@@ -161,7 +161,7 @@ bool WorldModelROS::transformPosition(const pbl::PDF& pdf_in, const string& fram
         return false;
     }
 
-    const arma::vec& pos = gauss->getMean();
+    const Eigen::VectorXd& pos = gauss->getMean();
     tf::Stamped<tf::Point> pos_stamped(tf::Point(pos(0), pos(1), pos(2)), ros::Time(), frame_in);
 
     try{
@@ -189,7 +189,7 @@ bool WorldModelROS::transformOrientation(const pbl::PDF& pdf_in, const string& f
         return false;
     }
 
-    const arma::vec& ori = gauss->getMean();
+    const Eigen::VectorXd& ori = gauss->getMean();
     tf::Stamped<tf::Quaternion> ori_stamped(tf::Quaternion(ori(0), ori(1), ori(2), ori(3)), ros::Time(), frame_in);
 
     try{

@@ -138,7 +138,7 @@ protected:
 	pbl::Gaussian G_small_;
 
     /** Observation model **/
-    pbl::Matrix H_;
+    Eigen::MatrixXd H_;
 
     /** Maximum expected acceleration **/
 	double a_max_;

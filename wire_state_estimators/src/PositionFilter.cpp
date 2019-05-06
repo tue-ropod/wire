@@ -81,8 +81,8 @@ void PositionFilter::propagate(const mhf::Time& time) {
     if ((time - t_last_update_) > kalman_timeout_ && kalman_timeout_ > 0) {
     //if ((time - t_last_update_) > 10.0) {
         if (!fixed_pdf_) {
-            int dimensions = kalman_filter_->getGaussian().getMean().n_rows;
-            pbl::Matrix cov = arma::eye(dimensions, dimensions) * fixed_pdf_cov_;
+            int dimensions = kalman_filter_->getGaussian().getMean().rows();
+            pbl::Matrix cov = Eigen::Matrix2Xd::Identity(dimensions, dimensions) * fixed_pdf_cov_;
             fixed_pdf_ = new pbl::Gaussian(kalman_filter_->getGaussian().getMean(), cov);
         } else {
             fixed_pdf_->setMean(kalman_filter_->getGaussian().getMean());
