@@ -36,92 +36,88 @@ const pbl::Gaussian* getBestGaussianFromMixture(const pbl::Mixture& mix, double 
 	return G_best;
 }
 
+void worldStateCallback(const wire_msgs::WorldState::ConstPtr& msg) 
+{
+     //   ROS_INFO("Received world state with %d objects", msg->objects.size());
+        
+        // Iterate over world model objects
+        for (vector<wire_msgs::ObjectState>::const_iterator it_obj = msg->objects.begin(); it_obj != msg->objects.end(); ++it_obj) {
+                
+                // Get object from the object array
+                wire_msgs::ObjectState obj = *it_obj;
+                ROS_INFO(" Object:");
+                
+                // Iterate over all properties
+                for (vector<wire_msgs::Property>::const_iterator it_prop = obj.properties.begin(); it_prop != obj.properties.end(); ++it_prop) {
+                        
+                        // Get the pdf of the current property
+                        pbl::PDF* pdf = pbl::msgToPDF(it_prop->pdf);
+                        
+                        if (pdf) {
+                                // Check the attribute
+                                // Object class
+                                
+                                if (it_prop->attribute == "class_label") {
+                                        string label = "";
+                                        pdf->getExpectedValue(label);
+                                        
+                                        // Get probability
+                                        const pbl::PMF* pmf = pbl::PDFtoPMF(*pdf);
+                                        double p = pmf->getProbability(label);
+                                        
+                                        ROS_INFO( " - class %s with probability %f",label.c_str(), p);
+                                }
+                                
+                                // Position
+                                else if (it_prop->attribute == "position") {
+                                        ROS_INFO(" - position: ");
+                                        
+                                        const pbl::Gaussian* pos_gauss = pbl::PDFtoGaussian(*pdf);
+                                        const pbl::Mixture* pos_pdf = pbl::PDFtoMixture(*pdf);
 
+                                        if (pos_pdf) {
+                                                const pbl::Gaussian* pos_gauss = getBestGaussianFromMixture(*pos_pdf);
+                                        }
+                                        
+                                        if (pos_gauss) {
+                                                const pbl::Vector& pos = pos_gauss->getMean();
+                                                
+                                             //   ROS_INFO(" - position: (%f,%f,%f),%i,%i", pos(0), pos(1), pos(2),IDobj,jcount);
+                                            //    ROS_INFO (" - diagonal position cov: (%f,%f,%f)");
+                                        } else {
+                                             //   ROS_INFO (" - position: object position unknown (uniform distribution)");
+                                                
+                                        }
+                                        
+                                }
 
-void worldStateCallback(const wire_msgs::WorldState::ConstPtr& msg) {
-
-	ROS_INFO("Received world state with %d objects", msg->objects.size());
-
-
-	// Iterate over world model objects
-	for (vector<wire_msgs::ObjectState>::const_iterator it_obj = msg->objects.begin(); it_obj != msg->objects.end(); ++it_obj) {
-
-		// Get object from the object array
-		wire_msgs::ObjectState obj = *it_obj;
-		ROS_INFO(" Object:");
-
-		// Iterate over all properties
-		for (vector<wire_msgs::Property>::const_iterator it_prop = obj.properties.begin(); it_prop != obj.properties.end(); ++it_prop) {
-
-			// Get the pdf of the current property
-			pbl::PDF* pdf = pbl::msgToPDF(it_prop->pdf);
-
-			if (pdf) {
-
-				//// Check the attribute
-
-				// Object class
-				if (it_prop->attribute == "class_label") {
-					string label = "";
-					pdf->getExpectedValue(label);
-
-					// Get probability
-					const pbl::PMF* pmf = pbl::PDFtoPMF(*pdf);
-					double p = pmf->getProbability(label);
-					ROS_INFO(" - class %s with probability %f", label.c_str(), p);
-				}
-					// Position
-				else if (it_prop->attribute == "position") {
-
-					// Get (Gaussian) position
-					const pbl::Gaussian* pos_gauss;
-					if (pdf->type() == pbl::PDF::MIXTURE) {
-						const pbl::Mixture* pos_pdf = pbl::PDFtoMixture(*pdf);
-						if (pos_pdf)
-							pos_gauss = getBestGaussianFromMixture(*pos_pdf);
-						else
-							ROS_INFO(" - position: object position unknown (uniform distribution)");
-					}
-					else if (pdf->type() == pbl::PDF::GAUSSIAN) {
-						pos_gauss = pbl::PDFtoGaussian(*pdf);
-					}
-
-					// Print Gaussian position
-					if (pos_gauss) {
-						const pbl::Vector& pos = pos_gauss->getMean();
-						ROS_INFO(" - position: (%f,%f,%f)", pos(0), pos(1), pos(2));
-						ROS_INFO(" - diagonal position cov: (%f,%f,%f)",
-										 pos_gauss->getCovariance()(0, 0), pos_gauss->getCovariance()(1, 1), pos_gauss->getCovariance()(2, 2));
-
-					}
-				}
-					// Orientation
-				else if (it_prop->attribute == "orientation") {
-					const pbl::Mixture* orientation_pdf = pbl::PDFtoMixture(*pdf);
-					if (orientation_pdf) {
-						const pbl::Gaussian* orientation_gauss = getBestGaussianFromMixture(*orientation_pdf);
-						if (orientation_gauss) {
-							const pbl::Vector& ori = orientation_gauss->getMean();
-							ROS_INFO(" - orientation: (%f,%f,%f,%f)", ori(0), ori(1), ori(2), ori(3));
-						}
-					} else {
-						ROS_INFO(" - orientation: object orientation unknown (uniform distribution)");
-					}
-				}
-					// Color
-				else if (it_prop->attribute == "color") {
-					string color = "";
-					pdf->getExpectedValue(color);
-					ROS_INFO(" - color: %s", color.c_str());
-				}
-
-				delete pdf;
-			}
-
-		}
-
-	}
-
+                                // Orientation
+                                else if (it_prop->attribute == "orientation") {
+                                        const pbl::Mixture* orientation_pdf = pbl::PDFtoMixture(*pdf);
+                                        if (orientation_pdf) {
+                                                const pbl::Gaussian* orientation_gauss = getBestGaussianFromMixture(*orientation_pdf);
+                                                if (orientation_gauss) {
+                                                        const pbl::Vector& ori = orientation_gauss->getMean();
+                                                        //                ROS_INFO (" - orientation: (%f,%f,%f,%f)", ori(0), ori(1), ori(2), ori(3));
+                                                }
+                                                
+                                        } else {
+                                           //     ROS_INFO (" - orientation: object orientation unknown (uniform distribution)");
+                                                
+                                        }
+                                        
+                                }
+                                
+                                // Color
+                                else if (it_prop->attribute == "color") {
+                                        string color = "";
+                                        pdf->getExpectedValue(color);
+                                        //        ROS_INFO(" - color: %s", color.c_str());
+                                }
+                                delete pdf;
+                        }
+                }
+    }
 }
 
 int main(int argc, char **argv) {

@@ -103,8 +103,8 @@ void WorldModelROS::start() {
         processEvidence(r.expectedCycleTime());
         publish();
         ++count;
-        if (count == 15) {
-            //showStatistics();
+        if (count == 1) {
+            showStatistics();
             count = 0;
         }
         r.sleep();
@@ -216,7 +216,7 @@ void WorldModelROS::evidenceCallback(const wire_msgs::WorldEvidence::ConstPtr& w
 void WorldModelROS::processEvidence(const ros::Duration max_duration) {
 
     ros::Time start_time = ros::Time::now();
-
+std::cout << "Going to process evidence with size = " << evidence_buffer_.size() << std::endl;;
     while(!evidence_buffer_.empty() && ros::Time::now() - start_time < max_duration) {
 
         ros::Time time_before_update = ros::Time::now();
@@ -295,6 +295,7 @@ void WorldModelROS::processEvidence(const wire_msgs::WorldEvidence& world_eviden
     } // end iteration over object evidence list
 
     world_model_->addEvidence(evidence_set);
+    std::cout << "Evidence added with size = " << evidence_set.size() << std::endl;
 
     for(list<Evidence*>::iterator it = measurements_mem.begin(); it != measurements_mem.end(); ++it) {
         delete (*it);

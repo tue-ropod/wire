@@ -269,9 +269,14 @@ void HypothesisTree::expandTree(const EvidenceSet& ev_set) {
 void HypothesisTree::normalizeProbabilities() {
     // Calculate sum of all probabilities
     double p_total = 0;
+    std::cout << "Normalize prob: dist = " << std::distance(leafs_.begin(), leafs_.end());
+    std::cout << " prob of each hypothesis = ";
     for(std::list<Hypothesis* >::iterator it_hyp = leafs_.begin(); it_hyp != leafs_.end(); ++it_hyp) {
         p_total += (*it_hyp)->getProbability();
+        std::cout << (*it_hyp)->getProbability() << "\t";
     }
+    
+    std::cout << "Normalize Prob: p_total = " << p_total << std::endl;
 
     // Normalize all probabilities
     for(std::list<Hypothesis* >::iterator it_hyp = leafs_.begin(); it_hyp != leafs_.end(); ++it_hyp) {
@@ -309,7 +314,11 @@ void HypothesisTree::pruneTree(const Time& timestamp) {
 
             // determine best branch of root hypothesis (highest sum of leaf probabilities)
             Hypothesis* best_child = *children.begin();
+            std::cout << "Determine best child: prob = " << std::endl;
             for (std::list<Hypothesis*>::const_iterator it_child = children.begin(); it_child != children.end(); ++it_child) {
+                    std::cout << (*it_child)->getProbability() << "\t";
+                    
+                    
                 if ((*it_child)->getProbability() > best_child->getProbability()) {
                     best_child = *it_child;
                 }
@@ -325,6 +334,8 @@ void HypothesisTree::pruneTree(const Time& timestamp) {
             }
 
             double min_prob = best_child->getProbability() * prob_ratio;
+            
+            std::cout << "pruneTree: min_prob = " << min_prob << std::endl;
 
             for (std::list<Hypothesis*>::iterator it_child = children.begin(); it_child != children.end();) {
                 bool prune_child = false;
@@ -341,6 +352,7 @@ void HypothesisTree::pruneTree(const Time& timestamp) {
 
                         prune_child = (similarity > 0.5);
                     } else if ((*it_child)->getProbability() < min_prob) {
+                            std::cout << "pruneTree, prob = " << (*it_child)->getProbability()<< std::endl;
                         prune_child = true;
                     }
                 }
@@ -365,9 +377,13 @@ void HypothesisTree::pruneTree(const Time& timestamp) {
 
     normalizeProbabilities();
 
-    DEBUG_INFO("   #leafs after pruning = %i\n", (int)leafs_.size());
+    //DEBUG_INFO("   #leafs after pruning = %i\n", (int)leafs_.size());
 
-    DEBUG_INFO("pruneTree - end\n");
+   // DEBUG_INFO("pruneTree - end\n");
+
+//    std::cout << "   #leafs after pruning = " << (int)leafs_.size() << std::endl; 
+
+//  std::cout << "pruneTree - end\n";
 }
 
 /* ****************************************************************************** */
