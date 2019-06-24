@@ -12,6 +12,7 @@
 
 #include "problib/conversions.h"
 
+
 // Publisher used to send evidence to world model
 ros::Publisher world_evidence_publisher_;
 

@@ -32,56 +32,56 @@ catkin_package(
     TinyXML
 )
 
-include_directories(include ${catkin_INCLUDE_DIRS} ${TinyXML_INCLUDE_DIRS})
+#include_directories(include ${catkin_INCLUDE_DIRS} ${TinyXML_INCLUDE_DIRS})
 
 ## Build
-add_compile_options(-std=c++0x) # C++ 11
-add_compile_options(-Wreturn-type) # Return type checking
+#add_compile_options(-std=c++0x) # C++ 11
+#add_compile_options(-Wreturn-type) # Return type checking
 
 
-add_library(wire
-    src/WorldModelROS.cpp
-    src/models/FixedState.cpp
-    src/core/datatypes.cpp
-    src/core/ClassModel.cpp
-    src/core/Property.cpp
-    src/core/Evidence.cpp
-    src/core/EvidenceSet.cpp
-    src/core/PropertySet.cpp
-    src/storage/SemanticObject.cpp
-    src/storage/ObjectStorage.cpp
-    src/storage/KnowledgeDatabase.cpp
-    src/util/ObjectModelParser.cpp
-    src/logic/Assignment.cpp
-    src/logic/AssignmentSet.cpp
-    src/logic/AssignmentMatrix.cpp
-    src/logic/Hypothesis.cpp
-    src/logic/HypothesesTree.cpp
-    include/wire/WorldModelROS.h
-    include/wire/models/FixedState.h
-    include/wire/core/datatypes.h
-    include/wire/core/ClassModel.h
-    include/wire/core/Property.h
-    include/wire/core/Evidence.h
-    include/wire/core/EvidenceSet.h
-    include/wire/core/PropertySet.h
-    include/wire/storage/SemanticObject.h
-    include/wire/storage/ObjectStorage.h
-    include/wire/storage/KnowledgeDatabase.h
-    include/wire/util/ObjectModelParser.h
-    include/wire/logic/Assignment.h
-    include/wire/logic/AssignmentSet.h
-    include/wire/logic/AssignmentMatrix.h
-    include/wire/logic/Hypothesis.h
-    include/wire/logic/HypothesesTree.h
-    
-)
+#add_library(wire
+#    src/WorldModelROS.cpp
+#    src/models/FixedState.cpp
+#    src/core/datatypes.cpp
+#    src/core/ClassModel.cpp
+#    src/core/Property.cpp
+#    src/core/Evidence.cpp
+#    src/core/EvidenceSet.cpp
+#    src/core/PropertySet.cpp
+#    src/storage/SemanticObject.cpp
+#    src/storage/ObjectStorage.cpp
+#    src/storage/KnowledgeDatabase.cpp
+#    src/util/ObjectModelParser.cpp
+#    src/logic/Assignment.cpp
+#    src/logic/AssignmentSet.cpp
+#    src/logic/AssignmentMatrix.cpp
+#    src/logic/Hypothesis.cpp
+###    src/logic/HypothesesTree.cpp
+#    include/wire/WorldModelROS.h
+#    include/wire/models/FixedState.h
+##    include/wire/core/datatypes.h
+#    include/wire/core/ClassModel.h
+#    include/wire/core/Property.h
+#    include/wire/core/Evidence.h
+#    include/wire/core/EvidenceSet.h
+#    include/wire/core/PropertySet.h
+#    include/wire/storage/SemanticObject.h
+#    include/wire/storage/ObjectStorage.h
+#    include/wire/storage/KnowledgeDatabase.h
+#    include/wire/util/ObjectModelParser.h
+#    include/wire/logic/Assignment.h
+#    include/wire/logic/AssignmentSet.h
+#    include/wire/logic/AssignmentMatrix.h
+#    include/wire/logic/Hypothesis.h
+#    include/wire/logic/HypothesesTree.h
+#    
+#)
 
-target_link_libraries(wire ${catkin_LIBRARIES} ${TinyXML_LIBRARIES})
+#target_link_libraries(wire ${catkin_LIBRARIES} ${TinyXML_LIBRARIES})
 
 # ROS nodes
-add_executable(wire_server src/world_model.cpp) 
-target_link_libraries(wire_server wire)
+#add_executable(wire_server src/world_model.cpp) 
+#target_link_libraries(wire_server wire)
 
-add_executable(dummy_publisher src/dummy_evidence_publisher.cpp) 
-target_link_libraries(dummy_publisher wire)
+#add_executable(dummy_publisher src/dummy_evidence_publisher.cpp) 
+#target_link_libraries(dummy_publisher wire)
