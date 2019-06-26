@@ -32,12 +32,12 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 add_compile_options(-std=c++0x) # C++ 11
 add_compile_options(-Wreturn-type) # Return type checking
 
-#add_library(wire_viz
-#    src/Visualizer.cpp
-#)
+add_library(wire_viz
+    src/Visualizer.cpp
+)
 
-#target_link_libraries(wire_viz ${catkin_LIBRARIES})
+target_link_libraries(wire_viz ${catkin_LIBRARIES})
 
 # ROS nodes
-#add_executable(visualization src/visualization.cpp) 
-#target_link_libraries(visualization wire_viz)
+add_executable(visualization src/visualization.cpp) 
+target_link_libraries(visualization wire_viz)

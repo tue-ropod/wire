@@ -8,14 +8,14 @@ using namespace std;
 
 namespace mhf {
 
-ObjectStorage* ObjectStorage::instance_ = 0;
+std::shared_ptr<ObjectStorage> ObjectStorage::instance_ = 0;
 
-ObjectStorage& ObjectStorage::getInstance() {
+std::shared_ptr<ObjectStorage> ObjectStorage::getInstance() {
     if (instance_) {
-        return *instance_;
+        return instance_;
     }
-    instance_ = new ObjectStorage();
-    return *instance_;
+    instance_ = std::make_shared<ObjectStorage>();
+    return instance_;
 }
 
 ObjectStorage::ObjectStorage() : ID_(0), knowledge_db_(KnowledgeDatabase::getInstance()) {
@@ -26,32 +26,32 @@ ObjectStorage::~ObjectStorage() {
 
 }
 
-void ObjectStorage::addObject(SemanticObject* obj) {
+void ObjectStorage::addObject(std::shared_ptr<SemanticObject> obj) {
     objects_.push_back(obj);
     obj->it_obj_storage_ = --objects_.end();
 }
 
-void ObjectStorage::removeObject(SemanticObject& obj) {
-    objects_.erase(obj.it_obj_storage_);
+void ObjectStorage::removeObject(std::shared_ptr<SemanticObject> obj) {
+    objects_.erase(obj->it_obj_storage_);
 }
 
 long ObjectStorage::getUniqueID() {
     return ID_++;
 }
 
-void ObjectStorage::match(const Evidence& ev) {
+void ObjectStorage::match(std::shared_ptr<const Evidence> ev) {
 
     //cout << endl << "ObjectStorage::match" << endl;
 
-    for(list<SemanticObject*>::iterator it_obj = objects_.begin(); it_obj != objects_.end(); ++it_obj) {
+    for(list<std::shared_ptr<SemanticObject>>::iterator it_obj = objects_.begin(); it_obj != objects_.end(); ++it_obj) {
         SemanticObject& obj = **it_obj;
-        obj.propagate(ev.getTimestamp());
+        obj.propagate(ev->getTimestamp());
     }
 
-    for(list<SemanticObject*>::iterator it_obj = objects_.begin(); it_obj != objects_.end(); ++it_obj) {
+    for(list<std::shared_ptr<SemanticObject>>::iterator it_obj = objects_.begin(); it_obj != objects_.end(); ++it_obj) {
         SemanticObject& obj = **it_obj;
 
-        double prob_existing = KnowledgeDatabase::getInstance().getProbabilityExisting(ev, obj);
+        double prob_existing = KnowledgeDatabase::getInstance()->getProbabilityExisting(ev, obj);
         if (prob_existing > 0) {
 
             //cout << "Adding evidence " << &ev << " to object " << &obj << endl;

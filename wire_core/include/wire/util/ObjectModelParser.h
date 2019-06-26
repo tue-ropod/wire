@@ -30,7 +30,7 @@ public:
 
     virtual ~ObjectModelParser();
 
-    bool parse(KnowledgeDatabase& obj_models);
+    bool parse(std::shared_ptr<KnowledgeDatabase> obj_models);
 
     std::string getErrorMessage() const;
 
@@ -50,9 +50,9 @@ protected:
 
     bool hasAttributeValue(const TiXmlElement* elem, std::string att_name, std::string att_value);
 
-    bool parseStateEstimator(ClassModel* obj_model, const TiXmlElement* elem, std::stringstream& error);
+    bool parseStateEstimator(std::shared_ptr<ClassModel> obj_model, const TiXmlElement* elem, std::stringstream& error);
 
-    pbl::PDF* parsePDF(const TiXmlElement* elem, std::stringstream& error);
+    std::shared_ptr<pbl::PDF> parsePDF(const TiXmlElement* elem, std::stringstream& error);
 
     bool getStateEstimatorParameter(const TiXmlElement* elem, const std::string& param_name, double& value);
 

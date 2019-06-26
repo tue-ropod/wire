@@ -50,33 +50,37 @@ class Property {
 
 public:
 
-    Property(const Attribute& attribute, const IStateEstimator& bm, const ObjectID& object_id = -1);
+   // Property(const Attribute& attribute, const IStateEstimator& bm, const ObjectID& object_id = -1);
+         Property(const Attribute& attribute, std::shared_ptr<const IStateEstimator> bm, const ObjectID& object_id = -1);
 
-    Property(const Property& orig);
+    //Property(std::shared_ptr<const Property> orig);
+         Property(const Property& orig);
 
     virtual ~Property();
 
-    Property* clone() const;
+ //   Property* clone() const;
+    
+     std::shared_ptr<Property> clone() const{ return std::make_shared< Property>(*this); };
 
     Property& operator=(const Property& other);
 
     const Attribute& getAttribute() const;
 
-    const IStateEstimator& getEstimator() const;
+    std::shared_ptr<const IStateEstimator> getEstimator() const;
 
-    const pbl::PDF& getValue() const;
+    std::shared_ptr<const pbl::PDF> getValue() const;
 
     //void setObjectID(const ObjectID& id);
 
     const ObjectID& getObjectID() const;
 
-    void update(const pbl::PDF& z, const Time& time);
+    void update(std::shared_ptr<const pbl::PDF> z, const Time& time);
 
     void propagate(const Time& time);
 
     void reset();
 
-    virtual double getLikelihood(const pbl::PDF& pdf) const;
+    virtual double getLikelihood(std::shared_ptr<const pbl::PDF> pdf) const;
 
     std::string toString(const std::string& prefix = "") const;
 
@@ -84,11 +88,11 @@ protected:
 
     Time time_;
 
-    //ObjectID object_id_;
+    ObjectID object_id_;
 
     Attribute attribute_;
 
-    IStateEstimator* estimator_;
+    std::shared_ptr<IStateEstimator> estimator_;
 
 };
 

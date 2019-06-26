@@ -15,7 +15,7 @@ using namespace std;
 
 namespace mhf {
 
-bool compareAssignments(const Assignment* ass1, const Assignment* ass2) {
+bool compareAssignments(std::shared_ptr<const Assignment> ass1, std::shared_ptr<const Assignment> ass2) {
     return ass1->getProbability() > ass2->getProbability();
 }
 
@@ -27,30 +27,30 @@ AssignmentMatrix::~AssignmentMatrix() {
 
 }
 
-void AssignmentMatrix::addPotentialAssignment(const Assignment& assignment) {
-    map<const Evidence*, unsigned int>::iterator it_ev = evidence_to_index_.find(assignment.getEvidence());
+void AssignmentMatrix::addPotentialAssignment(std::shared_ptr<const Assignment> assignment) {
+    map<std::shared_ptr<const Evidence>, unsigned int>::iterator it_ev = evidence_to_index_.find(assignment->getEvidence());
 
     int ev_index;
     if (it_ev == evidence_to_index_.end()) {
         ev_index = assignments_.size();
-        evidence_to_index_[assignment.getEvidence()] = ev_index;
+        evidence_to_index_[assignment->getEvidence()] = ev_index;
         assignments_.resize(ev_index + 1);
     } else {
         ev_index = it_ev->second;
     }
 
-    assignments_[ev_index].push_back(&assignment);
+    assignments_[ev_index].push_back(assignment);
 }
 
 
 void AssignmentMatrix::sortAssignments() {
-    for(vector<vector<const Assignment*> >::iterator it_ev = assignments_.begin(); it_ev != assignments_.end(); ++it_ev) {
+    for(vector<vector<std::shared_ptr<const Assignment>> >::iterator it_ev = assignments_.begin(); it_ev != assignments_.end(); ++it_ev) {
         sort(it_ev->begin(), it_ev->end(), compareAssignments);
     }
 }
 
-const Assignment& AssignmentMatrix::getAssignment(unsigned int i_ev, int i_assignment) {
-    return *assignments_[i_ev][i_assignment];
+std::shared_ptr<const Assignment> AssignmentMatrix::getAssignment(unsigned int i_ev, int i_assignment) {
+    return assignments_[i_ev][i_assignment];
 }
 
 unsigned int AssignmentMatrix::getNumAssignments(unsigned int i_ev) {

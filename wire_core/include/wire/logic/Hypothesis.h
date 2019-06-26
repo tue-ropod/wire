@@ -62,6 +62,8 @@
 
 #include <string>
 #include <list>
+#include <iostream>
+#include <memory>
 
 namespace mhf {
 
@@ -71,7 +73,7 @@ class Assignment;
 class ProbabilityModel;
 class AssignmentMatrix;
 
-class Hypothesis {
+class Hypothesis: public std::enable_shared_from_this<Hypothesis> {
 
 public:
         /* CONSTRUCTORS / DESTRUCTORS */
@@ -82,16 +84,16 @@ public:
     // Destructor
     virtual ~Hypothesis();
 
-    Hypothesis* clone() const;
+    std::shared_ptr<Hypothesis> clone() const;
 
 
         /* GETTERS */
 
-    const AssignmentSet* getAssignments() const;
+    std::shared_ptr<const AssignmentSet> getAssignments() const;
 
-    const Hypothesis* getBestLeaf() const;
+    std::shared_ptr<const Hypothesis> getBestLeaf() const;
 
-    std::list<Hypothesis*>& getChildHypotheses();
+    std::list<std::shared_ptr<Hypothesis>>& getChildHypotheses();
 
     int getHeight() const;
 
@@ -99,22 +101,22 @@ public:
     int getNumObjects() const;
 
     // returns the list of objects contained in this hypothesis
-    const std::list<SemanticObject*>& getObjects() const;
+    const std::list<std::shared_ptr<SemanticObject>>& getObjects() const;
 
     //double getObjectProbability(MHTObject* obj) const;
 
-    const Hypothesis* getParent() const;
+    std::shared_ptr<const Hypothesis> getParent() const;
 
     // returns probability of this hypothesis
     double getProbability() const;
 
     double getTimestamp() const;
 
-    AssignmentMatrix* getAssignmentMatrix() const;
+    std::shared_ptr<AssignmentMatrix> getAssignmentMatrix() const;
 
         /* SETTERS */
 
-    void setAssignments(AssignmentSet* assignments);
+    void setAssignments(std::shared_ptr<AssignmentSet> assignments);
 
     void setInactive();
 
@@ -124,28 +126,28 @@ public:
 
         /* HYPOTHESIS MODIFIERS */
 
-    void addChildHypothesis(Hypothesis* h);
+    void addChildHypothesis(std::shared_ptr<Hypothesis> h);
 
     // Add object to the object list
-    void addObject(SemanticObject* obj);
+    void addObject(std::shared_ptr<SemanticObject> obj);
 
     void clearAssignmentSet();
 
     void clear();
 
-    void addPotentialAssignment(Assignment* assignment);
+    void addPotentialAssignment(std::shared_ptr<Assignment> assignment);
 
     void applyAssignments();
 
         /* TREE UPDATE METHODS  */
 
-    void findActiveLeafs(std::list<Hypothesis*>& active_leafs);
+    void findActiveLeafs(std::list<std::shared_ptr<Hypothesis>>& active_leafs);
 
     double calculateBranchProbabilities();
 
     int calculateHeigth();
 
-    Hypothesis* determineBestLeaf();
+    std::shared_ptr<Hypothesis> determineBestLeaf();
 
 
         /* TREE CLEAR / DELETE METHODS */
@@ -154,7 +156,7 @@ public:
 
     void deleteChildren();
 
-    Hypothesis* deleteSinglePaths();
+    std::shared_ptr<Hypothesis> deleteSinglePaths();
 
 protected:
 
@@ -162,17 +164,17 @@ protected:
 
     double timestamp_;
 
-    std::list<SemanticObject*> objects_;
+    std::list<std::shared_ptr<SemanticObject>> objects_;
 
-    Hypothesis* parent_;
+    std::shared_ptr<Hypothesis> parent_;
 
-    std::list<Hypothesis*> children_;
+    std::list<std::shared_ptr<Hypothesis>> children_;
 
-    AssignmentSet* assignment_set_;
+    std::shared_ptr<AssignmentSet> assignment_set_;
 
-    AssignmentMatrix* assignment_matrix_;
+    std::shared_ptr<AssignmentMatrix> assignment_matrix_;
 
-    Hypothesis* best_leaf_;
+    std::shared_ptr<Hypothesis> best_leaf_;
 
     int height_;
 

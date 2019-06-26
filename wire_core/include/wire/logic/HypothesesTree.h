@@ -62,6 +62,8 @@
 #include "wire/core/datatypes.h"
 #include <list>
 #include <map>
+#include <iostream> 
+#include <memory>
 
 namespace mhf {
 
@@ -87,20 +89,20 @@ public:
 
     /* GETTERS */
 
-    const std::list<SemanticObject*>& getMAPObjects() const;
+    const std::list<std::shared_ptr<SemanticObject>>& getMAPObjects() const;
 
-    const std::list<SemanticObject*>& getAllObjects() const;
+    const std::list<std::shared_ptr<SemanticObject>>& getAllObjects() const;
 
-    const std::list<Hypothesis*>& getHypotheses() const;
+    const std::list<std::shared_ptr<Hypothesis>>& getHypotheses() const;
 
-    const Hypothesis& getMAPHypothesis() const;
+    std::shared_ptr<const Hypothesis> getMAPHypothesis() const;
 
     int getHeight() const;
 
 
     /* SETTERS */
 
-    void addEvidence(const EvidenceSet& ev_set);
+    void addEvidence(std::shared_ptr<const EvidenceSet> ev_set);
 
 
     /* PRINT METHODS */
@@ -109,11 +111,11 @@ public:
 
 protected:
 
-    Hypothesis* root_;
+    std::shared_ptr<Hypothesis> root_;
 
-    std::list<Hypothesis*> leafs_;
+    std::list<std::shared_ptr<Hypothesis>> leafs_;
 
-    Hypothesis* MAP_hypothesis_;
+    std::shared_ptr<Hypothesis> MAP_hypothesis_;
 
     long n_updates_;
 
@@ -130,7 +132,7 @@ protected:
 
     //void determineMAPHypothesis();
 
-    void expandTree(const EvidenceSet &ev_set);
+    void expandTree(std::shared_ptr<const EvidenceSet> ev_set);
 
     // Normalize the probabilities of all hypotheses in the tree
     void normalizeProbabilities();

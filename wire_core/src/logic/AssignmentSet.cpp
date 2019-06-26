@@ -17,13 +17,13 @@
 
 namespace mhf {
 
-AssignmentSet::AssignmentSet(Hypothesis* hyp, AssignmentMatrix* assignment_matrix) :
+AssignmentSet::AssignmentSet(std::shared_ptr<Hypothesis> hyp, std::shared_ptr<AssignmentMatrix> assignment_matrix) :
     hyp_(hyp), assignment_matrix_(assignment_matrix), probability_(hyp_->getProbability()),
     evidence_assignments_(assignment_matrix_->getNumMeasurements()), n_blocked_(0) {
 
     for(unsigned int i = 0; i < evidence_assignments_.size(); ++i) {
         evidence_assignments_[i] = 0;
-        probability_ *= assignment_matrix_->getAssignment(i, 0).getProbability();
+        probability_ *= assignment_matrix_->getAssignment(i, 0)->getProbability();
     }
 
     assert(probability_ > 0);
@@ -37,27 +37,27 @@ AssignmentSet::AssignmentSet(const AssignmentSet& orig) :
 AssignmentSet::~AssignmentSet() {
 }
 
-void AssignmentSet::expand(std::list<AssignmentSet*>& children) const {
+void AssignmentSet::expand(std::list<std::shared_ptr<AssignmentSet>>& children) const {
     for(unsigned int i = n_blocked_; i < evidence_assignments_.size(); ++i) {
         if (evidence_assignments_[i] + 1 < assignment_matrix_->getNumAssignments(i)) {
-            AssignmentSet* child = new AssignmentSet(*this);
+            std::shared_ptr<AssignmentSet> child = std::make_shared<AssignmentSet>(*this);
             child->evidence_assignments_[i]++;
             child->n_blocked_ = i;
-            child->probability_ *= assignment_matrix_->getAssignment(i, child->evidence_assignments_[i]).getProbability()
-                    / assignment_matrix_->getAssignment(i, this->evidence_assignments_[i]).getProbability();
+            child->probability_ *= assignment_matrix_->getAssignment(i, child->evidence_assignments_[i])->getProbability()
+                    / assignment_matrix_->getAssignment(i, this->evidence_assignments_[i])->getProbability();
 
             children.push_back(child);
         }
     }
 }
 
-const Assignment& AssignmentSet::getMeasurementAssignment(unsigned int i_ev) const {
+std::shared_ptr<const Assignment> AssignmentSet::getMeasurementAssignment(unsigned int i_ev) const {
     return assignment_matrix_->getAssignment(i_ev, evidence_assignments_[i_ev]);
 }
 
-void AssignmentSet::getAllAssignments(std::list<const Assignment*>& assignments) const {
+void AssignmentSet::getAllAssignments(std::list<std::shared_ptr<const Assignment>>& assignments) const {
     for(unsigned int i = 0; i < evidence_assignments_.size(); ++i) {
-        assignments.push_back(&getMeasurementAssignment(i));
+        assignments.push_back(getMeasurementAssignment(i));
     }
 }
 
@@ -65,7 +65,7 @@ double AssignmentSet::getProbability() const {
     return probability_;
 }
 
-Hypothesis* AssignmentSet::getHypothesis() const {
+std::shared_ptr<Hypothesis> AssignmentSet::getHypothesis() const {
     return hyp_;
 }
 
@@ -97,7 +97,7 @@ void AssignmentSet::print() const {
 
     for(unsigned int i = 0; i < evidence_assignments_.size(); ++i) {
         for(unsigned int j = 0; j <  assignment_matrix_->getNumAssignments(i); ++j) {
-            double prob = assignment_matrix_->getAssignment(i, j).getProbability();
+            double prob = assignment_matrix_->getAssignment(i, j)->getProbability();
             if (j == evidence_assignments_[i]) {
                 std::cout << " (" << prob << ")";
             } else {
@@ -108,7 +108,7 @@ void AssignmentSet::print() const {
     }
 
     for(unsigned int i = 0; i < evidence_assignments_.size(); ++i) {
-        std::cout << assignment_matrix_->getAssignment(i, evidence_assignments_[i]).toString() << std::endl;
+        std::cout << assignment_matrix_->getAssignment(i, evidence_assignments_[i])->toString() << std::endl;
     }
 
     isValid();

@@ -11,14 +11,14 @@ using namespace std;
 
 namespace mhf {
 
-KnowledgeDatabase* KnowledgeDatabase::instance_ = 0;
+std::shared_ptr<KnowledgeDatabase> KnowledgeDatabase::instance_ = 0;
 
-KnowledgeDatabase& KnowledgeDatabase::getInstance() {
+std::shared_ptr<KnowledgeDatabase> KnowledgeDatabase::getInstance() {
     if (instance_) {
-        return *instance_;
+        return instance_;
     }
-    instance_ = new KnowledgeDatabase();
-    return *instance_;
+    instance_ = std::make_shared<KnowledgeDatabase>();
+    return instance_;
 }
 
 KnowledgeDatabase::KnowledgeDatabase() : prior_new_(0), prior_existing_(0), prior_clutter_(0) {
@@ -26,12 +26,12 @@ KnowledgeDatabase::KnowledgeDatabase() : prior_new_(0), prior_existing_(0), prio
 }
 
 KnowledgeDatabase::~KnowledgeDatabase() {
-    for(map<string, ClassModel*>::iterator it_model = class_models_.begin(); it_model != class_models_.end(); ++it_model) {
-        delete it_model->second;
-    }
+    //for(map<string, std::shared_ptr<ClassModel>>::iterator it_model = class_models_.begin(); it_model != class_models_.end(); ++it_model) {
+    //    delete it_model->second;
+   // }
 }
 
-void KnowledgeDatabase::addClassModel(const string& class_name, ClassModel* model) {
+void KnowledgeDatabase::addClassModel(const string& class_name, std::shared_ptr<ClassModel> model) {
     class_models_[class_name] = model;
 }
 
@@ -43,7 +43,7 @@ const PropertySet& KnowledgeDatabase::getClutterPDFs(const std::string& class_na
     return getClassModel(class_name)->getClutterPDFs();
 }
 
-const IStateEstimator* KnowledgeDatabase::getEstimator(const std::string& class_name, const Attribute& attribute) const {
+std::shared_ptr<const IStateEstimator> KnowledgeDatabase::getEstimator(const std::string& class_name, const Attribute& attribute) const {
     return getClassModel(class_name)->getEstimator(attribute);
 }
 
@@ -75,12 +75,12 @@ double KnowledgeDatabase::getPriorClutter() const {
     return prior_clutter_;
 }
 
-const std::map<std::string, ClassModel*>& KnowledgeDatabase::getClassModels() const {
+const std::map<std::string, std::shared_ptr<ClassModel>>& KnowledgeDatabase::getClassModels() const {
     return class_models_;
 }
 
-const ClassModel* KnowledgeDatabase::getClassModel(const std::string& class_name) const {
-    map<string, ClassModel*>::const_iterator it_model = class_models_.find(class_name);
+std::shared_ptr<const ClassModel> KnowledgeDatabase::getClassModel(const std::string& class_name) const {
+    map<string, std::shared_ptr<ClassModel>>::const_iterator it_model = class_models_.find(class_name);
     if (it_model != class_models_.end()) {
         return it_model->second;
     }
@@ -91,16 +91,16 @@ const ClassModel* KnowledgeDatabase::getClassModel(const std::string& class_name
     return it_model->second;
 }
 
-double KnowledgeDatabase::getProbabilityNew(const Evidence& z) {
+double KnowledgeDatabase::getProbabilityNew(std::shared_ptr<const Evidence> z) {
 
-    const Property* class_prop = z.getProperty("class_label");
+    std::shared_ptr<const Property> class_prop = z->getProperty("class_label");
 
     double likelihood = 0;
     double total_prob = 0;
 
     if (class_prop) {
         // we have information about the class distribution
-        const pbl::PMF* class_pmf = pbl::PDFtoPMF(class_prop->getValue());
+        std::shared_ptr<const pbl::PMF> class_pmf = pbl::PDFtoPMF(class_prop->getValue());
 
         vector<double> class_probs;
         class_pmf->getProbabilities(class_probs);
@@ -110,7 +110,7 @@ double KnowledgeDatabase::getProbabilityNew(const Evidence& z) {
 
         likelihood = 0;
         for(unsigned int i = 0; i < class_probs.size(); ++i) {
-            const ClassModel* class_model = getClassModel(class_names[i]);
+            std::shared_ptr<const ClassModel> class_model = getClassModel(class_names[i]);
 
             if (class_model) {
                 likelihood += class_probs[i] * class_model->getNewPDFs().getLikelihood(z);
@@ -119,7 +119,7 @@ double KnowledgeDatabase::getProbabilityNew(const Evidence& z) {
         }
     }
 
-    const ClassModel* default_model = getClassModel("object");
+    std::shared_ptr<const ClassModel> default_model = getClassModel("object");
     assert(default_model != 0);
 
     likelihood += (1 - total_prob) * default_model->getNewPDFs().getLikelihood(z);
@@ -131,16 +131,16 @@ double KnowledgeDatabase::getProbabilityNew(const Evidence& z) {
     return p_new;
 }
 
-double KnowledgeDatabase::getProbabilityClutter(const Evidence& z) {
+double KnowledgeDatabase::getProbabilityClutter(std::shared_ptr<const Evidence> z) {
 
-    const Property* class_prop = z.getProperty("class_label");
+    std::shared_ptr<const Property> class_prop = z->getProperty("class_label");
 
     double likelihood = 0;
     double total_prob = 0;
 
     if (class_prop) {
         // we have information about the class distribution
-        const pbl::PMF* class_pmf = pbl::PDFtoPMF(class_prop->getValue());
+        std::shared_ptr<const pbl::PMF> class_pmf = pbl::PDFtoPMF(class_prop->getValue());
 
         vector<double> class_probs;
         class_pmf->getProbabilities(class_probs);
@@ -150,7 +150,7 @@ double KnowledgeDatabase::getProbabilityClutter(const Evidence& z) {
 
         likelihood = 0;
         for(unsigned int i = 0; i < class_probs.size(); ++i) {
-            const ClassModel* class_model = getClassModel(class_names[i]);
+            std::shared_ptr<const ClassModel> class_model = getClassModel(class_names[i]);
 
             if (class_model) {
                 likelihood += class_probs[i] * class_model->getClutterPDFs().getLikelihood(z);
@@ -159,7 +159,7 @@ double KnowledgeDatabase::getProbabilityClutter(const Evidence& z) {
         }
     }
 
-    const ClassModel* default_model = getClassModel("object");
+    std::shared_ptr<const ClassModel> default_model = getClassModel("object");
     assert(default_model != 0);
 
     likelihood += (1 - total_prob) * default_model->getClutterPDFs().getLikelihood(z);
@@ -171,7 +171,7 @@ double KnowledgeDatabase::getProbabilityClutter(const Evidence& z) {
     return p_clutter;
 }
 
-double KnowledgeDatabase::getProbabilityExisting(const Evidence& z, const SemanticObject& obj) {
+double KnowledgeDatabase::getProbabilityExisting(std::shared_ptr<const Evidence> z, const SemanticObject& obj) {
     // calculate prior (prior probability that target generates a detection)
     double prior = getPriorExisting();
 
@@ -184,12 +184,12 @@ double KnowledgeDatabase::getProbabilityExisting(const Evidence& z, const Semant
 }
 
 vector<Property> KnowledgeDatabase::inferProperties(const PropertySet& prop_set, vector<Attribute> attribs) const {
-    const Property* class_prop = prop_set.getProperty("class_label");
+    std::shared_ptr<const Property> class_prop = prop_set.getProperty("class_label");
 
-    const ClassModel* most_prob_class_model = 0;
+    std::shared_ptr<const ClassModel> most_prob_class_model = 0;
     if (class_prop) {
         string most_prob_class;
-        class_prop->getValue().getExpectedValue(most_prob_class);
+        class_prop->getValue()->getExpectedValue(most_prob_class);
         most_prob_class_model = getClassModel(most_prob_class);
     } else {
         most_prob_class_model = getClassModel("object");
@@ -197,7 +197,7 @@ vector<Property> KnowledgeDatabase::inferProperties(const PropertySet& prop_set,
 
     vector<Property> inferred_props;
     for(vector<Attribute>::iterator it_att = attribs.begin(); it_att != attribs.end(); ++it_att) {
-        const Property* prop = most_prob_class_model->getNewPDFs().getProperty(*it_att);
+        std::shared_ptr<const Property> prop = most_prob_class_model->getNewPDFs().getProperty(*it_att);
         assert(prop);
         inferred_props.push_back(*prop);
     }

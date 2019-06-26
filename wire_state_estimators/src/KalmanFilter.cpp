@@ -37,7 +37,8 @@
 #include "KalmanFilter.h"
 
 KalmanFilter::KalmanFilter(int dim)
-: meas_dim_(dim), state_dim_(dim * 2), G_(dim * 2), G_small_(dim), a_max_(0) {
+: meas_dim_(dim), state_dim_(dim * 2), G_(dim * 2),a_max_(0) {
+        G_small_ = std::make_shared<pbl::Gaussian>(dim);
 }
 
 KalmanFilter::KalmanFilter(const KalmanFilter& orig)
@@ -47,9 +48,9 @@ KalmanFilter::KalmanFilter(const KalmanFilter& orig)
 KalmanFilter::~KalmanFilter() {
 }
 
-KalmanFilter* KalmanFilter::clone() const {
-	return new KalmanFilter(*this);
-}
+//KalmanFilter* KalmanFilter::clone() const {
+//	return new KalmanFilter(*this);
+//}
 
 void KalmanFilter::init(const pbl::Gaussian& z) {
 	H_ = Eigen::MatrixXd::Identity(meas_dim_, state_dim_);
@@ -57,8 +58,8 @@ void KalmanFilter::init(const pbl::Gaussian& z) {
 	G_.setMean(H_.transpose() * z.getMean());
 	G_.setCovariance(H_.transpose() * z.getCovariance() * H_);
 
-	G_small_.setMean(z.getMean());;
-	G_small_.setCovariance(z.getCovariance());;
+	G_small_->setMean(z.getMean());;
+	G_small_->setCovariance(z.getCovariance());;
 }
 
 void KalmanFilter::propagate(const double& dt) {
@@ -95,8 +96,8 @@ void KalmanFilter::propagate(const double& dt) {
 
 		G_.setCovariance(P);
 
-		G_small_.setMean(H_ * G_.getMean());
-		G_small_.setCovariance(H_ * G_.getCovariance() * H_.transpose());
+		G_small_->setMean(H_ * G_.getMean());
+		G_small_->setCovariance(H_ * G_.getCovariance() * H_.transpose());
 	}
 }
 
@@ -121,15 +122,15 @@ void KalmanFilter::update(const pbl::Gaussian& z) {
         Identity = Eigen::MatrixXd::Identity(state_dim_, state_dim_);
 	G_.setCovariance((Identity - K * H_) * P);
 
-	G_small_.setMean(H_ * G_.getMean());
-	G_small_.setCovariance(H_ * G_.getCovariance() * H_.transpose());
+	G_small_->setMean(H_ * G_.getMean());
+	G_small_->setCovariance(H_ * G_.getCovariance() * H_.transpose());
 }
 
 double KalmanFilter::getLikelihood(const pbl::Gaussian& z) const {
-	return z.getDensity(G_small_);
+	return z.getDensity(*G_small_);
 }
 
-const pbl::Gaussian& KalmanFilter::getGaussian() const {
+std::shared_ptr<const pbl::Gaussian> KalmanFilter::getGaussian() const {
 	return G_small_;
 }
 

@@ -25,15 +25,15 @@ ClassModel::~ClassModel() {
 
 }
 
-void ClassModel::setNewPDF(const Attribute& attribute, const pbl::PDF& pdf) {
+void ClassModel::setNewPDF(const Attribute& attribute, std::shared_ptr<const pbl::PDF> pdf) {
     new_pdfs_.addProperty(attribute, pdf);
 }
 
-void ClassModel::setClutterPDF(const Attribute& attribute, const pbl::PDF& pdf) {
+void ClassModel::setClutterPDF(const Attribute& attribute, std::shared_ptr<const pbl::PDF> pdf) {
     clutter_pdfs_.addProperty(attribute, pdf);
 }
 
-void ClassModel::setEstimator(const Attribute& attribute, const IStateEstimator& estimator) {
+void ClassModel::setEstimator(const Attribute& attribute, std::shared_ptr<const IStateEstimator> estimator) {
     estimators_.addProperty(attribute, estimator);
 }
 
@@ -45,10 +45,10 @@ const std::string& ClassModel::getModelName() const {
     return model_name_;
 }
 
-const IStateEstimator* ClassModel::getEstimator(const Attribute& attribute) const {
-    const Property* prop = estimators_.getProperty(attribute);
+std::shared_ptr<const IStateEstimator> ClassModel::getEstimator(const Attribute& attribute) const {
+    std::shared_ptr<const Property> prop = estimators_.getProperty(attribute);
     if (prop) {
-        return &prop->getEstimator();
+        return prop->getEstimator();
     }
     return 0;
 }

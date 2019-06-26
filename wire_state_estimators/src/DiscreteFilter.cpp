@@ -36,40 +36,45 @@
 
 #include "DiscreteFilter.h"
 
-int DiscreteFilter::N_DISCRETEKALMAN_FILTER = 0;
+//int DiscreteFilter::N_DISCRETEKALMAN_FILTER = 0;
 
 DiscreteFilter::DiscreteFilter() {
-	++N_DISCRETEKALMAN_FILTER;
+//	++N_DISCRETEKALMAN_FILTER;
 }
 
 DiscreteFilter::DiscreteFilter(const DiscreteFilter& orig) : mhf::IStateEstimator(orig), pmf_(orig.pmf_) {
-	++N_DISCRETEKALMAN_FILTER;
+//	++N_DISCRETEKALMAN_FILTER;
 }
 
 DiscreteFilter::~DiscreteFilter() {
-    --N_DISCRETEKALMAN_FILTER;
+//    --N_DISCRETEKALMAN_FILTER;
 }
 
-DiscreteFilter* DiscreteFilter::clone() const {
-	return new DiscreteFilter(*this);
-}
+//DiscreteFilter* DiscreteFilter::clone() const {
+//	return new DiscreteFilter(*this);
+//}
 
 void DiscreteFilter::propagate(const mhf::Time& time) {
 }
 
-void DiscreteFilter::update(const pbl::PDF& z, const mhf::Time& time) {
-	assert(z.type() == pbl::PDF::DISCRETE);
-	const pbl::PMF* pmf = pbl::PDFtoPMF(z);
-	pmf_.update(*pmf);
+void DiscreteFilter::update(std::shared_ptr<const pbl::PDF> z, const mhf::Time& time) {
+	assert(z->type() == pbl::PDF::DISCRETE);
+	std::shared_ptr<const pbl::PMF> pmf = pbl::PDFtoPMF(z);
+	pmf_->update(pmf);
 }
 
 void DiscreteFilter::reset() {
-    pmf_ = pbl::PMF();
+    *pmf_ = pbl::PMF();
 }
 
-const pbl::PDF& DiscreteFilter::getValue() const {
-	return pmf_;
+// const pbl::PDF DiscreteFilter::getValue() const {
+// 	return pmf_;
+// }
+
+std::shared_ptr<const pbl::PDF> DiscreteFilter::getValue() const {
+        std::shared_ptr<pbl::PDF> pdf_;
 }
+
 
 #include <pluginlib/class_list_macros.h>
 PLUGINLIB_EXPORT_CLASS( DiscreteFilter, mhf::IStateEstimator )

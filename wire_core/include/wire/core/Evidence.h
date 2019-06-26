@@ -61,7 +61,7 @@ namespace mhf {
 class Evidence : public PropertySet {
 public:
 
-    static int N_EVIDENCE;
+//    static int N_EVIDENCE;
 
     /**
      * @brief Evidence constructor

@@ -13,7 +13,7 @@
 
 namespace mhf {
 
-Assignment::Assignment(AssignmentType type , const Evidence* evidence, const SemanticObject* target, double probability)
+Assignment::Assignment(AssignmentType type , std::shared_ptr<const Evidence> evidence, std::shared_ptr<const SemanticObject> target, double probability)
     : type_(type), evidence_(evidence), target_(target), probability_(probability), new_object_(0), updated_object_(0) {
 
 }
@@ -25,11 +25,11 @@ Assignment::AssignmentType Assignment::getType() const {
     return type_;
 }
 
-const Evidence* Assignment::getEvidence() const {
+std::shared_ptr<const Evidence> Assignment::getEvidence() const {
     return evidence_;
 }
 
-const SemanticObject* Assignment::getTarget() const {
+std::shared_ptr<const SemanticObject> Assignment::getTarget() const {
     return target_;
 }
 
@@ -38,26 +38,26 @@ double Assignment::getProbability() const {
 }
 
 
-SemanticObject* Assignment::getNewObject() const {
+std::shared_ptr<SemanticObject> Assignment::getNewObject() const {
     if (new_object_) {
         return new_object_;
     }
-    new_object_ = new SemanticObject(ObjectStorage::getInstance().getUniqueID());
-    new_object_->init(*evidence_);
+    new_object_ = std::make_shared<SemanticObject>(ObjectStorage::getInstance()->getUniqueID());
+    new_object_->init(evidence_);
 
-    ObjectStorage::getInstance().addObject(new_object_);
+    ObjectStorage::getInstance()->addObject(new_object_);
     return new_object_;
 }
 
-SemanticObject* Assignment::getUpdatedObject() const {
+std::shared_ptr<SemanticObject> Assignment::getUpdatedObject() const {
     if (updated_object_) {
         return updated_object_;
     }
 
     updated_object_ = target_->clone();
-    updated_object_->update(*evidence_);
+    updated_object_->update(evidence_);
 
-    ObjectStorage::getInstance().addObject(updated_object_);
+    ObjectStorage::getInstance()->addObject(updated_object_);
     return updated_object_;
 }
 

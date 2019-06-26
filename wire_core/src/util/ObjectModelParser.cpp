@@ -77,7 +77,7 @@ bool ObjectModelParser::hasAttributeValue(const TiXmlElement* elem, string att_n
     return (att_value == valueStr);
 }
 
-pbl::PDF* ObjectModelParser::parsePDF(const TiXmlElement* pdf_elem, std::stringstream& error) {
+std::shared_ptr<pbl::PDF> ObjectModelParser::parsePDF(const TiXmlElement* pdf_elem, std::stringstream& error) {
     const char* pdf_type = pdf_elem->Attribute("type");
     if (pdf_type) {
         if (string(pdf_type) == "uniform") {
@@ -85,12 +85,12 @@ pbl::PDF* ObjectModelParser::parsePDF(const TiXmlElement* pdf_elem, std::strings
             double density = 0;
             if (getAttributeValue(pdf_elem, "dimensions", dim, error)
                     && getAttributeValue(pdf_elem, "density", density, error)) {
-                return new pbl::Uniform((int)dim, density);
+                return std::make_shared<pbl::Uniform>((int)dim, density);
             }
         } else if (string(pdf_type) == "discrete") {
             double domain_size;
             if (getAttributeValue(pdf_elem, "domain_size", domain_size, error)) {
-                return new pbl::PMF((int)domain_size);
+                return std::make_shared<pbl::PMF>((int)domain_size);
             }
         } else {
             error << "Unknown pdf type: " << pdf_type << endl;
@@ -101,7 +101,7 @@ pbl::PDF* ObjectModelParser::parsePDF(const TiXmlElement* pdf_elem, std::strings
     return 0;
 }
 
-bool ObjectModelParser::parseStateEstimator(ClassModel* obj_model, const TiXmlElement* elem, std::stringstream& error) {
+bool ObjectModelParser::parseStateEstimator(std::shared_ptr<ClassModel> obj_model, const TiXmlElement* elem, std::stringstream& error) {
 
     // check behavior model's attribute and model type
     string attribute_name, model_type;
@@ -125,7 +125,7 @@ bool ObjectModelParser::parseStateEstimator(ClassModel* obj_model, const TiXmlEl
         }
     }
 
-    IStateEstimator* estimator;
+    std::shared_ptr<IStateEstimator> estimator;
 
     if (object_model_loader_->isClassAvailable(model_type)) {
         estimator = object_model_loader_->createClassInstance(model_type)->clone();
@@ -173,13 +173,13 @@ bool ObjectModelParser::parseStateEstimator(ClassModel* obj_model, const TiXmlEl
 
     const TiXmlElement* pnew = elem->FirstChildElement("pnew");
     if (pnew) {
-        pbl::PDF* pdf_new = parsePDF(pnew, error);
+        std::shared_ptr<pbl::PDF> pdf_new = parsePDF(pnew, error);
         if (pdf_new) {
-            obj_model->setNewPDF(attribute, *pdf_new);
+            obj_model->setNewPDF(attribute, pdf_new);
 
-            estimator->update(*pdf_new, 0);
+            estimator->update(pdf_new, 0);
 
-            delete pdf_new;
+           // delete pdf_new;
         } else {
             return false;
         }
@@ -190,11 +190,11 @@ bool ObjectModelParser::parseStateEstimator(ClassModel* obj_model, const TiXmlEl
 
     const TiXmlElement* pclutter = elem->FirstChildElement("pclutter");
     if (pnew) {
-        pbl::PDF* pdf_clutter = parsePDF(pclutter, error);
+        std::shared_ptr<pbl::PDF> pdf_clutter = parsePDF(pclutter, error);
         if (pdf_clutter) {
-            obj_model->setClutterPDF(attribute, *pdf_clutter);
+            obj_model->setClutterPDF(attribute, pdf_clutter);
 
-            delete pdf_clutter;
+            //delete pdf_clutter;
         } else {
             return false;
         }
@@ -203,7 +203,7 @@ bool ObjectModelParser::parseStateEstimator(ClassModel* obj_model, const TiXmlEl
         return false;
     }
 
-    obj_model->setEstimator(attribute, *estimator);
+    obj_model->setEstimator(attribute, estimator);
 
     return true;
 }
@@ -223,7 +223,7 @@ bool ObjectModelParser::getStateEstimatorParameter(const TiXmlElement* elem, con
     return false;
 }
 
-bool ObjectModelParser::parse(KnowledgeDatabase& knowledge_db) {
+bool ObjectModelParser::parse(std::shared_ptr<KnowledgeDatabase> knowledge_db) {
 
     TiXmlDocument doc(filename_);
     doc.LoadFile();
@@ -239,7 +239,7 @@ bool ObjectModelParser::parse(KnowledgeDatabase& knowledge_db) {
     const TiXmlElement* prior_new_elem = root->FirstChildElement("prior_new");
     if (prior_new_elem) {
         if (getAttributeValue(prior_new_elem, "value", prior_new, parse_errors_)) {
-            knowledge_db.setPriorNew(prior_new);
+            knowledge_db->setPriorNew(prior_new);
         }
     } else {
         parse_errors_ << "Knowledge file does not contain 'prior_new'" << endl;
@@ -249,7 +249,7 @@ bool ObjectModelParser::parse(KnowledgeDatabase& knowledge_db) {
     const TiXmlElement* prior_existing_elem = root->FirstChildElement("prior_existing");
     if (prior_existing_elem) {
         if (getAttributeValue(prior_existing_elem, "value", prior_existing, parse_errors_)) {
-            knowledge_db.setPriorExisting(prior_existing);
+            knowledge_db->setPriorExisting(prior_existing);
         }
     } else {
         parse_errors_ << "Knowledge file does not contain 'prior_existing'" << endl;
@@ -259,7 +259,7 @@ bool ObjectModelParser::parse(KnowledgeDatabase& knowledge_db) {
     const TiXmlElement* prior_clutter_elem = root->FirstChildElement("prior_clutter");
     if (prior_clutter_elem) {
         if (getAttributeValue(prior_clutter_elem, "value", prior_clutter, parse_errors_)) {
-            knowledge_db.setPriorClutter(prior_clutter);
+            knowledge_db->setPriorClutter(prior_clutter);
         }
     } else {
         parse_errors_ << "Knowledge file does not contain 'prior_clutter'" << endl;
@@ -271,7 +271,7 @@ bool ObjectModelParser::parse(KnowledgeDatabase& knowledge_db) {
     /* PARSE ALL OBJECT MODELS */
 
     while(class_element) {
-        ClassModel* class_model = 0;
+        std::shared_ptr<ClassModel> class_model = 0;
 
         string model_name;
         getAttributeValue(class_element, "name", model_name, parse_errors_);
@@ -285,16 +285,16 @@ bool ObjectModelParser::parse(KnowledgeDatabase& knowledge_db) {
             // class derives from base class
             base_class = value;
 
-            const ClassModel* base_model = knowledge_db.getClassModel(base_class);
+            std::shared_ptr<const ClassModel> base_model = knowledge_db->getClassModel(base_class);
             if (base_model) {
-                class_model = new ClassModel(*base_model);
+                class_model = std::make_shared<ClassModel>(base_model);
                 class_model->setModelName(model_name);
             } else {
                 parse_errors_ << "Error in class definition of '" << model_name << "': unknown base class '" << base_class << "'." << endl;
-                class_model = new ClassModel(model_name);
+                class_model = std::make_shared<ClassModel>(model_name);
             }
         } else {
-            class_model = new ClassModel(model_name);
+            class_model = std::make_shared<ClassModel>(model_name);
         }
 
         // parse properties
@@ -313,7 +313,7 @@ bool ObjectModelParser::parse(KnowledgeDatabase& knowledge_db) {
             prop = prop->NextSiblingElement();
         }
 
-        knowledge_db.addClassModel(class_model->getModelName(), class_model);
+        knowledge_db->addClassModel(class_model->getModelName(), class_model);
 
         class_element = class_element->NextSiblingElement("object_class");
     }

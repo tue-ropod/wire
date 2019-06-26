@@ -10,6 +10,8 @@
 
 #include <vector>
 #include <map>
+#include <memory>
+#include <iostream>
 
 namespace mhf {
 
@@ -25,9 +27,9 @@ public:
 
     virtual ~AssignmentMatrix();
 
-    void addPotentialAssignment(const Assignment& ass);
+    void addPotentialAssignment(std::shared_ptr<const Assignment> ass);
 
-    const Assignment& getAssignment(unsigned int i_ev, int i_assignment);
+    std::shared_ptr<const Assignment> getAssignment(unsigned int i_ev, int i_assignment);
 
     unsigned int getNumAssignments(unsigned int i_ev);
 
@@ -37,9 +39,9 @@ public:
 
 protected:
 
-    std::map<const Evidence*, unsigned int> evidence_to_index_;
+    std::map<std::shared_ptr<const Evidence>, unsigned int> evidence_to_index_;
 
-    std::vector< std::vector<const Assignment*> > assignments_;
+    std::vector< std::vector<std::shared_ptr<const Assignment>> > assignments_;
 
 };
 

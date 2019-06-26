@@ -51,7 +51,7 @@ class DiscreteFilter : public mhf::IStateEstimator {
 
 public:
 
-	static int N_DISCRETEKALMAN_FILTER;
+	//static int N_DISCRETEKALMAN_FILTER;
 
 	DiscreteFilter();
 
@@ -59,14 +59,21 @@ public:
 
 	virtual ~DiscreteFilter();
 
-	virtual DiscreteFilter* clone() const;
+	//virtual DiscreteFilter* clone() const;
+        
+        std::shared_ptr<IStateEstimator> clone() const{ return CloneMethod(); };
+    
+        std::shared_ptr<DiscreteFilter> CloneMethod() const { 
+            std::shared_ptr<DiscreteFilter> PF = std::make_shared< DiscreteFilter>(*this);
+            return PF;
+}
 
     /**
      * @brief Updates the internal state based on measurement z
      * @param z The measurement with which to update. z should be a discrete distribution (PMF)
      * @param time The time to which the internal state is propagated before updating
      */
-    virtual void update(const pbl::PDF& z, const mhf::Time& time);
+    virtual void update(std::shared_ptr<const pbl::PDF> z, const mhf::Time& time);
 
     /**
      * @brief Propagates the internal state to Time time
@@ -83,11 +90,12 @@ public:
      * @brief Returns the current estimated state value
      * @return The current state, i.e., the current attribute value represented as probability density function
      */
-	virtual const pbl::PDF& getValue() const;
+	//virtual const pbl::PDF getValue() const;
+        std::shared_ptr<const pbl::PDF> getValue() const;
 
 protected:
 
-	pbl::PMF pmf_;
+	std::shared_ptr<pbl::PMF> pmf_;
 
 };
 

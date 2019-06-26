@@ -64,11 +64,11 @@ public:
 
     virtual ~ClassModel();
 
-    void setNewPDF(const Attribute& attribute, const pbl::PDF& pdf);
+    void setNewPDF(const Attribute& attribute, std::shared_ptr<const pbl::PDF> pdf);
 
-    void setClutterPDF(const Attribute& attribute, const pbl::PDF& pdf);
+    void setClutterPDF(const Attribute& attribute, std::shared_ptr<const pbl::PDF> pdf);
 
-    void setEstimator(const Attribute& attribute, const IStateEstimator& estimator);
+    void setEstimator(const Attribute& attribute, std::shared_ptr<const IStateEstimator> estimator);
 
     void setModelName(const std::string& name);
 
@@ -78,7 +78,7 @@ public:
 
     const PropertySet& getClutterPDFs() const;
 
-    const IStateEstimator* getEstimator(const Attribute& attribute) const;
+    std::shared_ptr<const IStateEstimator> getEstimator(const Attribute& attribute) const;
 
     //void setProbDetectedGivenVisible(double prob);
 

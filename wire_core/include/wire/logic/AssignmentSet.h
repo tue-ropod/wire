@@ -11,6 +11,8 @@
 #include <list>
 #include <vector>
 #include <map>
+#include <iostream>
+#include <memory>
 
 namespace mhf {
 
@@ -23,7 +25,7 @@ class AssignmentSet {
 
 public:
 
-    AssignmentSet(Hypothesis* hyp, AssignmentMatrix* assignment_matrix);
+    AssignmentSet(std::shared_ptr<Hypothesis> hyp, std::shared_ptr<AssignmentMatrix> assignment_matrix);
 
     AssignmentSet(const AssignmentSet& orig);
 
@@ -31,21 +33,21 @@ public:
 
     void init();
 
-    void expand(std::list<AssignmentSet*>& children) const;
+    void expand(std::list<std::shared_ptr<AssignmentSet>>& children) const;
 
     bool allMeasurementsAssigned() const;
 
     bool allObjectsAssigned() const;
 
-    AssignmentSet* constructNextBest() const;
+    std::shared_ptr<AssignmentSet> constructNextBest() const;
 
-    const Assignment& getMeasurementAssignment(unsigned int i_ev) const;
+    std::shared_ptr<const Assignment> getMeasurementAssignment(unsigned int i_ev) const;
 
-    void getAllAssignments(std::list<const Assignment*>& assignments) const;
+    void getAllAssignments(std::list<std::shared_ptr<const Assignment>>& assignments) const;
 
     double getProbability() const;
 
-    Hypothesis* getHypothesis() const;
+    std::shared_ptr<Hypothesis> getHypothesis() const;
 
     int getNumMeasurements() const;
 
@@ -55,9 +57,9 @@ public:
 
 protected:
 
-    Hypothesis* hyp_;
+    std::shared_ptr<Hypothesis> hyp_;
 
-    AssignmentMatrix* assignment_matrix_;
+    std::shared_ptr<AssignmentMatrix> assignment_matrix_;
 
     double probability_;
 

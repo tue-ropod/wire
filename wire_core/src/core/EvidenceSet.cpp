@@ -17,7 +17,7 @@ EvidenceSet::~EvidenceSet() {
 }
 
 
-void EvidenceSet::add(Evidence* ev) {
+void EvidenceSet::add(std::shared_ptr<Evidence> ev) {
     evidence_.push_back(ev);
 
     // all evidence added to the evidence set should have same timestamp
@@ -34,11 +34,11 @@ const Time& EvidenceSet::getTimestamp() const {
     return timestamp_;
 }
 
-std::vector<Evidence*>::const_iterator EvidenceSet::begin() const {
+std::vector<std::shared_ptr<Evidence>>::const_iterator EvidenceSet::begin() const {
     return evidence_.begin();
 }
 
-std::vector<Evidence*>::const_iterator EvidenceSet::end() const {
+std::vector<std::shared_ptr<Evidence>>::const_iterator EvidenceSet::end() const {
     return evidence_.end();
 }
 

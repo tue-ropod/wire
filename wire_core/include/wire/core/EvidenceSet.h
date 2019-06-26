@@ -38,6 +38,8 @@
 #define WM_EVIDENCESET_H_
 
 #include "wire/core/datatypes.h"
+#include <iostream>
+#include <memory>
 
 #include <vector>
 
@@ -64,7 +66,7 @@ public:
      * @brief Adds evidence to the evidence set
      * @param ev The evidence
      */
-    void add(Evidence* ev);
+    void add(std::shared_ptr<Evidence> ev);
 
     /**
      * @brief Returns the number of evidence items in the set
@@ -82,15 +84,15 @@ public:
      *  Returns a read-only (constant) iterator that points to the
      *  first evidence item in the evidence set
      */
-    std::vector<Evidence*>::const_iterator begin() const;
+    std::vector<std::shared_ptr<Evidence>>::const_iterator begin() const;
 
     /**
      *  Returns a read-only (constant) iterator that points one past the
      * last evidence item in the evidence set
      */
-    std::vector<Evidence*>::const_iterator end() const;
+    std::vector<std::shared_ptr<Evidence>>::const_iterator end() const;
 
-    typedef std::vector<Evidence*>::const_iterator const_iterator;
+    typedef std::vector<std::shared_ptr<Evidence>>::const_iterator const_iterator;
 
 protected:
 
@@ -98,7 +100,7 @@ protected:
     Time timestamp_;
 
     /// Collection of evidence items
-    std::vector<Evidence*> evidence_;
+    std::vector<std::shared_ptr<Evidence>> evidence_;
 
 };
 

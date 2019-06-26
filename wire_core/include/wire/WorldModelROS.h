@@ -53,7 +53,7 @@ public:
 
     void startThreaded();
 
-    const std::list<SemanticObject*>& getMAPObjects() const;
+    const std::list<std::shared_ptr<SemanticObject>>& getMAPObjects() const;
 
 protected:
 
@@ -103,13 +103,13 @@ protected:
 
     bool objectToMsg(const SemanticObject& obj, wire_msgs::ObjectState& msg) const;
 
-    bool hypothesisToMsg(const mhf::Hypothesis& hyp, wire_msgs::WorldState& msg) const;
+    bool hypothesisToMsg(std::shared_ptr<const mhf::Hypothesis> hyp, wire_msgs::WorldState& msg) const;
 
     void printWorldObjects(const mhf::Hypothesis& hyp) const;
 
-    bool transformPosition(const pbl::PDF& pdf_in, const std::string& frame_in, pbl::Gaussian& pdf_out) const;
+    bool transformPosition(std::shared_ptr<const pbl::PDF> pdf_in, const std::string& frame_in, pbl::Gaussian& pdf_out) const;
 
-    bool transformOrientation(const pbl::PDF& pdf_in, const std::string& frame_in, pbl::Gaussian& pdf_out) const;
+    bool transformOrientation(std::shared_ptr<const pbl::PDF> pdf_in, const std::string& frame_in, pbl::Gaussian& pdf_out) const;
 
     void evidenceCallback(const wire_msgs::WorldEvidence::ConstPtr& world_evidence_msg);
 

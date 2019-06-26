@@ -60,7 +60,13 @@ public:
     /**
      * @brief Clone operator
      */
-	virtual KalmanFilter* clone() const;
+//	virtual KalmanFilter* clone() const;
+         std::shared_ptr<KalmanFilter> clone() const{ return CloneMethod(); };
+         
+          std::shared_ptr<KalmanFilter> CloneMethod() const { 
+            std::shared_ptr<KalmanFilter> KF = std::make_shared< KalmanFilter>(*this);
+            return KF;
+}      
 
     /**
      * @brief Destructor
@@ -100,7 +106,7 @@ public:
      * @brief Returns the Kalman state and covariance as Gaussian
      * @return The Kalman state and covariance as Gaussian
      */
-	const pbl::Gaussian& getGaussian() const;
+	std::shared_ptr<const pbl::Gaussian> getGaussian() const;
 
     /**
      * @brief Returns the Kalman state (mean of the estimated Gaussian)
@@ -135,7 +141,7 @@ protected:
 	pbl::Gaussian G_;
 
     /** Portion of the estimated Kalman state that contains only the measurement dimensions **/
-	pbl::Gaussian G_small_;
+	std::shared_ptr<pbl::Gaussian> G_small_;
 
     /** Observation model **/
     Eigen::MatrixXd H_;

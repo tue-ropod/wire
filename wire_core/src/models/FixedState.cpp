@@ -13,21 +13,22 @@ FixedState::FixedState() {
 
 }
 
-FixedState::FixedState(const pbl::PDF& pdf) : pdf_(pdf.clone()) {
+FixedState::FixedState(std::shared_ptr<const pbl::PDF> pdf) : pdf_(pdf->clone()) {
 }
 
-FixedState::FixedState(const FixedState& orig) : IStateEstimator(orig), pdf_(orig.pdf_->clone()) {
+FixedState::FixedState(std::shared_ptr<const FixedState> orig) : IStateEstimator(*orig), pdf_(orig->pdf_->clone()) {
 }
 
 FixedState::~FixedState() {
-    delete pdf_;
+  //  delete pdf_;
 }
 
-FixedState* FixedState::clone() const {
-    return new FixedState(*this);
-}
+//std::shared_ptr<FixedState> FixedState::clone() const {
+//    //return new FixedState(*this);
+//        return std::make_shared<FixedState>(shared_from_this());
+//}
 
-void FixedState::update(const pbl::PDF& z, const mhf::Time& time) {
+void FixedState::update(std::shared_ptr<const pbl::PDF> z, const mhf::Time& time) {
 }
 
 void FixedState::propagate(const mhf::Time& time) {
@@ -36,8 +37,8 @@ void FixedState::propagate(const mhf::Time& time) {
 void FixedState::reset() {
 }
 
-const pbl::PDF& FixedState::getValue() const {
-    return *pdf_;
+std::shared_ptr<const pbl::PDF> FixedState::getValue() const {
+    return pdf_;
 }
 
 }

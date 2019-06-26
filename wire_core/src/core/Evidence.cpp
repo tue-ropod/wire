@@ -12,14 +12,14 @@ using namespace std;
 
 namespace mhf {
 
-int Evidence::N_EVIDENCE = 0;
+//int Evidence::N_EVIDENCE = 0;
 
 Evidence::Evidence(Time timestamp) : PropertySet(timestamp) {
-    ++N_EVIDENCE;
+    //++N_EVIDENCE;
 }
 
 Evidence::~Evidence() {
-    --N_EVIDENCE;
+    //--N_EVIDENCE;
 }
 
 }

@@ -18,13 +18,13 @@ class Evidence;
 class Assignment;
 class Hypothesis;
 
-class SemanticObject : public PropertySet {
+class SemanticObject : public PropertySet, public std::enable_shared_from_this<SemanticObject> {
 
 public:
 
-    static int N_SEMANTICOBJECT;
+   // static int N_SEMANTICOBJECT;
 
-    std::list<SemanticObject*>::iterator it_obj_storage_;
+    std::list<std::shared_ptr<SemanticObject>>::iterator it_obj_storage_;
 
     SemanticObject(long ID);
 
@@ -32,27 +32,31 @@ public:
 
     virtual ~SemanticObject();
 
-    void init(const Evidence& z);
+    void init(std::shared_ptr<const Evidence> z);
 
-    void update(const Evidence& z);
+    void update(std::shared_ptr<const Evidence> z);
 
-    SemanticObject* clone() const;
+    //std::shared_ptr<SemanticObject> clone() const;
+    
+       std::shared_ptr<IStateEstimator> clone() const{ return CloneMethod(); };
+   
+    std::shared_ptr<SemanticObject> CloneMethod() const {return std::make_shared< SemanticObject>(*this);}
 
     double getLastUpdateTime() const;
 
     double getTimestamp() const;
 
-    const ClassModel& getExpectedObjectModel() const;
+    std::shared_ptr<const ClassModel> getExpectedObjectModel() const;
 
-    double getLikelihood(const PropertySet& ev) const;
+    double getLikelihood(std::shared_ptr<const PropertySet> ev) const;
 
-    void addPotentialAssignment(const Evidence& ev, double probability);
+    void addPotentialAssignment(std::shared_ptr<const Evidence> ev, double probability);
 
     ObjectID getID() const;
 
-    void addToHypothesis(Hypothesis* hyp);
+    void addToHypothesis(std::shared_ptr<Hypothesis> hyp);
 
-    void removeFromHypothesis(Hypothesis* hyp);
+    void removeFromHypothesis(std::shared_ptr<Hypothesis> hyp);
 
     unsigned int getNumParentHypotheses() const;
 
@@ -62,7 +66,7 @@ protected:
 
     std::string expected_class_;
 
-    std::set<Hypothesis*> parent_hypotheses_;
+    std::set<std::shared_ptr<Hypothesis>> parent_hypotheses_;
 
 };
 

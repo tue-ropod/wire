@@ -2,6 +2,8 @@
 #define MHT_OBJECT_STORAGE_H_
 
 #include <list>
+#include <iostream> 
+#include <memory>
 
 namespace mhf {
 
@@ -13,30 +15,32 @@ class ObjectStorage {
 
 public:
 
-    static ObjectStorage& getInstance();
+    static std::shared_ptr<ObjectStorage> getInstance();
 
     virtual ~ObjectStorage();
 
-    void addObject(SemanticObject* obj);
+    void addObject(std::shared_ptr<SemanticObject> obj);
 
-    void removeObject(SemanticObject& obj);
+    void removeObject(std::shared_ptr<SemanticObject> obj);
 
     long getUniqueID();
 
-    void match(const Evidence& ev);
+    void match(std::shared_ptr<const Evidence> ev);
 
-protected:
 
-    ObjectStorage();
 
-    static ObjectStorage* instance_;
+    ObjectStorage(); // TODO protected??
+    
+    protected:
+
+    static std::shared_ptr< ObjectStorage> instance_;
 
 
     long ID_;
 
-    std::list<SemanticObject*> objects_;
+    std::list<std::shared_ptr<SemanticObject>> objects_;
 
-    const KnowledgeDatabase& knowledge_db_;   
+    std::shared_ptr<const KnowledgeDatabase> knowledge_db_;   
 
 };
 

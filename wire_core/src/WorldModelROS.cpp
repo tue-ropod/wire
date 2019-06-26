@@ -116,29 +116,30 @@ void WorldModelROS::start() {
 bool WorldModelROS::objectToMsg(const SemanticObject& obj, wire_msgs::ObjectState& msg) const {
     msg.ID = obj.getID();
 
-    const map<Attribute, Property*>& properties = obj.getPropertyMap();
+    const map<Attribute, std::shared_ptr<Property>>& properties = obj.getPropertyMap();
 
-    for(map<Attribute, Property*>::const_iterator it_prop = properties.begin(); it_prop != properties.end(); ++it_prop) {
-        Property* prop = it_prop->second;
+    for(map<Attribute, std::shared_ptr<Property>>::const_iterator it_prop = properties.begin(); it_prop != properties.end(); ++it_prop) {
+        std::shared_ptr<Property> prop = it_prop->second;
 
         wire_msgs::Property prop_msg;
         prop_msg.attribute = AttributeConv::attribute_str(it_prop->first);
-        pbl::PDFtoMsg(prop->getValue(), prop_msg.pdf);
+        pbl::PDFtoMsg(*prop->getValue(), prop_msg.pdf);
         msg.properties.push_back(prop_msg);
     }
 
     return true;
 }
 
-bool WorldModelROS::hypothesisToMsg(const Hypothesis& hyp, wire_msgs::WorldState& msg) const {
+bool WorldModelROS::hypothesisToMsg(std::shared_ptr<const Hypothesis> hyp, wire_msgs::WorldState& msg) const {
     ros::Time time = ros::Time::now();
 
     msg.header.frame_id = world_model_frame_id_;
     msg.header.stamp = time;
 
-    for(list<SemanticObject*>::const_iterator it = hyp.getObjects().begin(); it != hyp.getObjects().end(); ++it) {
+    for(list<std::shared_ptr<SemanticObject>>::const_iterator it = hyp->getObjects().begin(); it != hyp->getObjects().end(); ++it) {
 
-        SemanticObject* obj_clone = (*it)->clone();
+        std::shared_ptr<SemanticObject> obj = (*it);
+        std::shared_ptr<SemanticObject> obj_clone = obj->clone();
         obj_clone->propagate(time.toSec());
 
         wire_msgs::ObjectState obj_msg;
@@ -146,15 +147,15 @@ bool WorldModelROS::hypothesisToMsg(const Hypothesis& hyp, wire_msgs::WorldState
             msg.objects.push_back(obj_msg);
         }
 
-        delete obj_clone;
+        //delete obj_clone;
 
     }
 
     return true;
 }
 
-bool WorldModelROS::transformPosition(const pbl::PDF& pdf_in, const string& frame_in, pbl::Gaussian& pdf_out) const {
-    const pbl::Gaussian* gauss = pbl::PDFtoGaussian(pdf_in);
+bool WorldModelROS::transformPosition(std::shared_ptr<const pbl::PDF> pdf_in, const string& frame_in, pbl::Gaussian& pdf_out) const {
+    std::shared_ptr<const pbl::Gaussian> gauss = pbl::PDFtoGaussian(pdf_in);
 
     if (!gauss) {
         ROS_ERROR("Position evidence is not a gaussian!");
@@ -181,8 +182,8 @@ bool WorldModelROS::transformPosition(const pbl::PDF& pdf_in, const string& fram
     return true;
 }
 
-bool WorldModelROS::transformOrientation(const pbl::PDF& pdf_in, const string& frame_in, pbl::Gaussian& pdf_out) const {
-    const pbl::Gaussian* gauss = pbl::PDFtoGaussian(pdf_in);
+bool WorldModelROS::transformOrientation(std::shared_ptr<const pbl::PDF> pdf_in, const string& frame_in, pbl::Gaussian& pdf_out) const {
+    std::shared_ptr<const pbl::Gaussian> gauss = pbl::PDFtoGaussian(pdf_in);
 
     if (!gauss) {
         ROS_ERROR("Orientation evidence is not a gaussian!");
@@ -243,15 +244,15 @@ void WorldModelROS::processEvidence(const wire_msgs::WorldEvidence& world_eviden
     // reset the warnings stringstream
     warnings_.str("");
 
-    EvidenceSet evidence_set;
-    std::list<Evidence*> measurements_mem;
+    std::shared_ptr<EvidenceSet> evidence_set = std::make_shared<EvidenceSet>();
+    std::list<std::shared_ptr<Evidence>> measurements_mem;
 
     const vector<wire_msgs::ObjectEvidence>& object_evidence = world_evidence_msg.object_evidence;
     for(vector<wire_msgs::ObjectEvidence>::const_iterator it_ev = object_evidence.begin(); it_ev != object_evidence.end(); ++it_ev) {
         const wire_msgs::ObjectEvidence& evidence = (*it_ev);
 
         //Evidence* meas = new Evidence(world_evidence_msg->header.stamp.toSec(), evidence.certainty, evidence.negative);
-        Evidence* meas = new Evidence(current_time.toSec());
+        std::shared_ptr<Evidence> meas = std::make_shared<Evidence>(current_time.toSec());
 
         measurements_mem.push_back(meas);
 
@@ -260,12 +261,13 @@ void WorldModelROS::processEvidence(const wire_msgs::WorldEvidence& world_eviden
         for(vector<wire_msgs::Property>::const_iterator it_prop = evidence.properties.begin(); it_prop != evidence.properties.end(); ++it_prop ) {
             const wire_msgs::Property& prop = *it_prop;
 
-            pbl::PDF* pdf = pbl::msgToPDF(prop.pdf);
+            std::shared_ptr<pbl::PDF> pdf = pbl::msgToPDF(prop.pdf);
 
             if (pdf) {
                 if (prop.attribute == "position") {
-                    pbl::Gaussian pos_pdf(3);
-                    if (!transformPosition(*pdf, world_evidence_msg.header.frame_id, pos_pdf)) {
+                    //pbl::Gaussian pos_pdf(3);
+                    std::shared_ptr<pbl::Gaussian> pos_pdf = std::make_shared<pbl::Gaussian>(3);
+                    if (!transformPosition(pdf, world_evidence_msg.header.frame_id, *pos_pdf)) {
                         // position is a necessary property. If the transform was not successful, abort and don't use the evidence
                         position_ok = false;
                         break;
@@ -273,21 +275,21 @@ void WorldModelROS::processEvidence(const wire_msgs::WorldEvidence& world_eviden
                         meas->addProperty(AttributeConv::attribute(prop.attribute), pos_pdf);
                     }
                 } else if (prop.attribute == "orientation") {
-                    pbl::Gaussian ori_pdf(4);
-                    if (!transformOrientation(*pdf, world_evidence_msg.header.frame_id, ori_pdf)) {
+                    std::shared_ptr<pbl::Gaussian> ori_pdf = std::make_shared<pbl::Gaussian>(4);
+                    if (!transformOrientation(pdf, world_evidence_msg.header.frame_id, *ori_pdf)) {
                         meas->addProperty(AttributeConv::attribute(prop.attribute), ori_pdf);
                     }
                 } else {
-                    meas->addProperty(AttributeConv::attribute(prop.attribute), *pdf);
+                    meas->addProperty(AttributeConv::attribute(prop.attribute), pdf);
                 }
-                delete pdf;
+                //delete pdf;
             } else {
                 ROS_ERROR_STREAM("For attribute '" << prop.attribute << "': malformed pdf: " << prop.pdf);
             }
         }
 
         if (position_ok) {                
-            evidence_set.add(meas);
+            evidence_set->add(meas);
         } else {
             ROS_ERROR("Unable to transform position.");
         }
@@ -296,9 +298,9 @@ void WorldModelROS::processEvidence(const wire_msgs::WorldEvidence& world_eviden
 
     world_model_->addEvidence(evidence_set);
 
-    for(list<Evidence*>::iterator it = measurements_mem.begin(); it != measurements_mem.end(); ++it) {
-        delete (*it);
-    }
+   // for(list<std::shared_ptr<Evidence>>::iterator it = measurements_mem.begin(); it != measurements_mem.end(); ++it) {
+        //delete (*it);
+   // }
 }
 
 bool WorldModelROS::resetWorldModel(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res) {
@@ -316,7 +318,7 @@ void WorldModelROS::publish() const {
 
 }
 
-const list<SemanticObject*>& WorldModelROS::getMAPObjects() const {
+const list<std::shared_ptr<SemanticObject>>& WorldModelROS::getMAPObjects() const {
     return world_model_->getMAPObjects();
 }
 
