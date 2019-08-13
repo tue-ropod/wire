@@ -29,7 +29,7 @@ public:
 
     virtual ~Assignment();
 
-    Assignment(AssignmentType type , std::shared_ptr<const Evidence> evidence, std::shared_ptr<const SemanticObject> target, double probability);
+    Assignment(AssignmentType type , const std::shared_ptr< Evidence> evidence, const std::shared_ptr< SemanticObject> target, double probability);
 
     AssignmentType getType() const;
 
@@ -55,8 +55,11 @@ protected:
 
     double probability_;
 
+    //mutable SemanticObject* new_object_;
+    //mutable std::shared_ptr<SemanticObject> new_object_;
     mutable std::shared_ptr<SemanticObject> new_object_;
 
+    // mutable SemanticObject* updated_object_;
     mutable std::shared_ptr<SemanticObject> updated_object_;
 };
 

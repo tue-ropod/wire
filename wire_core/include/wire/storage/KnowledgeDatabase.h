@@ -38,7 +38,7 @@ public:
 
     const std::map<std::string, std::shared_ptr<ClassModel>>& getClassModels() const;
 
-    std::shared_ptr<const ClassModel> getClassModel(const std::string& class_name) const;
+    const std::shared_ptr< ClassModel> getClassModel(const std::string& class_name) const;
 
     void setPriorNew(double prior_new);
 
@@ -52,11 +52,11 @@ public:
 
     double getPriorClutter() const;
 
-    double getProbabilityNew(std::shared_ptr<const Evidence> z);
+    double getProbabilityNew(const std::shared_ptr< Evidence> z);
 
-    double getProbabilityClutter(std::shared_ptr<const Evidence> z);
+    double getProbabilityClutter(const std::shared_ptr< Evidence> z);
 
-    double getProbabilityExisting(std::shared_ptr<const Evidence> z, const SemanticObject& obj);
+    double getProbabilityExisting(const std::shared_ptr< Evidence> z, const SemanticObject& obj);
 
     std::vector<Property> inferProperties(const PropertySet& prop_set, std::vector<Attribute>) const;
     

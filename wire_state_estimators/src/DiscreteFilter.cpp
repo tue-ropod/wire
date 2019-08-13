@@ -38,6 +38,7 @@
 
 //int DiscreteFilter::N_DISCRETEKALMAN_FILTER = 0;
 
+//DiscreteFilter::DiscreteFilter() : pmf_() {
 DiscreteFilter::DiscreteFilter() {
 //	++N_DISCRETEKALMAN_FILTER;
 }
@@ -60,6 +61,9 @@ void DiscreteFilter::propagate(const mhf::Time& time) {
 void DiscreteFilter::update(std::shared_ptr<const pbl::PDF> z, const mhf::Time& time) {
 	assert(z->type() == pbl::PDF::DISCRETE);
 	std::shared_ptr<const pbl::PMF> pmf = pbl::PDFtoPMF(z);
+         std::cout << "pmf_->getDomainSize() other= "  << pmf->getDomainSize() << std::endl;
+         std::cout << "pmf_= "  << pmf_ << std::endl;
+        std::cout << "pmf_->getDomainSize() = "  << pmf_->getDomainSize() << std::endl;
 	pmf_->update(pmf);
 }
 

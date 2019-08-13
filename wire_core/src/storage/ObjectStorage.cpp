@@ -39,7 +39,7 @@ long ObjectStorage::getUniqueID() {
     return ID_++;
 }
 
-void ObjectStorage::match(std::shared_ptr<const Evidence> ev) {
+void ObjectStorage::match(const std::shared_ptr< Evidence> ev) {
 
     //cout << endl << "ObjectStorage::match" << endl;
 

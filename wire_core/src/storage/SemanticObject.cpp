@@ -39,7 +39,7 @@ void SemanticObject::init(std::shared_ptr<const Evidence> z) {
     update(z);
 }
 
-double SemanticObject::getLikelihood(std::shared_ptr<const PropertySet> ev) const {
+double SemanticObject::getLikelihood(const std::shared_ptr< PropertySet> ev) const {
 
     //propagate(ev.getTimeStamp());
 
@@ -64,7 +64,7 @@ double SemanticObject::getLikelihood(std::shared_ptr<const PropertySet> ev) cons
     vector<Property> deduced_props = KnowledgeDatabase::getInstance()->inferProperties(*this, need_to_deduce);
 
     for(vector<Property>::iterator it_prop = deduced_props.begin(); it_prop != deduced_props.end(); ++it_prop) {
-        std::shared_ptr<const Property> ev_prop = ev->getProperty(it_prop->getAttribute());
+        const std::shared_ptr< Property> ev_prop = ev->getProperty(it_prop->getAttribute());
         assert(ev_prop);
         likelihood *= it_prop->getLikelihood(ev_prop->getValue());
     }
@@ -156,7 +156,7 @@ std::shared_ptr<const ClassModel> SemanticObject::getExpectedObjectModel() const
     return KnowledgeDatabase::getInstance()->getClassModel(class_name);
 }
 
-void SemanticObject::addPotentialAssignment(std::shared_ptr<const Evidence> ev, double probability) {
+void SemanticObject::addPotentialAssignment(const std::shared_ptr< Evidence> ev, double probability) {
     std::shared_ptr<Assignment> assignment = std::make_shared<Assignment>(Assignment::EXISTING, ev, shared_from_this(), probability);
     
     for(set<std::shared_ptr<Hypothesis>>::iterator it_hyp = parent_hypotheses_.begin(); it_hyp != parent_hypotheses_.end(); ++it_hyp) {

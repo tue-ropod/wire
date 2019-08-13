@@ -67,6 +67,11 @@ public:
             return G;
 }
   
+      std::shared_ptr<PositionFilter> cloneThis() const {             
+            return std::make_shared< PositionFilter>(*this);
+}
+  
+  
     virtual ~PositionFilter();
 
     /**

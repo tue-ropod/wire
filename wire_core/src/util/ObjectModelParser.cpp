@@ -285,9 +285,9 @@ bool ObjectModelParser::parse(std::shared_ptr<KnowledgeDatabase> knowledge_db) {
             // class derives from base class
             base_class = value;
 
-            std::shared_ptr<const ClassModel> base_model = knowledge_db->getClassModel(base_class);
+            const std::shared_ptr< ClassModel> base_model = knowledge_db->getClassModel(base_class);
             if (base_model) {
-                class_model = std::make_shared<ClassModel>(base_model);
+                class_model = std::make_shared<ClassModel>(*base_model);
                 class_model->setModelName(model_name);
             } else {
                 parse_errors_ << "Error in class definition of '" << model_name << "': unknown base class '" << base_class << "'." << endl;

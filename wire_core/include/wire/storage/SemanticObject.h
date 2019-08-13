@@ -38,19 +38,21 @@ public:
 
     //std::shared_ptr<SemanticObject> clone() const;
     
-       std::shared_ptr<IStateEstimator> clone() const{ return CloneMethod(); };
+    std::shared_ptr<IStateEstimator> clone() const{ return CloneMethod(); };
    
     std::shared_ptr<SemanticObject> CloneMethod() const {return std::make_shared< SemanticObject>(*this);}
 
+    std::shared_ptr<SemanticObject> cloneThis() const {return std::make_shared< SemanticObject>(*this);}
+    
     double getLastUpdateTime() const;
 
     double getTimestamp() const;
 
     std::shared_ptr<const ClassModel> getExpectedObjectModel() const;
 
-    double getLikelihood(std::shared_ptr<const PropertySet> ev) const;
+    double getLikelihood( const std::shared_ptr< PropertySet> ev) const;
 
-    void addPotentialAssignment(std::shared_ptr<const Evidence> ev, double probability);
+    void addPotentialAssignment(const std::shared_ptr< Evidence> ev, double probability);
 
     ObjectID getID() const;
 

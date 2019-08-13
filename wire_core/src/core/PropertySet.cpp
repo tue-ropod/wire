@@ -73,7 +73,7 @@ void PropertySet::addProperty(std::shared_ptr<Property> property) {
     }
 }
 
-std::shared_ptr<const Property> PropertySet::getProperty(const Attribute& attribute) const {
+const std::shared_ptr< Property> PropertySet::getProperty(const Attribute& attribute) const {
     map<Attribute, std::shared_ptr<Property>>::const_iterator it = properties_.find(attribute);
     if (it != properties_.end()) {
         return it->second;
@@ -81,15 +81,15 @@ std::shared_ptr<const Property> PropertySet::getProperty(const Attribute& attrib
     return 0;
 }
 
-std::shared_ptr<Property> PropertySet::getProperty(const Attribute& attribute) {
+/*std::shared_ptr<Property> PropertySet::getProperty(const Attribute& attribute) {
     map<Attribute, std::shared_ptr<Property>>::iterator it = properties_.find(attribute);
     if (it != properties_.end()) {
         return it->second;
     }
     return 0;
-}
+}*/
 
-std::shared_ptr<const Property> PropertySet::getProperty(const std::string& attribute) const {
+const std::shared_ptr< Property> PropertySet::getProperty(const std::string& attribute) const {
     return getProperty(AttributeConv::attribute(attribute));
 }
 
@@ -119,7 +119,7 @@ std::shared_ptr<const pbl::PDF> PropertySet::getValue() const {
     assert(false);
 }
 
-double PropertySet::getLikelihood(std::shared_ptr<const PropertySet> P) const {
+double PropertySet::getLikelihood(const std::shared_ptr< PropertySet> P) const {
     double likelihood = 1;
 
     const map<Attribute, std::shared_ptr<Property>>& other_props = P->properties_;

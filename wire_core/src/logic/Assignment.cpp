@@ -13,10 +13,11 @@
 
 namespace mhf {
 
-Assignment::Assignment(AssignmentType type , std::shared_ptr<const Evidence> evidence, std::shared_ptr<const SemanticObject> target, double probability)
+Assignment::Assignment(AssignmentType type , const std::shared_ptr<Evidence> evidence, const std::shared_ptr< SemanticObject> target, double probability)
     : type_(type), evidence_(evidence), target_(target), probability_(probability), new_object_(0), updated_object_(0) {
 
 }
+//mhf::Assignment::Assignment(mhf::Assignment::AssignmentType, const std::shared_ptr<mhf::Evidence>&, int, double)
 
 Assignment::~Assignment() {
 }
@@ -54,7 +55,7 @@ std::shared_ptr<SemanticObject> Assignment::getUpdatedObject() const {
         return updated_object_;
     }
 
-    updated_object_ = target_->clone();
+    updated_object_ = target_->cloneThis();
     updated_object_->update(evidence_);
 
     ObjectStorage::getInstance()->addObject(updated_object_);

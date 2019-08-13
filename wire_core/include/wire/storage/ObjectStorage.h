@@ -25,9 +25,7 @@ public:
 
     long getUniqueID();
 
-    void match(std::shared_ptr<const Evidence> ev);
-
-
+    void match(const std::shared_ptr< Evidence> ev);
 
     ObjectStorage(); // TODO protected??
     

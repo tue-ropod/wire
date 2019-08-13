@@ -41,6 +41,7 @@ WorldModelROS::~WorldModelROS() {
 }
 
 bool WorldModelROS::initialize() {
+        std::cout << "WIRE going to initialize" << std::endl;
     // get node handle
     ros::NodeHandle n("~");
 
@@ -60,6 +61,9 @@ bool WorldModelROS::initialize() {
 
     // Parse object models
     // ObjectModelParser parser(object_models_filename);
+    
+    std::cout << "object_models_filename = " << object_models_filename << std::endl;
+    
     ObjectModelParser parser(object_models_filename);
     if (!parser.parse(KnowledgeDatabase::getInstance())) {
         // parsing failed
@@ -81,6 +85,8 @@ bool WorldModelROS::initialize() {
 
     // initialize the filter
     world_model_ = new HypothesisTree(max_num_hyps_, min_prob_ratio_);
+    
+    std::cout << "WIRE initialized" << std::endl;
 
     return true;
 }
@@ -138,8 +144,8 @@ bool WorldModelROS::hypothesisToMsg(std::shared_ptr<const Hypothesis> hyp, wire_
 
     for(list<std::shared_ptr<SemanticObject>>::const_iterator it = hyp->getObjects().begin(); it != hyp->getObjects().end(); ++it) {
 
-        std::shared_ptr<SemanticObject> obj = (*it);
-        std::shared_ptr<SemanticObject> obj_clone = obj->clone();
+       std::shared_ptr< SemanticObject> obj_clone = (*it)->cloneThis();
+
         obj_clone->propagate(time.toSec());
 
         wire_msgs::ObjectState obj_msg;
@@ -232,6 +238,7 @@ void WorldModelROS::processEvidence(const ros::Duration max_duration) {
 }
 
 void WorldModelROS::processEvidence(const wire_msgs::WorldEvidence& world_evidence_msg) {
+            std::cout << "WIRE processEvidence" << std::endl;
     ros::Time current_time = ros::Time::now();
 
     if (current_time < last_update_) {
@@ -301,9 +308,12 @@ void WorldModelROS::processEvidence(const wire_msgs::WorldEvidence& world_eviden
    // for(list<std::shared_ptr<Evidence>>::iterator it = measurements_mem.begin(); it != measurements_mem.end(); ++it) {
         //delete (*it);
    // }
+    
+    std::cout << "WIRE processEvidence finished" << std::endl;
 }
 
 bool WorldModelROS::resetWorldModel(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res) {
+        std::cout << "WIRE WM reset" << std::endl;
     delete world_model_;
     world_model_ = new HypothesisTree(max_num_hyps_, min_prob_ratio_);
     return true;

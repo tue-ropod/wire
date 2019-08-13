@@ -46,8 +46,7 @@ PositionFilter::PositionFilter(const PositionFilter& orig) : mhf::IStateEstimato
     fixed_pdf_cov_(orig.fixed_pdf_cov_ ), kalman_timeout_(orig.kalman_timeout_) {
 // 
     if (orig.fixed_pdf_) {
-            fixed_pdf_ = orig.fixed_pdf_->clone();
-        fixed_pdf_ = orig.fixed_pdf_->clone();
+            fixed_pdf_ = orig.fixed_pdf_->cloneThis();
     }
 
     if (orig.kalman_filter_) {
@@ -125,6 +124,7 @@ void PositionFilter::update(std::shared_ptr<const pbl::PDF> z, const mhf::Time& 
         }
     } else {
         printf("PositionFilter can only be updated with Gaussians.\n");
+        printf("Type = %i, pbl::PDF::GAUSSIAN = %i, MIXTURE = %i, uniform = %i \n", z->type(), pbl::PDF::GAUSSIAN,  pbl::PDF::MIXTURE, pbl::PDF::UNIFORM);
     }
 }
 

@@ -37,9 +37,9 @@ public:
 
     void addProperty(const Attribute& attribute, std::shared_ptr<const IStateEstimator> estimator);    
 
-    std::shared_ptr<const Property> getProperty(const Attribute& attribute) const;
+    const std::shared_ptr< Property> getProperty(const Attribute& attribute) const;
 
-    std::shared_ptr<const Property> getProperty(const std::string& attribute) const;
+    const std::shared_ptr< Property> getProperty(const std::string& attribute) const;
 
     void propagate(const Time& time);
 
@@ -49,7 +49,7 @@ public:
 
     std::shared_ptr<const pbl::PDF> getValue() const;
 
-    virtual double getLikelihood(std::shared_ptr<const PropertySet> P) const;
+    virtual double getLikelihood(const std::shared_ptr< PropertySet> P) const;
 
     const std::map<Attribute, std::shared_ptr<Property>>& getPropertyMap() const;
 
@@ -63,7 +63,7 @@ protected:
 
     void addProperty(std::shared_ptr<Property> property);
 
-    std::shared_ptr<Property> getProperty(const Attribute& attribute);
+    //std::shared_ptr<Property> getProperty(const Attribute& attribute);
 
 private:
 

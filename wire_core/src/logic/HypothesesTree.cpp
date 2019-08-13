@@ -136,11 +136,14 @@ void HypothesisTree::expandTree(std::shared_ptr<const EvidenceSet> ev_set) {
     std::list<std::shared_ptr<Assignment>> new_assignments;
     std::list<std::shared_ptr<Assignment>> clutter_assignments;
     for(EvidenceSet::const_iterator it_ev = ev_set->begin(); it_ev != ev_set->end(); ++it_ev) {
+            
+            const std::shared_ptr< SemanticObject> zeroTarget = 0;
+            
         // new
-        new_assignments.push_back(std::make_shared<Assignment>(Assignment::NEW, *it_ev, 0, KnowledgeDatabase::getInstance()->getProbabilityNew(*it_ev)));
+        new_assignments.push_back(std::make_shared<Assignment>(Assignment::NEW, *it_ev, zeroTarget, KnowledgeDatabase::getInstance()->getProbabilityNew(*it_ev)));
 
         // clutter
-        clutter_assignments.push_back(std::make_shared<Assignment>(Assignment::CLUTTER, *it_ev, 0, KnowledgeDatabase::getInstance()->getProbabilityClutter(*it_ev)));
+        clutter_assignments.push_back(std::make_shared<Assignment>(Assignment::CLUTTER, *it_ev, zeroTarget, KnowledgeDatabase::getInstance()->getProbabilityClutter(*it_ev)));
     }
 
 #ifdef MHF_MEASURE_TIME

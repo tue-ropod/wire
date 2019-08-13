@@ -79,7 +79,7 @@ const std::map<std::string, std::shared_ptr<ClassModel>>& KnowledgeDatabase::get
     return class_models_;
 }
 
-std::shared_ptr<const ClassModel> KnowledgeDatabase::getClassModel(const std::string& class_name) const {
+const std::shared_ptr< ClassModel> KnowledgeDatabase::getClassModel(const std::string& class_name) const {
     map<string, std::shared_ptr<ClassModel>>::const_iterator it_model = class_models_.find(class_name);
     if (it_model != class_models_.end()) {
         return it_model->second;
@@ -91,7 +91,7 @@ std::shared_ptr<const ClassModel> KnowledgeDatabase::getClassModel(const std::st
     return it_model->second;
 }
 
-double KnowledgeDatabase::getProbabilityNew(std::shared_ptr<const Evidence> z) {
+double KnowledgeDatabase::getProbabilityNew(const std::shared_ptr< Evidence> z) {
 
     std::shared_ptr<const Property> class_prop = z->getProperty("class_label");
 
@@ -131,7 +131,7 @@ double KnowledgeDatabase::getProbabilityNew(std::shared_ptr<const Evidence> z) {
     return p_new;
 }
 
-double KnowledgeDatabase::getProbabilityClutter(std::shared_ptr<const Evidence> z) {
+double KnowledgeDatabase::getProbabilityClutter(const std::shared_ptr< Evidence> z) {
 
     std::shared_ptr<const Property> class_prop = z->getProperty("class_label");
 
@@ -171,7 +171,7 @@ double KnowledgeDatabase::getProbabilityClutter(std::shared_ptr<const Evidence> 
     return p_clutter;
 }
 
-double KnowledgeDatabase::getProbabilityExisting(std::shared_ptr<const Evidence> z, const SemanticObject& obj) {
+double KnowledgeDatabase::getProbabilityExisting(const std::shared_ptr< Evidence> z, const SemanticObject& obj) {
     // calculate prior (prior probability that target generates a detection)
     double prior = getPriorExisting();
 
