@@ -60,6 +60,11 @@ void DiscreteFilter::propagate(const mhf::Time& time) {
 void DiscreteFilter::update(const pbl::PDF& z, const mhf::Time& time) {
 	assert(z.type() == pbl::PDF::DISCRETE);
 	const pbl::PMF* pmf = pbl::PDFtoPMF(z);
+        
+        std::cout << "pmf_->getDomainSize() other= "  << pmf->getDomainSize() << std::endl;
+    //    std::cout << "pmf_= "  << *pmf_ << std::endl;
+        std::cout << "pmf_->getDomainSize() = "  << pmf_.getDomainSize() << std::endl;
+        
 	pmf_.update(*pmf);
 }
 
