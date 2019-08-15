@@ -69,6 +69,7 @@ public:
     std::shared_ptr<const IStateEstimator> getEstimator() const;
 
     std::shared_ptr<const pbl::PDF> getValue() const;
+    //std::shared_ptr<const pbl::PDF>& getValue() const;
 
     //void setObjectID(const ObjectID& id);
 
@@ -81,6 +82,7 @@ public:
     void reset();
 
     virtual double getLikelihood(std::shared_ptr<const pbl::PDF> pdf) const;
+    //virtual double getLikelihood(std::shared_ptr<const pbl::PDF>& pdf) const;
 
     std::string toString(const std::string& prefix = "") const;
 

@@ -92,6 +92,7 @@ public:
      * @return The current state, i.e., the current attribute value represented as probability density function
      */
     virtual std::shared_ptr<const pbl::PDF> getValue() const = 0;
+    // virtual std::shared_ptr<const pbl::PDF>& getValue() const = 0;
 
     /**
      * @brief Resets the internal state of the estimator to the given PDF

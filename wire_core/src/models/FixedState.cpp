@@ -41,4 +41,10 @@ std::shared_ptr<const pbl::PDF> FixedState::getValue() const {
     return pdf_;
 }
 
+
+/*std::shared_ptr<const pbl::PDF>& FixedState::getValue() const {
+     std::shared_ptr<const pbl::PDF>& toReturn = std::make_shared<const pbl::PDF> (pdf_)  ;
+    return pdf_;
+}*/
+
 }

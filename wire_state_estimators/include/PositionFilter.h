@@ -97,6 +97,8 @@ public:
      * @return The current state, i.e., the current attribute value represented as probability density function
      */
     std::shared_ptr<const pbl::PDF> getValue() const;
+    
+     //const std::shared_ptr< pbl::PDF>& getValue() const;
 
     void setValue(const pbl::PDF& pdf);
 

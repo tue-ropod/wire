@@ -2,7 +2,8 @@
 
 <launch>
 
-    <node pkg="rviz" type="rviz" respawn="false" name="rviz_world_model" output="screen" args="-d $(find wire_tutorials)/config/rviz_world_model_kinetic.rviz" launch-prefix="xterm -e gdb --args"/>
+        <!--<node pkg="rviz" type="rviz" respawn="false" name="rviz_world_model" output="screen" args="-d $(find wire_tutorials)/config/rviz_world_model_kinetic.rviz" launch-prefix="xterm -e gdb -_-args"/>-->
+      <node pkg="rviz" type="rviz" respawn="false" name="rviz_world_model" output="screen" args="-d $(find wire_tutorials)/config/rviz_world_model_kinetic.rviz" />
 
     <include file="$(find wire_viz)/launch/start.launch" />   
 

@@ -50,6 +50,12 @@ void ObjectStorage::match(const std::shared_ptr< Evidence> ev) {
 
     for(list<std::shared_ptr<SemanticObject>>::iterator it_obj = objects_.begin(); it_obj != objects_.end(); ++it_obj) {
         SemanticObject& obj = **it_obj;
+        
+        
+//         std::cout << "Objectstorage" << std::endl;
+//         std::cout << "obj id = " << obj.getID() << std::endl;
+       // std::cout << "obj.expected_class_ = " << obj.expected_class_ << std::endl;
+        //std::cout << "obj ev= " << ev.timestamp_ << std::endl;
 
         double prob_existing = KnowledgeDatabase::getInstance()->getProbabilityExisting(ev, obj);
         if (prob_existing > 0) {

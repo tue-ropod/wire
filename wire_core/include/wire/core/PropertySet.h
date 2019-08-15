@@ -37,7 +37,7 @@ public:
 
     void addProperty(const Attribute& attribute, std::shared_ptr<const IStateEstimator> estimator);    
 
-    const std::shared_ptr< Property> getProperty(const Attribute& attribute) const;
+    const std::shared_ptr<  Property> getProperty(const Attribute& attribute) const;
 
     const std::shared_ptr< Property> getProperty(const std::string& attribute) const;
 
@@ -48,6 +48,7 @@ public:
     void reset();
 
     std::shared_ptr<const pbl::PDF> getValue() const;
+    //const pbl::PDF& getValue() const;
 
     virtual double getLikelihood(const std::shared_ptr< PropertySet> P) const;
 

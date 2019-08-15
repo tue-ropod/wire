@@ -46,8 +46,16 @@ std::shared_ptr<const IStateEstimator> Property::getEstimator() const {
 }
 
 std::shared_ptr<const pbl::PDF> Property::getValue() const {
+      /*  std::cout << "Property: going to get value." << std::endl;
+        std::cout << "Estimator_ = " << estimator_ << std::endl;
+        std::cout << " estimator_->getValue()->toString() = " << estimator_->getValue()->toString() << std::endl;
+        */
     return estimator_->getValue();
 }
+
+/*std::shared_ptr<const pbl::PDF>& Property::getValue() const {
+    return estimator_->getValue();
+}*/
 
 void Property::update(std::shared_ptr<const pbl::PDF> z, const Time& time) {
     if (time < time_) return;
@@ -66,8 +74,20 @@ void Property::reset() {
 }
 
 double Property::getLikelihood(std::shared_ptr<const pbl::PDF> pdf) const {
+        /*std::cout << "Property: going to get getLikelihood." << std::endl;
+        std::cout << "Estimator_ = " << estimator_ << std::endl;
+        std::cout << "Estimator_ = " << estimator_-> << std::endl;
+        std::cout << " estimator_->getValue()->toString() = " << estimator_->getValue()->toString() << std::endl;
+        std::cout << " pdf = " << pdf << std::endl;
+        std::cout << " pdf type = " << pdf->type() << std::endl;
+         std::cout << " estimator_->getValue()->getLikelihood(pdf) " << estimator_->getValue()->getLikelihood(pdf) << std::endl;
+         */
     return estimator_->getValue()->getLikelihood(pdf);
 }
+
+/*double Property::getLikelihood(std::shared_ptr<const pbl::PDF>& pdf) const {
+    return estimator_->getValue()->getLikelihood(pdf);
+}*/
 
 std::string Property::toString(const std::string& prefix) const {
     return estimator_->getValue()->toString();

@@ -142,6 +142,15 @@ std::shared_ptr<const pbl::PDF> MultiModelFilter::getValue() const {
     return mixture_;
 }
 
+/*const pbl::PDF& MultiModelFilter::getValue() const {
+    mixture_.clear();
+    for(unsigned int i = 0; i < estimators_.size(); ++i) {
+        mixture_.addComponent(estimators_[i]->getValue(), weights_[i]);
+    }
+    mixture_.normalizeWeights();
+    return mixture_;
+}*/
+
 void MultiModelFilter::setValue(const pbl::PDF& pdf) {
 
 }

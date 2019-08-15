@@ -86,6 +86,8 @@ public:
     virtual void reset();
 
     std::shared_ptr<const pbl::PDF> getValue() const;
+    
+    //const pbl::PDF& getValue() const;
 
 protected:
 

@@ -86,7 +86,7 @@ bool WorldModelROS::initialize() {
     // initialize the filter
     world_model_ = new HypothesisTree(max_num_hyps_, min_prob_ratio_);
     
-    std::cout << "WIRE initialized" << std::endl;
+    //std::cout << "WIRE initialized" << std::endl;
 
     return true;
 }
@@ -238,7 +238,7 @@ void WorldModelROS::processEvidence(const ros::Duration max_duration) {
 }
 
 void WorldModelROS::processEvidence(const wire_msgs::WorldEvidence& world_evidence_msg) {
-            std::cout << "WIRE processEvidence" << std::endl;
+         //   std::cout << "WIRE processEvidence" << std::endl;
     ros::Time current_time = ros::Time::now();
 
     if (current_time < last_update_) {
@@ -309,7 +309,7 @@ void WorldModelROS::processEvidence(const wire_msgs::WorldEvidence& world_eviden
         //delete (*it);
    // }
     
-    std::cout << "WIRE processEvidence finished" << std::endl;
+   // std::cout << "WIRE processEvidence finished" << std::endl;
 }
 
 bool WorldModelROS::resetWorldModel(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res) {

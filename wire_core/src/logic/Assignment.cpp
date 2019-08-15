@@ -56,6 +56,7 @@ std::shared_ptr<SemanticObject> Assignment::getUpdatedObject() const {
     }
 
     updated_object_ = target_->cloneThis();
+    //updated_object_ = target_->clone();
     updated_object_->update(evidence_);
 
     ObjectStorage::getInstance()->addObject(updated_object_);

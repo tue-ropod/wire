@@ -64,8 +64,13 @@ void FixedState::reset() {
 }
 
 std::shared_ptr<const pbl::PDF> FixedState::getValue() const {
-        std::shared_ptr<pbl::PDF> pdf_;
+       // std::shared_ptr<pbl::PDF> pdf_;
+        return pdf_;
 }
 
+/*
+const pbl::PDF& FixedState::getValue() const {
+        return *pdf_;
+}*/
 #include <pluginlib/class_list_macros.h>
 PLUGINLIB_EXPORT_CLASS( FixedState, mhf::IStateEstimator )

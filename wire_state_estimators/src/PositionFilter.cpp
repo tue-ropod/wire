@@ -46,7 +46,7 @@ PositionFilter::PositionFilter(const PositionFilter& orig) : mhf::IStateEstimato
     fixed_pdf_cov_(orig.fixed_pdf_cov_ ), kalman_timeout_(orig.kalman_timeout_) {
 // 
     if (orig.fixed_pdf_) {
-            fixed_pdf_ = orig.fixed_pdf_->cloneThis();
+            fixed_pdf_ = orig.fixed_pdf_->CloneMethod();
     }
 
     if (orig.kalman_filter_) {
@@ -83,7 +83,15 @@ void PositionFilter::propagate(const mhf::Time& time) {
     //if ((time - t_last_update_) > 10.0) {
         if (!fixed_pdf_) {
             int dimensions = kalman_filter_->getGaussian()->getMean().rows();
-            pbl::Matrix cov = Eigen::Matrix2Xd::Identity(dimensions, dimensions) * fixed_pdf_cov_;
+            
+          /*  std::cout << "Position filter: fixed_pdf_cov_ = " << fixed_pdf_cov_ << std::endl;
+            std::cout << " dimensions = "  << dimensions << std::endl;
+            pbl::Matrix matrixTest = Eigen::MatrixXd::Identity(dimensions, dimensions);
+            
+            std::cout << "matrixTest = " << matrixTest << std::endl;
+            */
+            
+            pbl::Matrix cov = Eigen::MatrixXd::Identity(dimensions, dimensions) * fixed_pdf_cov_;
             fixed_pdf_ = std::make_shared<pbl::Gaussian>(kalman_filter_->getGaussian()->getMean(), cov);
         } else {
             fixed_pdf_->setMean(kalman_filter_->getGaussian()->getMean());
@@ -145,6 +153,18 @@ std::shared_ptr<const pbl::PDF> PositionFilter::getValue() const {
 
     std::cout << "SOMETHINGS WRONG" << std::endl;
 }
+
+/*
+const std::shared_ptr< pbl::PDF>& PositionFilter::getValue() const {
+    if (kalman_filter_) {
+        return kalman_filter_->getGaussian();
+    } else if (fixed_pdf_) {
+        return std::shared_ptr<fixed_pdf_>;
+    }
+
+    std::cout << "SOMETHINGS WRONG" << std::endl;
+}*/
+
 
 bool PositionFilter::setParameter(const std::string& param, bool b) {
     return false;

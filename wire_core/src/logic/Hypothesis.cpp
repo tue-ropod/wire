@@ -300,7 +300,7 @@ std::shared_ptr<Hypothesis> Hypothesis::deleteSinglePaths() {
     if (children_.size() == 1) {
         std::shared_ptr<Hypothesis> hyp = *children_.begin();
         hyp->parent_ = this->parent_;
-        delete this;
+      //  delete this;
         return hyp;
     }
 

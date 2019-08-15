@@ -64,7 +64,7 @@ double SemanticObject::getLikelihood(const std::shared_ptr< PropertySet> ev) con
     vector<Property> deduced_props = KnowledgeDatabase::getInstance()->inferProperties(*this, need_to_deduce);
 
     for(vector<Property>::iterator it_prop = deduced_props.begin(); it_prop != deduced_props.end(); ++it_prop) {
-        const std::shared_ptr< Property> ev_prop = ev->getProperty(it_prop->getAttribute());
+        std::shared_ptr< const Property> ev_prop = ev->getProperty(it_prop->getAttribute());
         assert(ev_prop);
         likelihood *= it_prop->getLikelihood(ev_prop->getValue());
     }
@@ -81,10 +81,10 @@ void SemanticObject::update(std::shared_ptr<const Evidence> ev) {
     // first update class property
 
     Attribute class_att = AttributeConv::attribute("class_label");
-    std::shared_ptr<const Property> ev_class = ev->getProperty(class_att);
+    const std::shared_ptr< Property> ev_class = ev->getProperty(class_att);
 
     if (ev_class) {
-        std::shared_ptr<Property> my_class = getProperty(class_att);
+        const std::shared_ptr< Property> my_class = getProperty(class_att);
 
         if (my_class) {
             my_class->update(ev_class->getValue(), ev->getTimestamp());
@@ -116,14 +116,14 @@ void SemanticObject::update(std::shared_ptr<const Evidence> ev) {
         std::shared_ptr<const Property> ev_prop = it->second;
 
         if (attribute != class_att) {
-            std::shared_ptr<Property> my_prop = getProperty(attribute);
+            const std::shared_ptr< Property> my_prop = getProperty(attribute);
 
             if (my_prop && !class_changed) {
                 my_prop->update(ev_prop->getValue(), ev->getTimestamp());
                 //cout << "Updating " << AttributeConv::attribute_str(attribute) << " with " << ev_prop->getValue().toString() << endl;
                 //cout << "Result: " << my_prop->toString() << endl;
             } else {
-                std::shared_ptr<const IStateEstimator> prototype = getExpectedObjectModel()->getEstimator(attribute);
+                 std::shared_ptr< const IStateEstimator> prototype = getExpectedObjectModel()->getEstimator(attribute);
                 if (prototype) {
                     std::shared_ptr<Property> new_prop = std::make_shared<Property>(attribute, prototype);
                     new_prop->update(ev_prop->getValue(), ev->getTimestamp());
@@ -168,6 +168,7 @@ void SemanticObject::addPotentialAssignment(const std::shared_ptr< Evidence> ev,
 }
 
 ObjectID SemanticObject::getID() const {
+    //    std::cout << "expected_class_ = " << expected_class_ << std::endl;
     return ID_;
 }
 

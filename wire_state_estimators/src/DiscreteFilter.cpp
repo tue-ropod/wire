@@ -41,6 +41,10 @@
 //DiscreteFilter::DiscreteFilter() : pmf_() {
 DiscreteFilter::DiscreteFilter() {
 //	++N_DISCRETEKALMAN_FILTER;
+       // std::cout << "Init discrete filter" << std::endl;
+         pbl::PMF test = pbl::PMF();
+        pmf_ = std::make_shared<pbl::PMF>(test);
+      //  std::cout << "Discrete filter initialized. pmf_ = " << pmf_ << std::endl;
 }
 
 DiscreteFilter::DiscreteFilter(const DiscreteFilter& orig) : mhf::IStateEstimator(orig), pmf_(orig.pmf_) {
@@ -61,14 +65,13 @@ void DiscreteFilter::propagate(const mhf::Time& time) {
 void DiscreteFilter::update(std::shared_ptr<const pbl::PDF> z, const mhf::Time& time) {
 	assert(z->type() == pbl::PDF::DISCRETE);
 	std::shared_ptr<const pbl::PMF> pmf = pbl::PDFtoPMF(z);
-         std::cout << "pmf_->getDomainSize() other= "  << pmf->getDomainSize() << std::endl;
-         std::cout << "pmf_= "  << pmf_ << std::endl;
-        std::cout << "pmf_->getDomainSize() = "  << pmf_->getDomainSize() << std::endl;
 	pmf_->update(pmf);
 }
 
 void DiscreteFilter::reset() {
-    *pmf_ = pbl::PMF();
+    //    std::cout << "Discrete filter: going to reset." << std::endl;
+        pbl::PMF test = pbl::PMF();
+        pmf_ = std::make_shared<pbl::PMF>(test);
 }
 
 // const pbl::PDF DiscreteFilter::getValue() const {
@@ -76,8 +79,14 @@ void DiscreteFilter::reset() {
 // }
 
 std::shared_ptr<const pbl::PDF> DiscreteFilter::getValue() const {
-        std::shared_ptr<pbl::PDF> pdf_;
+        //std::shared_ptr<pbl::PDF> pdf_;
+        return pmf_;
 }
+
+
+/*const pbl::PDF& DiscreteFilter::getValue() const {
+        return pmf_;
+}*/
 
 
 #include <pluginlib/class_list_macros.h>

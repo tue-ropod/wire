@@ -122,6 +122,10 @@ double KnowledgeDatabase::getProbabilityNew(const std::shared_ptr< Evidence> z) 
     std::shared_ptr<const ClassModel> default_model = getClassModel("object");
     assert(default_model != 0);
 
+  /*  std::cout << " KnowledgeDatabase: default_model = " << default_model << std::endl;
+    std::cout << " KnowledgeDatabase: z = " << z << std::endl;
+    std::cout << " KnowledgeDatabase: class_prop = " << class_prop << std::endl;
+    */
     likelihood += (1 - total_prob) * default_model->getNewPDFs().getLikelihood(z);
 
     double p_new = getPriorNew() * likelihood;

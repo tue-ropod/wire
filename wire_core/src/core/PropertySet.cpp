@@ -119,22 +119,28 @@ std::shared_ptr<const pbl::PDF> PropertySet::getValue() const {
     assert(false);
 }
 
+/*const pbl::PDF& PropertySet::getValue() const {
+    assert(false);
+}*/
+
 double PropertySet::getLikelihood(const std::shared_ptr< PropertySet> P) const {
     double likelihood = 1;
 
     const map<Attribute, std::shared_ptr<Property>>& other_props = P->properties_;
 
+  //  std::cout << "other_props size = "  << other_props.size() << std::endl;
+    
     for(map<Attribute, std::shared_ptr<Property>>::const_iterator it = other_props.begin(); it != other_props.end(); ++it) {
 
         const Attribute& attribute = it->first;
-        std::shared_ptr<const Property> other_prop = it->second;
+        std::shared_ptr< Property> other_prop = it->second;
 
         std::shared_ptr<const Property> this_prop = getProperty(attribute);
 
         if (this_prop) {
 
-            /*
-            std::cout << "Attribute: " << AttributeConv::attribute_str(it->first) << std::endl;
+            
+           /* std::cout << "Attribute: " << AttributeConv::attribute_str(it->first) << std::endl;
             std::cout << "PDF mine:  " << it_prop->second->getValue().toString() << std::endl;
             std::cout << "PDF other: " << it->second->getValue().toString() << std::endl;
             std::cout << "Likelihood: " << it_prop->second->getLikelihood(it->second->getValue()) << std::endl;
@@ -142,7 +148,20 @@ double PropertySet::getLikelihood(const std::shared_ptr< PropertySet> P) const {
 
             
             //other_prop->getValue();
+        /*    std::cout << " Going to obtain values: " << std::endl;
+            std::cout << " this prop =  " << this_prop << std::endl;
+            std::cout << " other prop = " << other_prop << std::endl;
+          */            
+            //std::cout << "other_prop->getValue() = "  << other_prop->getValue().toString() << std::endl;
+           /* std::cout << "this_prop->getValue()->toString() = "  << this_prop->getValue()->toString() << std::endl;
+            std::cout << "other_prop->getValue()->toString() = "  << other_prop->getValue()->toString() << std::endl;
+            */
+           //std::shared_ptr<const pbl::PDF> test = other_prop->getValue();
+              //std::cout << "other_prop->getValue() = "  << *test << std::endl;
+          //    std::cout << "other_prop->getValue() = "  << &test << std::endl;
+            //std::cout << "this_prop->getLikelihood(other_prop->getValue()) = "  << this_prop->getLikelihood(other_prop->getValue()) << std::endl;
             likelihood *= this_prop->getLikelihood(other_prop->getValue());
+           // std::cout << "likelihood = " << likelihood << std::endl;
         } else {
             printf("Error during likelihood calculation: property '%s' is not in property set.\n", AttributeConv::attribute_str(attribute).c_str());
 

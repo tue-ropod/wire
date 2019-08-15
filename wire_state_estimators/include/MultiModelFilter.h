@@ -86,6 +86,8 @@ public:
      * @return The current state, i.e., the current attribute value represented as probability density function
      */
     std::shared_ptr<const pbl::PDF> getValue() const;
+    
+    //const pbl::PDF& getValue() const;
 
     void setValue(const pbl::PDF& pdf);
 
@@ -114,6 +116,8 @@ protected:
     std::vector<double> weights_;
 
     mutable std::shared_ptr<pbl::Mixture> mixture_;
+    
+    //mutable pbl::Mixture mixture_;
 
 };
 
