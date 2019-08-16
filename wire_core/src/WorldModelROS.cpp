@@ -168,7 +168,8 @@ bool WorldModelROS::transformPosition(std::shared_ptr<const pbl::PDF> pdf_in, co
         return false;
     }
 
-    const Eigen::VectorXd& pos = gauss->getMean();
+   // const Eigen::VectorXd& pos = gauss->getMean();
+        const arma::vec& pos = gauss->getMean();
     tf::Stamped<tf::Point> pos_stamped(tf::Point(pos(0), pos(1), pos(2)), ros::Time(), frame_in);
 
     try{
@@ -196,7 +197,8 @@ bool WorldModelROS::transformOrientation(std::shared_ptr<const pbl::PDF> pdf_in,
         return false;
     }
 
-    const Eigen::VectorXd& ori = gauss->getMean();
+    //const Eigen::VectorXd& ori = gauss->getMean();
+  const arma::vec& ori = gauss->getMean();
     tf::Stamped<tf::Quaternion> ori_stamped(tf::Quaternion(ori(0), ori(1), ori(2), ori(3)), ros::Time(), frame_in);
 
     try{
@@ -235,6 +237,12 @@ void WorldModelROS::processEvidence(const ros::Duration max_duration) {
 
         evidence_buffer_.pop_back();
     }
+    
+    ros::Duration duration = ros::Time::now() - start_time;
+    bool timeCheck = ros::Time::now() - start_time < max_duration;
+    
+   
+    std::cout << "Duration = " << duration.toSec() << " time check = "  << timeCheck << " max_duration = " << max_duration << " evidence buffer size  = " << evidence_buffer_.size() << std::endl;
 }
 
 void WorldModelROS::processEvidence(const wire_msgs::WorldEvidence& world_evidence_msg) {

@@ -144,7 +144,8 @@ protected:
 	std::shared_ptr<pbl::Gaussian> G_small_;
 
     /** Observation model **/
-    Eigen::MatrixXd H_;
+   // Eigen::MatrixXd H_;
+        pbl::Matrix H_;
 
     /** Maximum expected acceleration **/
 	double a_max_;

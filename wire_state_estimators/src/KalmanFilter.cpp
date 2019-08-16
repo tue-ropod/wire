@@ -53,11 +53,14 @@ KalmanFilter::~KalmanFilter() {
 //}
 
 void KalmanFilter::init(const pbl::Gaussian& z) {
-	H_ = Eigen::MatrixXd::Identity(meas_dim_, state_dim_);
+        H_ = arma::eye(meas_dim_, state_dim_);
+	//H_ = Eigen::MatrixXd::Identity(meas_dim_, state_dim_);
 
-	G_.setMean(H_.transpose() * z.getMean());
-	G_.setCovariance(H_.transpose() * z.getCovariance() * H_);
-
+	//G_.setMean(H_.transpose() * z.getMean());
+	//G_.setCovariance(H_.transpose() * z.getCovariance() * H_);
+        G_.setMean(H_.t() * z.getMean());
+        G_.setCovariance(H_.t() * z.getCovariance() * H_);
+        
 	G_small_->setMean(z.getMean());;
 	G_small_->setCovariance(z.getCovariance());;
 }
@@ -68,8 +71,10 @@ void KalmanFilter::propagate(const double& dt) {
 		//		const pbl::Matrix& P = G_.getCovariance();
 
 		// set state transition matrix
-		Eigen::MatrixXd F;
-                F = Eigen::MatrixXd::Identity(state_dim_, state_dim_);
+		//Eigen::MatrixXd F;
+                pbl::Matrix F = arma::eye(state_dim_, state_dim_);
+
+//                F = Eigen::MatrixXd::Identity(state_dim_, state_dim_);
 		for(int i = 0; i < meas_dim_; ++i) {
 			F(i, i + meas_dim_) = dt;
 		}
@@ -87,7 +92,8 @@ void KalmanFilter::propagate(const double& dt) {
 		double dt2 = dt * dt;
 		double dt4 = dt2 * dt2;
 
-        Eigen::MatrixXd P = F * G_.getCovariance() * F.transpose();
+        //Eigen::MatrixXd P = F * G_.getCovariance() * F.transpose();
+        pbl::Matrix P = F * G_.getCovariance() * F.t();
 		for(int i = 0; i < meas_dim_; ++i) {
 			P(i, i) += dt4 / 4 * q;						// cov pos
 			P(i, i + meas_dim_) += dt4 / 4 * q;         // cov pos~vel
@@ -97,33 +103,42 @@ void KalmanFilter::propagate(const double& dt) {
 		G_.setCovariance(P);
 
 		G_small_->setMean(H_ * G_.getMean());
-		G_small_->setCovariance(H_ * G_.getCovariance() * H_.transpose());
+	//	G_small_->setCovariance(H_ * G_.getCovariance() * H_.transpose());
+                G_small_->setCovariance(H_ * G_.getCovariance() * H_.t());
 	}
 }
 
 void KalmanFilter::update(const pbl::Gaussian& z) {
-	const Eigen::MatrixXd& x = G_.getMean();
-	const Eigen::MatrixXd& P = G_.getCovariance();
+	//const Eigen::MatrixXd& x = G_.getMean();
+	//const Eigen::MatrixXd& P = G_.getCovariance();
+        const pbl::Vector& x = G_.getMean();
+        const pbl::Matrix& P = G_.getCovariance();
 
 	// determine innovation
-	Eigen::MatrixXd y = z.getMean() - H_ * x;
-
+	//Eigen::MatrixXd y = z.getMean() - H_ * x;
+        pbl::Vector y = z.getMean() - H_ * x;        
+        
 	// determine innovation covariance
-	Eigen::MatrixXd S = H_ * P * H_.transpose() + z.getCovariance();
+        pbl::Matrix S = H_ * P * H_.t() + z.getCovariance();
+	//Eigen::MatrixXd S = H_ * P * H_.transpose() + z.getCovariance();
 
 	// calculate optimal Kalman gain
-	Eigen::MatrixXd K = P * H_.transpose() * S.inverse();
+        pbl::Matrix K = P * H_.t() * inv(S);
+	//Eigen::MatrixXd K = P * H_.transpose() * S.inverse();
 
 	// update state
 	G_.setMean(x + K * y);
 
 	// update state covariance
-        Eigen::MatrixXd Identity;
-        Identity = Eigen::MatrixXd::Identity(state_dim_, state_dim_);
-	G_.setCovariance((Identity - K * H_) * P);
-
+        G_.setCovariance((arma::eye(state_dim_, state_dim_) - K * H_) * P);
+        //Eigen::MatrixXd Identity;
+       // Identity = Eigen::MatrixXd::Identity(state_dim_, state_dim_);
+	//G_.setCovariance((Identity - K * H_) * P);
+        G_.setCovariance((arma::eye(state_dim_, state_dim_) - K * H_) * P);
+        
 	G_small_->setMean(H_ * G_.getMean());
-	G_small_->setCovariance(H_ * G_.getCovariance() * H_.transpose());
+        G_small_->setCovariance(H_ * G_.getCovariance() * H_.t());
+	//G_small_->setCovariance(H_ * G_.getCovariance() * H_.transpose());
 }
 
 double KalmanFilter::getLikelihood(const pbl::Gaussian& z) const {
