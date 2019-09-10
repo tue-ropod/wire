@@ -17,15 +17,15 @@ using namespace std;
 
 
 // Function that extract the Gaussian with the highest weight from a mixture of Gaussians and/or a uniform distribution
-const pbl::Gaussian* getBestGaussianFromMixture(const pbl::Mixture& mix, double min_weight = 0) {
-	const pbl::Gaussian* G_best = 0;
+std::shared_ptr<const pbl::Gaussian> getBestGaussianFromMixture(std::shared_ptr<const pbl::Mixture> mix, double min_weight = 0) {
+	std::shared_ptr<const pbl::Gaussian> G_best = 0;
 	double w_best = min_weight;
 
 	// Iterate over all components
-	for(int i = 0; i < mix.components(); ++i) {
-		const pbl::PDF& pdf = mix.getComponent(i);
-		const pbl::Gaussian* G = pbl::PDFtoGaussian(pdf);
-		double w = mix.getWeight(i);
+	for(int i = 0; i < mix->components(); ++i) {
+		std::shared_ptr<const pbl::PDF> pdf = mix->getComponent(i);
+		std::shared_ptr<const pbl::Gaussian> G = pbl::PDFtoGaussian(pdf);
+		double w = mix->getWeight(i);
 
 		// Get Gaussian with the highest associated weight
 		if (G && w > w_best) {
@@ -54,7 +54,7 @@ void worldStateCallback(const wire_msgs::WorldState::ConstPtr& msg) {
 		for (vector<wire_msgs::Property>::const_iterator it_prop = obj.properties.begin(); it_prop != obj.properties.end(); ++it_prop) {
 
 			// Get the pdf of the current property
-			pbl::PDF* pdf = pbl::msgToPDF(it_prop->pdf);
+			std::shared_ptr<pbl::PDF> pdf = pbl::msgToPDF(it_prop->pdf);
 
 			if (pdf) {
 
@@ -66,7 +66,7 @@ void worldStateCallback(const wire_msgs::WorldState::ConstPtr& msg) {
 					pdf->getExpectedValue(label);
 
 					// Get probability
-					const pbl::PMF* pmf = pbl::PDFtoPMF(*pdf);
+					std::shared_ptr<const pbl::PMF> pmf = pbl::PDFtoPMF(pdf);
 					double p = pmf->getProbability(label);
 					ROS_INFO(" - class %s with probability %f", label.c_str(), p);
 				}
@@ -74,16 +74,16 @@ void worldStateCallback(const wire_msgs::WorldState::ConstPtr& msg) {
 				else if (it_prop->attribute == "position") {
 
 					// Get (Gaussian) position
-					const pbl::Gaussian* pos_gauss;
+					std::shared_ptr<const pbl::Gaussian> pos_gauss;
 					if (pdf->type() == pbl::PDF::MIXTURE) {
-						const pbl::Mixture* pos_pdf = pbl::PDFtoMixture(*pdf);
+						std::shared_ptr<const pbl::Mixture> pos_pdf = pbl::PDFtoMixture(pdf);
 						if (pos_pdf)
-							pos_gauss = getBestGaussianFromMixture(*pos_pdf);
+							pos_gauss = getBestGaussianFromMixture(pos_pdf);
 						else
 							ROS_INFO(" - position: object position unknown (uniform distribution)");
 					}
 					else if (pdf->type() == pbl::PDF::GAUSSIAN) {
-						pos_gauss = pbl::PDFtoGaussian(*pdf);
+						pos_gauss = pbl::PDFtoGaussian(pdf);
 					}
 
 					// Print Gaussian position
@@ -97,9 +97,9 @@ void worldStateCallback(const wire_msgs::WorldState::ConstPtr& msg) {
 				}
 					// Orientation
 				else if (it_prop->attribute == "orientation") {
-					const pbl::Mixture* orientation_pdf = pbl::PDFtoMixture(*pdf);
+					std::shared_ptr<const pbl::Mixture> orientation_pdf = pbl::PDFtoMixture(pdf);
 					if (orientation_pdf) {
-						const pbl::Gaussian* orientation_gauss = getBestGaussianFromMixture(*orientation_pdf);
+						std::shared_ptr<const pbl::Gaussian> orientation_gauss = getBestGaussianFromMixture(orientation_pdf);
 						if (orientation_gauss) {
 							const pbl::Vector& ori = orientation_gauss->getMean();
 							ROS_INFO(" - orientation: (%f,%f,%f,%f)", ori(0), ori(1), ori(2), ori(3));
@@ -115,7 +115,7 @@ void worldStateCallback(const wire_msgs::WorldState::ConstPtr& msg) {
 					ROS_INFO(" - color: %s", color.c_str());
 				}
 
-				delete pdf;
+				//delete pdf;
 			}
 
 		}

@@ -46,7 +46,7 @@ PositionFilter::PositionFilter(const PositionFilter& orig) : mhf::IStateEstimato
     fixed_pdf_cov_(orig.fixed_pdf_cov_ ), kalman_timeout_(orig.kalman_timeout_) {
 
     if (orig.fixed_pdf_) {
-        fixed_pdf_ = orig.fixed_pdf_->clone();
+        fixed_pdf_ = orig.fixed_pdf_->CloneMethod();
     }
 
     if (orig.kalman_filter_) {
@@ -56,7 +56,7 @@ PositionFilter::PositionFilter(const PositionFilter& orig) : mhf::IStateEstimato
 
 PositionFilter::~PositionFilter() {
     delete kalman_filter_;
-    delete fixed_pdf_;
+    //delete fixed_pdf_;
 }
 
 PositionFilter* PositionFilter::clone() const {
@@ -81,11 +81,13 @@ void PositionFilter::propagate(const mhf::Time& time) {
     if ((time - t_last_update_) > kalman_timeout_ && kalman_timeout_ > 0) {
     //if ((time - t_last_update_) > 10.0) {
         if (!fixed_pdf_) {
-            int dimensions = kalman_filter_->getGaussian().getMean().rows();
-            pbl::Matrix cov = Eigen::Matrix2Xd::Identity(dimensions, dimensions) * fixed_pdf_cov_;
-            fixed_pdf_ = new pbl::Gaussian(kalman_filter_->getGaussian().getMean(), cov);
+            int dimensions = kalman_filter_->getGaussian()->getMean().n_rows;
+         //   pbl::Matrix cov = Eigen::Matrix2Xd::Identity(dimensions, dimensions) * fixed_pdf_cov_;
+            pbl::Matrix cov = arma::eye(dimensions, dimensions) * fixed_pdf_cov_;
+            //fixed_pdf_ = new pbl::Gaussian(kalman_filter_->getGaussian().getMean(), cov);
+             fixed_pdf_ = std::make_shared<pbl::Gaussian>(kalman_filter_->getGaussian()->getMean(), cov);
         } else {
-            fixed_pdf_->setMean(kalman_filter_->getGaussian().getMean());
+            fixed_pdf_->setMean(kalman_filter_->getGaussian()->getMean());
         }
 
         delete kalman_filter_;
@@ -108,18 +110,18 @@ void PositionFilter::propagate(const mhf::Time& time) {
     }
 }
 
-void PositionFilter::update(const pbl::PDF& z, const mhf::Time& time) {
+void PositionFilter::update(std::shared_ptr<const pbl::PDF> z, const mhf::Time& time) {
     t_last_update_ = time;
 
-    if (z.type() == pbl::PDF::GAUSSIAN) {
-        const pbl::Gaussian* G = pbl::PDFtoGaussian(z);
+    if (z->type() == pbl::PDF::GAUSSIAN) {
+        std::shared_ptr<const pbl::Gaussian> G = pbl::PDFtoGaussian(z);
 
         if (!kalman_filter_) {
-            kalman_filter_ = new KalmanFilter(z.dimensions());
+            kalman_filter_ = new KalmanFilter(z->dimensions());
             kalman_filter_->setMaxAcceleration(max_acceleration_);
-            kalman_filter_->init(*G);
+            kalman_filter_->init(G);
         } else {
-            kalman_filter_->update(*G);
+            kalman_filter_->update(G);
         }
     } else {
         printf("PositionFilter can only be updated with Gaussians.\n");
@@ -130,15 +132,15 @@ void PositionFilter::reset() {
     delete kalman_filter_;
     kalman_filter_ = 0;
 
-    delete fixed_pdf_;
+    //delete fixed_pdf_;
     fixed_pdf_ = 0;
 }
 
-const pbl::PDF& PositionFilter::getValue() const {
+std::shared_ptr<const pbl::PDF> PositionFilter::getValue() const {
     if (kalman_filter_) {
         return kalman_filter_->getGaussian();
     } else if (fixed_pdf_) {
-        return *fixed_pdf_;
+        return fixed_pdf_;
     }
 
     std::cout << "SOMETHINGS WRONG" << std::endl;

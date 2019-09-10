@@ -65,6 +65,7 @@ public:
     virtual ~IStateEstimator() {}
 
     virtual IStateEstimator* clone() const = 0;
+    // virtual std::shared_ptr<IStateEstimator> clone() const = 0;
 
     /**
      * @brief Propagates the internal state to Time time
@@ -77,7 +78,7 @@ public:
      * @param z The measurement with which to update, represented as a probability density function
      * @param time The time to which the internal state is propagated before updating
      */
-    virtual void update(const pbl::PDF& z, const Time& time) = 0;
+    virtual void update(std::shared_ptr<const pbl::PDF> z, const Time& time) = 0;
 
     /**
      * @brief Resets the internal state of the estimator to its initial value
@@ -88,7 +89,7 @@ public:
      * @brief Returns the current estimated state value
      * @return The current state, i.e., the current attribute value represented as probability density function
      */
-    virtual const pbl::PDF& getValue() const = 0;
+    virtual std::shared_ptr<const pbl::PDF> getValue() const = 0;
 
     /**
      * @brief Resets the internal state of the estimator to the given PDF

@@ -57,6 +57,7 @@ public:
     virtual ~Property();
 
     Property* clone() const;
+//    std::shared_ptr<Property> clone() const{ return std::make_shared< Property>(*this); };
 
     Property& operator=(const Property& other);
 
@@ -64,19 +65,19 @@ public:
 
     const IStateEstimator& getEstimator() const;
 
-    const pbl::PDF& getValue() const;
+    std::shared_ptr<const pbl::PDF> getValue() const;
 
     //void setObjectID(const ObjectID& id);
 
     const ObjectID& getObjectID() const;
 
-    void update(const pbl::PDF& z, const Time& time);
+    void update(std::shared_ptr<const pbl::PDF> z, const Time& time);
 
     void propagate(const Time& time);
 
     void reset();
 
-    virtual double getLikelihood(const pbl::PDF& pdf) const;
+    virtual double getLikelihood(std::shared_ptr<const pbl::PDF> pdf) const;
 
     std::string toString(const std::string& prefix = "") const;
 

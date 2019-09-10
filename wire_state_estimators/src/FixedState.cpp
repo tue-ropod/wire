@@ -40,32 +40,38 @@ FixedState::FixedState() {
 
 }
 
-FixedState::FixedState(const pbl::PDF& pdf) : pdf_(pdf.clone()) {
+FixedState::FixedState(std::shared_ptr<const pbl::PDF> pdf) : pdf_(pdf->clone()) {
 }
 
-FixedState::FixedState(const FixedState& orig) : mhf::IStateEstimator(orig), pdf_(orig.pdf_->clone()) {
+FixedState::FixedState(std::shared_ptr<const FixedState> orig) : mhf::IStateEstimator(*orig), pdf_(orig->pdf_->clone()) {
 }
 
 FixedState::~FixedState() {
-	delete pdf_;
+	//delete pdf_;
 }
 
 FixedState* FixedState::clone() const {
 	return new FixedState(*this);
 }
 
-void FixedState::update(const pbl::PDF& z, const mhf::Time& time) {
+void FixedState::update(std::shared_ptr<const pbl::PDF> z, const mhf::Time& time) {
 }
 
 void FixedState::propagate(const mhf::Time& time) {
+        std::cout << "FixedState::propagate" << std::endl;
 }
 
 void FixedState::reset() {
 }
 
-const pbl::PDF& FixedState::getValue() const {
+/*const pbl::PDF& FixedState::getValue() const {
 	return *pdf_;
+}*/
+
+std::shared_ptr<const pbl::PDF> FixedState::getValue() const {
+    return pdf_;
 }
+
 
 #include <pluginlib/class_list_macros.h>
 PLUGINLIB_EXPORT_CLASS( FixedState, mhf::IStateEstimator )

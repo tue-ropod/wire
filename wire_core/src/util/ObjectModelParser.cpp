@@ -77,7 +77,7 @@ bool ObjectModelParser::hasAttributeValue(const TiXmlElement* elem, string att_n
     return (att_value == valueStr);
 }
 
-pbl::PDF* ObjectModelParser::parsePDF(const TiXmlElement* pdf_elem, std::stringstream& error) {
+std::shared_ptr<pbl::PDF> ObjectModelParser::parsePDF(const TiXmlElement* pdf_elem, std::stringstream& error) {
     const char* pdf_type = pdf_elem->Attribute("type");
     if (pdf_type) {
         if (string(pdf_type) == "uniform") {
@@ -85,12 +85,12 @@ pbl::PDF* ObjectModelParser::parsePDF(const TiXmlElement* pdf_elem, std::strings
             double density = 0;
             if (getAttributeValue(pdf_elem, "dimensions", dim, error)
                     && getAttributeValue(pdf_elem, "density", density, error)) {
-                return new pbl::Uniform((int)dim, density);
+                return std::make_shared<pbl::Uniform>((int)dim, density);
             }
         } else if (string(pdf_type) == "discrete") {
             double domain_size;
             if (getAttributeValue(pdf_elem, "domain_size", domain_size, error)) {
-                return new pbl::PMF((int)domain_size);
+                return std::make_shared<pbl::PMF>((int)domain_size);
             }
         } else {
             error << "Unknown pdf type: " << pdf_type << endl;
@@ -173,13 +173,13 @@ bool ObjectModelParser::parseStateEstimator(ClassModel* obj_model, const TiXmlEl
 
     const TiXmlElement* pnew = elem->FirstChildElement("pnew");
     if (pnew) {
-        pbl::PDF* pdf_new = parsePDF(pnew, error);
+        std::shared_ptr<pbl::PDF> pdf_new = parsePDF(pnew, error);
         if (pdf_new) {
             obj_model->setNewPDF(attribute, *pdf_new);
 
-            estimator->update(*pdf_new, 0);
+            estimator->update(pdf_new, 0);
 
-            delete pdf_new;
+            //delete pdf_new;
         } else {
             return false;
         }
@@ -190,11 +190,11 @@ bool ObjectModelParser::parseStateEstimator(ClassModel* obj_model, const TiXmlEl
 
     const TiXmlElement* pclutter = elem->FirstChildElement("pclutter");
     if (pnew) {
-        pbl::PDF* pdf_clutter = parsePDF(pclutter, error);
+        std::shared_ptr<pbl::PDF> pdf_clutter = parsePDF(pclutter, error);
         if (pdf_clutter) {
             obj_model->setClutterPDF(attribute, *pdf_clutter);
 
-            delete pdf_clutter;
+            //delete pdf_clutter;
         } else {
             return false;
         }

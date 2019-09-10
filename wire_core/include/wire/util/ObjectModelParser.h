@@ -52,7 +52,7 @@ protected:
 
     bool parseStateEstimator(ClassModel* obj_model, const TiXmlElement* elem, std::stringstream& error);
 
-    pbl::PDF* parsePDF(const TiXmlElement* elem, std::stringstream& error);
+    std::shared_ptr<pbl::PDF> parsePDF(const TiXmlElement* elem, std::stringstream& error);
 
     bool getStateEstimatorParameter(const TiXmlElement* elem, const std::string& param_name, double& value);
 

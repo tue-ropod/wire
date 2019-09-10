@@ -107,9 +107,9 @@ protected:
 
     void printWorldObjects(const mhf::Hypothesis& hyp) const;
 
-    bool transformPosition(const pbl::PDF& pdf_in, const std::string& frame_in, pbl::Gaussian& pdf_out) const;
+    bool transformPosition(std::shared_ptr<const pbl::PDF> pdf_in, const std::string& frame_in, std::shared_ptr<pbl::Gaussian> pdf_out) const;
 
-    bool transformOrientation(const pbl::PDF& pdf_in, const std::string& frame_in, pbl::Gaussian& pdf_out) const;
+    bool transformOrientation(std::shared_ptr<const pbl::PDF> pdf_in, const std::string& frame_in, std::shared_ptr<pbl::Gaussian> pdf_out) const;
 
     void evidenceCallback(const wire_msgs::WorldEvidence::ConstPtr& world_evidence_msg);
 

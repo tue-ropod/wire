@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(wire_state_estimators)
 
+#set(CMAKE_BUILD_TYPE Debug)
+
 ## Compile as C++11
 add_compile_options(-std=c++11)
 
@@ -21,17 +23,16 @@ catkin_package(
     pluginlib
 )
 
-#include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS})
 
 ## Build
 
-#add_library(position_estimator src/PositionFilter.cpp src/KalmanFilter.cpp)
-#add_library(multimodel_estimator src/MultiModelFilter.cpp src/PositionFilter.cpp)
-#add_library(discrete_estimator src/DiscreteFilter.cpp)
-#add_library(fixed_estimator src/FixedState.cpp)
+add_library(position_estimator src/PositionFilter.cpp src/KalmanFilter.cpp)
+add_library(multimodel_estimator src/MultiModelFilter.cpp src/PositionFilter.cpp)
+add_library(discrete_estimator src/DiscreteFilter.cpp)
+add_library(fixed_estimator src/FixedState.cpp)
 
-#target_link_libraries(position_estimator ${catkin_LIBRARIES})
-#target_link_libraries(multimodel_estimator ${catkin_LIBRARIES})
-#target_link_libraries(discrete_estimator ${catkin_LIBRARIES})
-#target_link_libraries(fixed_estimator ${catkin_LIBRARIES})
-
+target_link_libraries(position_estimator ${catkin_LIBRARIES})
+target_link_libraries(multimodel_estimator ${catkin_LIBRARIES})
+target_link_libraries(discrete_estimator ${catkin_LIBRARIES})
+target_link_libraries(fixed_estimator ${catkin_LIBRARIES})

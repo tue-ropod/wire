@@ -61,6 +61,14 @@ public:
      * @brief Clone operator
      */
 	virtual KalmanFilter* clone() const;
+	 
+    /*std::shared_ptr<KalmanFilter> clone() const{ return CloneMethod(); };
+   
+              std::shared_ptr<KalmanFilter> CloneMethod() const { 
+            std::shared_ptr<KalmanFilter> KF = std::make_shared< KalmanFilter>(*this);
+            return KF;
+}     */ 
+
 
     /**
      * @brief Destructor
@@ -73,13 +81,13 @@ public:
      * given Gaussian.
      * @param G The Gaussian to initialize with
      */
-	virtual void init(const pbl::Gaussian& G);
+	virtual void init(std::shared_ptr<const pbl::Gaussian> G);
 
     /**
      * @brief Updates the Kalman filter with the given (Gaussian) measurement
      * @param z The Gaussian measurement
      */
-	void update(const pbl::Gaussian& z);
+	void update(std::shared_ptr<const pbl::Gaussian> z);
 
     /**
      * @brief Propagates the state of the Kalman filter according to the (constant-
@@ -100,7 +108,8 @@ public:
      * @brief Returns the Kalman state and covariance as Gaussian
      * @return The Kalman state and covariance as Gaussian
      */
-	const pbl::Gaussian& getGaussian() const;
+	std::shared_ptr<const pbl::Gaussian> getGaussian() const;
+	//std::shared_ptr<const pbl::Gaussian> getGaussian() const;
 
     /**
      * @brief Returns the Kalman state (mean of the estimated Gaussian)
@@ -122,6 +131,8 @@ public:
      * @param a_max The maximum expected acceleration
      */
 	void setMaxAcceleration(double a_max);
+        
+        std::string toString() const;
 
 protected:
 
@@ -135,10 +146,11 @@ protected:
 	pbl::Gaussian G_;
 
     /** Portion of the estimated Kalman state that contains only the measurement dimensions **/
-	pbl::Gaussian G_small_;
+	//pbl::Gaussian G_small_;
+        std::shared_ptr<pbl::Gaussian> G_small_;
 
     /** Observation model **/
-    Eigen::MatrixXd H_;
+        pbl::Matrix H_;
 
     /** Maximum expected acceleration **/
 	double a_max_;

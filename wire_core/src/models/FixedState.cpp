@@ -20,14 +20,14 @@ FixedState::FixedState(const FixedState& orig) : IStateEstimator(orig), pdf_(ori
 }
 
 FixedState::~FixedState() {
-    delete pdf_;
+  //  delete pdf_;
 }
 
 FixedState* FixedState::clone() const {
     return new FixedState(*this);
 }
 
-void FixedState::update(const pbl::PDF& z, const mhf::Time& time) {
+void FixedState::update(std::shared_ptr<const pbl::PDF> z, const mhf::Time& time) {
 }
 
 void FixedState::propagate(const mhf::Time& time) {
@@ -36,8 +36,8 @@ void FixedState::propagate(const mhf::Time& time) {
 void FixedState::reset() {
 }
 
-const pbl::PDF& FixedState::getValue() const {
-    return *pdf_;
+std::shared_ptr<const pbl::PDF> FixedState::getValue() const {
+    return pdf_;
 }
 
 }

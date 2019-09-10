@@ -58,11 +58,11 @@ bool Visualizer::createMarkers(const std_msgs::Header& header, long ID,
 	bool pos_found = false;
 	for (vector<wire_msgs::Property>::const_iterator it_prop = props.begin(); it_prop != props.end(); ++it_prop) {
 
-		pbl::PDF* pdf = pbl::msgToPDF(it_prop->pdf);
+		std::shared_ptr<pbl::PDF> pdf = pbl::msgToPDF(it_prop->pdf);
 
 		// Position
 		if (it_prop->attribute == "position") {
-			const pbl::Gaussian* gauss = getBestGaussian(*pdf);
+			std::shared_ptr<const pbl::Gaussian> gauss = getBestGaussian(pdf);
 			if (gauss) {
 				const pbl::Vector& mean = gauss->getMean();
 
@@ -85,7 +85,7 @@ bool Visualizer::createMarkers(const std_msgs::Header& header, long ID,
 		// Orientation
 		else if (it_prop->attribute == "orientation") {
 			if (pdf->dimensions() == 4) {
-				const pbl::Gaussian* gauss = getBestGaussian(*pdf);
+				std::shared_ptr<const pbl::Gaussian> gauss = getBestGaussian(pdf);
 				if (gauss) {
 					const pbl::Vector& mean = gauss->getMean();
 					ev_pose.setRotation(tf::Quaternion(mean(0), mean(1), mean(2), mean(3)));
@@ -120,7 +120,7 @@ bool Visualizer::createMarkers(const std_msgs::Header& header, long ID,
 		}
 
 
-		delete pdf;
+		//delete pdf;
 
 	} // End iterate over properties
 
@@ -224,18 +224,18 @@ void Visualizer::setTFListener(tf::TransformListener* tf_listener) {
 /*
  * Get the most probable Gaussian from a pdf
  */
-const pbl::Gaussian* Visualizer::getBestGaussian(const pbl::PDF& pdf, double min_weight) {
-	if (pdf.type() == pbl::PDF::GAUSSIAN) {
+std::shared_ptr<const pbl::Gaussian> Visualizer::getBestGaussian(std::shared_ptr<const pbl::PDF> pdf, double min_weight) {
+	if (pdf->type() == pbl::PDF::GAUSSIAN) {
 		return pbl::PDFtoGaussian(pdf);
-	} else if (pdf.type() == pbl::PDF::MIXTURE) {
-		const pbl::Mixture* mix = pbl::PDFtoMixture(pdf);
+	} else if (pdf->type() == pbl::PDF::MIXTURE) {
+		std::shared_ptr<const pbl::Mixture> mix = pbl::PDFtoMixture(pdf);
 
 		if (mix){
-			const pbl::Gaussian* G_best = 0;
+			std::shared_ptr<const pbl::Gaussian> G_best = 0;
 			double w_best = min_weight;
 			for(int i = 0; i < mix->components(); ++i) {
-				const pbl::PDF& pdf = mix->getComponent(i);
-				const pbl::Gaussian* G = pbl::PDFtoGaussian(pdf);
+				std::shared_ptr<const pbl::PDF> pdf = mix->getComponent(i);
+				std::shared_ptr<const pbl::Gaussian> G = pbl::PDFtoGaussian(pdf);
 				double w = mix->getWeight(i);
 				if (G && w > w_best) {
 					G_best = G;

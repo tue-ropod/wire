@@ -36,7 +36,7 @@
 
 #include "DiscreteFilter.h"
 
-int DiscreteFilter::N_DISCRETEKALMAN_FILTER = 0;
+int DiscreteFilter::N_DISCRETEKALMAN_FILTER = 0; // TODO remove
 
 DiscreteFilter::DiscreteFilter() {
 	++N_DISCRETEKALMAN_FILTER;
@@ -57,17 +57,18 @@ DiscreteFilter* DiscreteFilter::clone() const {
 void DiscreteFilter::propagate(const mhf::Time& time) {
 }
 
-void DiscreteFilter::update(const pbl::PDF& z, const mhf::Time& time) {
-	assert(z.type() == pbl::PDF::DISCRETE);
-	const pbl::PMF* pmf = pbl::PDFtoPMF(z);
-	pmf_.update(*pmf);
+void DiscreteFilter::update(std::shared_ptr<const pbl::PDF> z, const mhf::Time& time) {
+	assert(z->type() == pbl::PDF::DISCRETE);
+	std::shared_ptr<const pbl::PMF> pmf = pbl::PDFtoPMF(z);
+	pmf_->update(pmf);
 }
 
 void DiscreteFilter::reset() {
-    pmf_ = pbl::PMF();
+    //pmf_ = pbl::PMF();
+    pmf_.reset(new pbl::PMF);
 }
 
-const pbl::PDF& DiscreteFilter::getValue() const {
+std::shared_ptr<const pbl::PDF> DiscreteFilter::getValue() const {
 	return pmf_;
 }
 

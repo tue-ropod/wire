@@ -80,7 +80,7 @@ protected:
 	bool getAttributeSettings(ros::NodeHandle& n, const std::string& ns);
 
 	// Get most probable Gaussian from a pdf
-	const pbl::Gaussian* getBestGaussian(const pbl::PDF& pdf, double min_weight = 0);
+	std::shared_ptr<const pbl::Gaussian> getBestGaussian(std::shared_ptr<const pbl::PDF> pdf, double min_weight = 0);
 
 	// Set marker type
 	void setMarkerType(XmlRpc::XmlRpcValue& v, MarkerInfo& m);

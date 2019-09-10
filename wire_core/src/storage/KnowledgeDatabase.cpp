@@ -100,7 +100,7 @@ double KnowledgeDatabase::getProbabilityNew(const Evidence& z) {
 
     if (class_prop) {
         // we have information about the class distribution
-        const pbl::PMF* class_pmf = pbl::PDFtoPMF(class_prop->getValue());
+        std::shared_ptr<const pbl::PMF> class_pmf = pbl::PDFtoPMF(class_prop->getValue());
 
         vector<double> class_probs;
         class_pmf->getProbabilities(class_probs);
@@ -140,7 +140,7 @@ double KnowledgeDatabase::getProbabilityClutter(const Evidence& z) {
 
     if (class_prop) {
         // we have information about the class distribution
-        const pbl::PMF* class_pmf = pbl::PDFtoPMF(class_prop->getValue());
+        std::shared_ptr<const pbl::PMF> class_pmf = pbl::PDFtoPMF(class_prop->getValue());
 
         vector<double> class_probs;
         class_pmf->getProbabilities(class_probs);
@@ -189,7 +189,7 @@ vector<Property> KnowledgeDatabase::inferProperties(const PropertySet& prop_set,
     const ClassModel* most_prob_class_model = 0;
     if (class_prop) {
         string most_prob_class;
-        class_prop->getValue().getExpectedValue(most_prob_class);
+        class_prop->getValue()->getExpectedValue(most_prob_class);
         most_prob_class_model = getClassModel(most_prob_class);
     } else {
         most_prob_class_model = getClassModel("object");

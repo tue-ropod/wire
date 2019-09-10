@@ -35,7 +35,8 @@ PropertySet::PropertySet(const PropertySet& orig) : timestamp_(orig.timestamp_) 
 }
 
 PropertySet* PropertySet::clone() const {
-    return new PropertySet(*this);
+ 
+        return new PropertySet(*this);
 }
 
 void PropertySet::addProperty(const Attribute& att, const pbl::PDF& value) {
@@ -104,7 +105,7 @@ void PropertySet::propagate(const Time& time) {
     timestamp_ = time;
 }
 
-void PropertySet::update(const pbl::PDF& z, const Time& time) {
+void PropertySet::update(std::shared_ptr<const pbl::PDF> z, const Time& time) {
     assert(false);
 }
 
@@ -114,7 +115,7 @@ void PropertySet::reset() {
     }
 }
 
-const pbl::PDF& PropertySet::getValue() const {
+std::shared_ptr<const pbl::PDF> PropertySet::getValue() const {
     assert(false);
 }
 

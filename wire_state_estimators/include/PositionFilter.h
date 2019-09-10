@@ -58,6 +58,18 @@ public:
     PositionFilter(const PositionFilter& orig);
 
     virtual PositionFilter* clone() const;
+   /* 
+    std::shared_ptr<IStateEstimator> clone() const{ return CloneMethod(); };
+    
+    std::shared_ptr<PositionFilter> CloneMethod() const { 
+            std::shared_ptr<PositionFilter> G = std::make_shared< PositionFilter>(*this);
+            
+            return G;
+}*/
+  
+      std::shared_ptr<PositionFilter> cloneThis() const {             
+            return std::make_shared< PositionFilter>(*this);
+}
 
     virtual ~PositionFilter();
 
@@ -72,7 +84,7 @@ public:
      * @param z The measurement with which to update, represented as a probability density function
      * @param time The time to which the internal state is propagated before updating
      */
-    void update(const pbl::PDF& z, const mhf::Time& time);
+    void update(std::shared_ptr<const pbl::PDF> z, const mhf::Time& time);
 
     /**
      * @brief Resets the internal state of the estimator to its initial value
@@ -83,7 +95,7 @@ public:
      * @brief Returns the current estimated state value
      * @return The current state, i.e., the current attribute value represented as probability density function
      */
-    const pbl::PDF& getValue() const;
+    std::shared_ptr<const pbl::PDF> getValue() const;
 
     void setValue(const pbl::PDF& pdf);
 
@@ -111,7 +123,7 @@ protected:
 
     KalmanFilter* kalman_filter_;
 
-    pbl::Gaussian* fixed_pdf_;
+    std::shared_ptr<pbl::Gaussian> fixed_pdf_;
 
     // ********* filter parameters *********
 

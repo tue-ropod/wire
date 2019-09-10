@@ -90,7 +90,7 @@ void MultiModelFilter::propagate(const mhf::Time& time) {
     weights_[1] = w1;
 }
 
-void MultiModelFilter::update(const pbl::PDF& z, const mhf::Time& time) {
+void MultiModelFilter::update(std::shared_ptr<const pbl::PDF> z, const mhf::Time& time) {
     if (!initialized_) {
         for(unsigned int i = 0; i < estimators_.size(); ++i) {
             estimators_[i]->update(z, time);
@@ -102,7 +102,7 @@ void MultiModelFilter::update(const pbl::PDF& z, const mhf::Time& time) {
     // update weights based on likelihoods
     double total_weight = 0;
     for(unsigned int i = 0; i < estimators_.size(); ++i) {
-        weights_[i] = weights_[i] * estimators_[i]->getValue().getLikelihood(z);
+        weights_[i] = weights_[i] * estimators_[i]->getValue()->getLikelihood(z);
         total_weight += weights_[i];
     }
 
@@ -133,12 +133,12 @@ void MultiModelFilter::reset() {
     }
 }
 
-const pbl::PDF& MultiModelFilter::getValue() const {
-    mixture_.clear();
+std::shared_ptr<const pbl::PDF> MultiModelFilter::getValue() const {
+    mixture_->clear();
     for(unsigned int i = 0; i < estimators_.size(); ++i) {
-        mixture_.addComponent(estimators_[i]->getValue(), weights_[i]);
+        mixture_->addComponent(estimators_[i]->getValue(), weights_[i]);
     }
-    mixture_.normalizeWeights();
+    mixture_->normalizeWeights();
     return mixture_;
 }
 

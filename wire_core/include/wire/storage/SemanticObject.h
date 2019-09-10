@@ -37,6 +37,12 @@ public:
     void update(const Evidence& z);
 
     SemanticObject* clone() const;
+    
+    //std::shared_ptr<IStateEstimator> clone() const{ return CloneMethod(); };
+   
+  //  std::shared_ptr<SemanticObject> CloneMethod() const {return std::make_shared< SemanticObject>(*this);}
+    
+   // SemanticObject* cloneThis() const;
 
     double getLastUpdateTime() const;
 

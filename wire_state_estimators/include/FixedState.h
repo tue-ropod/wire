@@ -50,18 +50,22 @@ public:
 
     FixedState();
 
-    FixedState(const pbl::PDF& pdf);
+    FixedState(std::shared_ptr<const pbl::PDF> pdf);
 
-    FixedState(const FixedState& orig);
-
+    FixedState(std::shared_ptr<const FixedState> orig);
+    
     virtual ~FixedState();
 
     FixedState* clone() const;
-
+    
+    /*std::shared_ptr<IStateEstimator> clone() const{ return CloneMethod(); };
+   
+    std::shared_ptr<FixedState> CloneMethod() const {return std::make_shared< FixedState>(*this);}
+*/
     /**
      * @brief Performs an update, but since the state is fixed, update will do nothing.
      */
-    virtual void update(const pbl::PDF& z, const mhf::Time& time);
+    virtual void update(std::shared_ptr<const pbl::PDF> z, const mhf::Time& time);
 
     /**
      * @brief Propagates the state, but since the state is fixed, propagate will do nothing.
@@ -74,11 +78,11 @@ public:
      */
     virtual void reset();
 
-    const pbl::PDF& getValue() const;
+    std::shared_ptr<const pbl::PDF> getValue() const;
 
 protected:
 
-    pbl::PDF* pdf_;
+    std::shared_ptr<pbl::PDF> pdf_;
 
 };
 

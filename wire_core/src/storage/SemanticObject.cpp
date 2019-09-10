@@ -147,7 +147,7 @@ const ClassModel& SemanticObject::getExpectedObjectModel() const {
     string class_name;
 
     if (class_prop) {
-        class_prop->getValue().getExpectedValue(class_name);
+        class_prop->getValue()->getExpectedValue(class_name);
     } else {
         class_name = "object";
     }

@@ -22,6 +22,13 @@ public:
     virtual ~PropertySet();
 
     PropertySet* clone() const;
+ /*    std::shared_ptr<IStateEstimator> clone() const{ return CloneMethod(); };
+     
+      std::shared_ptr<PropertySet> CloneMethod() const { 
+            std::shared_ptr<PropertySet> PS = std::make_shared< PropertySet>(*this);
+            
+            return PS;
+}*/
 
     void addProperty(const Attribute& attribute, const pbl::PDF& value);
 
@@ -35,11 +42,11 @@ public:
 
     void propagate(const Time& time);
 
-    void update(const pbl::PDF& z, const Time& time);
+    void update(std::shared_ptr<const pbl::PDF> z, const Time& time);
 
     void reset();
 
-    const pbl::PDF& getValue() const;
+    std::shared_ptr<const pbl::PDF> getValue() const;
 
     virtual double getLikelihood(const PropertySet& P) const;
 

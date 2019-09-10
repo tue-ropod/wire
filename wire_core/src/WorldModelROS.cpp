@@ -19,7 +19,7 @@ using namespace mhf;
 
 WorldModelROS::WorldModelROS(tf::TransformListener* tf_listener)
     : loop_rate_(20), world_model_(0),  tf_listener_(tf_listener), is_tf_owner_(false), last_update_duration(0),
-      max_update_duration(0), world_model_frame_id_("/map"), output_frame_id_("/map"), max_num_hyps_(100), min_prob_ratio_(1e-10),
+      max_update_duration(0), world_model_frame_id_("/map"), output_frame_id_("/map"), max_num_hyps_(10), min_prob_ratio_(1e-10),
       last_update_(0) {
     initialize();
 }
@@ -123,7 +123,7 @@ bool WorldModelROS::objectToMsg(const SemanticObject& obj, wire_msgs::ObjectStat
 
         wire_msgs::Property prop_msg;
         prop_msg.attribute = AttributeConv::attribute_str(it_prop->first);
-        pbl::PDFtoMsg(prop->getValue(), prop_msg.pdf);
+        pbl::PDFtoMsg(*prop->getValue(), prop_msg.pdf);
         msg.properties.push_back(prop_msg);
     }
 
@@ -139,6 +139,7 @@ bool WorldModelROS::hypothesisToMsg(const Hypothesis& hyp, wire_msgs::WorldState
     for(list<SemanticObject*>::const_iterator it = hyp.getObjects().begin(); it != hyp.getObjects().end(); ++it) {
 
         SemanticObject* obj_clone = (*it)->clone();
+        
         obj_clone->propagate(time.toSec());
 
         wire_msgs::ObjectState obj_msg;
@@ -153,15 +154,16 @@ bool WorldModelROS::hypothesisToMsg(const Hypothesis& hyp, wire_msgs::WorldState
     return true;
 }
 
-bool WorldModelROS::transformPosition(const pbl::PDF& pdf_in, const string& frame_in, pbl::Gaussian& pdf_out) const {
-    const pbl::Gaussian* gauss = pbl::PDFtoGaussian(pdf_in);
-
+bool WorldModelROS::transformPosition(std::shared_ptr<const pbl::PDF> pdf_in, const string& frame_in, std::shared_ptr<pbl::Gaussian> pdf_out) const {
+    std::shared_ptr<const pbl::Gaussian> gauss = pbl::PDFtoGaussian(pdf_in);
+ std::cout << "transformPosition gauss: " << gauss->toString() << std::endl;
     if (!gauss) {
         ROS_ERROR("Position evidence is not a gaussian!");
         return false;
     }
 
-    const Eigen::VectorXd& pos = gauss->getMean();
+    //const Eigen::VectorXd& pos = gauss->getMean();
+     const arma::vec& pos = gauss->getMean();
     tf::Stamped<tf::Point> pos_stamped(tf::Point(pos(0), pos(1), pos(2)), ros::Time(), frame_in);
 
     try{
@@ -169,10 +171,10 @@ bool WorldModelROS::transformPosition(const pbl::PDF& pdf_in, const string& fram
         tf_listener_->transformPoint(world_model_frame_id_, pos_stamped, pos_stamped_world);
 
         pbl::Vector3 pos_world(pos_stamped_world.getX(), pos_stamped_world.getY(), pos_stamped_world.getZ());
-        pdf_out.setMean(pos_world);
+        pdf_out->setMean(pos_world);
 
         // todo: also transform covariance
-        pdf_out.setCovariance(gauss->getCovariance());
+        pdf_out->setCovariance(gauss->getCovariance());
 
     } catch (tf::TransformException& ex){
         ROS_ERROR("[WORLD_MODEL] %s",ex.what());
@@ -181,15 +183,16 @@ bool WorldModelROS::transformPosition(const pbl::PDF& pdf_in, const string& fram
     return true;
 }
 
-bool WorldModelROS::transformOrientation(const pbl::PDF& pdf_in, const string& frame_in, pbl::Gaussian& pdf_out) const {
-    const pbl::Gaussian* gauss = pbl::PDFtoGaussian(pdf_in);
-
+bool WorldModelROS::transformOrientation(std::shared_ptr<const pbl::PDF> pdf_in, const string& frame_in, std::shared_ptr<pbl::Gaussian> pdf_out) const {
+    std::shared_ptr<const pbl::Gaussian> gauss = pbl::PDFtoGaussian(pdf_in);
+ std::cout << "transformOrientation gauss: " << gauss->toString() << std::endl;
     if (!gauss) {
         ROS_ERROR("Orientation evidence is not a gaussian!");
         return false;
     }
 
-    const Eigen::VectorXd& ori = gauss->getMean();
+    //const Eigen::VectorXd& ori = gauss->getMean();
+    const arma::vec& ori = gauss->getMean();
     tf::Stamped<tf::Quaternion> ori_stamped(tf::Quaternion(ori(0), ori(1), ori(2), ori(3)), ros::Time(), frame_in);
 
     try{
@@ -197,10 +200,10 @@ bool WorldModelROS::transformOrientation(const pbl::PDF& pdf_in, const string& f
         tf_listener_->transformQuaternion(world_model_frame_id_, ori_stamped, ori_stamped_world);
 
         pbl::Vector4 ori_world(ori_stamped_world.getX(), ori_stamped_world.getY(), ori_stamped_world.getZ(), ori_stamped_world.getW());
-        pdf_out.setMean(ori_world);
+        pdf_out->setMean(ori_world);
 
         // todo: also transform covariance
-        pdf_out.setCovariance(gauss->getCovariance());
+        pdf_out->setCovariance(gauss->getCovariance());
 
     } catch (tf::TransformException& ex){
         ROS_ERROR("[WORLD MODEL] %s",ex.what());
@@ -228,6 +231,12 @@ void WorldModelROS::processEvidence(const ros::Duration max_duration) {
 
         evidence_buffer_.pop_back();
     }
+    
+    ros::Duration duration = ros::Time::now() - start_time;
+    bool timeCheck = ros::Time::now() - start_time < max_duration;
+    
+   
+    std::cout << "Duration = " << duration.toSec() << " time check = "  << timeCheck << " max_duration = " << max_duration << " evidence buffer size  = " << evidence_buffer_.size() << std::endl;
 }
 
 void WorldModelROS::processEvidence(const wire_msgs::WorldEvidence& world_evidence_msg) {
@@ -260,27 +269,31 @@ void WorldModelROS::processEvidence(const wire_msgs::WorldEvidence& world_eviden
         for(vector<wire_msgs::Property>::const_iterator it_prop = evidence.properties.begin(); it_prop != evidence.properties.end(); ++it_prop ) {
             const wire_msgs::Property& prop = *it_prop;
 
-            pbl::PDF* pdf = pbl::msgToPDF(prop.pdf);
+            std::shared_ptr<pbl::PDF> pdf = pbl::msgToPDF(prop.pdf);
+            std::cout << "pos_pdf: " << pdf->toString() << std::endl;
 
             if (pdf) {
                 if (prop.attribute == "position") {
-                    pbl::Gaussian pos_pdf(3);
-                    if (!transformPosition(*pdf, world_evidence_msg.header.frame_id, pos_pdf)) {
+                    //pbl::Gaussian pos_pdf(3);
+                        std::shared_ptr<pbl::Gaussian> pos_pdf = std::make_shared<pbl::Gaussian>(3);
+                    if (!transformPosition(pdf, world_evidence_msg.header.frame_id, pos_pdf)) {
                         // position is a necessary property. If the transform was not successful, abort and don't use the evidence
                         position_ok = false;
                         break;
                     } else {
-                        meas->addProperty(AttributeConv::attribute(prop.attribute), pos_pdf);
+                        meas->addProperty(AttributeConv::attribute(prop.attribute), *pos_pdf);
                     }
                 } else if (prop.attribute == "orientation") {
-                    pbl::Gaussian ori_pdf(4);
-                    if (!transformOrientation(*pdf, world_evidence_msg.header.frame_id, ori_pdf)) {
-                        meas->addProperty(AttributeConv::attribute(prop.attribute), ori_pdf);
+                    //pbl::Gaussian ori_pdf(4);
+                    std::shared_ptr<pbl::Gaussian> ori_pdf = std::make_shared<pbl::Gaussian>(4);
+                 //   std::cout << "ori_pdf: " << ori_pdf->toString() << std::endl;
+                    if (!transformOrientation(pdf, world_evidence_msg.header.frame_id, ori_pdf)) {
+                        meas->addProperty(AttributeConv::attribute(prop.attribute), *ori_pdf);
                     }
                 } else {
                     meas->addProperty(AttributeConv::attribute(prop.attribute), *pdf);
                 }
-                delete pdf;
+                //delete pdf;
             } else {
                 ROS_ERROR_STREAM("For attribute '" << prop.attribute << "': malformed pdf: " << prop.pdf);
             }
