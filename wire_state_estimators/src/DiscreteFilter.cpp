@@ -40,6 +40,9 @@ int DiscreteFilter::N_DISCRETEKALMAN_FILTER = 0; // TODO remove
 
 DiscreteFilter::DiscreteFilter() {
 	++N_DISCRETEKALMAN_FILTER;
+        
+        pbl::PMF test = pbl::PMF();
+        pmf_ = std::make_shared<pbl::PMF>(test);
 }
 
 DiscreteFilter::DiscreteFilter(const DiscreteFilter& orig) : mhf::IStateEstimator(orig), pmf_(orig.pmf_) {
