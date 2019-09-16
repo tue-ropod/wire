@@ -69,7 +69,9 @@ void KalmanFilter::init(std::shared_ptr<const pbl::Gaussian> z) {
         G_.setCovariance(H_.t() * z->getCovariance() * H_);
 
         G_small_->setMean(z->getMean());;
-        G_small_->setCovariance(z->getCovariance());;
+        G_small_->setCovariance(z->getCovariance());
+         std::string s = this->toString();
+        std::cout << "KF init: " << s << std::endl;
 }
 
 void KalmanFilter::propagate(const double& dt) {
@@ -111,6 +113,8 @@ void KalmanFilter::propagate(const double& dt) {
 
 		G_small_->setMean(H_ * G_.getMean());
 		G_small_->setCovariance(H_ * G_.getCovariance() * H_.t());
+                 std::string s = this->toString();
+                std::cout << "KF propagate: " << s << std::endl;
 	}
 }
 
@@ -143,6 +147,9 @@ void KalmanFilter::update(std::shared_ptr<const pbl::Gaussian> z) {
 
 	G_small_->setMean(H_ * G_.getMean());
 	G_small_->setCovariance(H_ * G_.getCovariance() * H_.t());
+        std::string s = this->toString();
+        
+        std::cout << "KF update: " << s << std::endl;
 }
 
 double KalmanFilter::getLikelihood(const pbl::Gaussian& z) const {

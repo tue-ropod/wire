@@ -22,6 +22,8 @@
 #include "wire/core/Property.h"
 #include "wire/core/ClassModel.h"
 
+#include <ros/console.h>
+
 #include <queue>
 #include <cassert>
 #include <float.h>
@@ -31,7 +33,7 @@
 #endif
 
 //#define DEBUG_INFO(_msg, ...) printf(_msg, ##__VA_ARGS__)
-#define DEBUG_INFO(_msg, ...)
+//#define DEBUG_INFO(_msg, ...)
 
 namespace mhf {
 
@@ -61,7 +63,7 @@ HypothesisTree::~HypothesisTree() {
 /* ****************************************************************************** */
 
 void HypothesisTree::addEvidence(const EvidenceSet& ev_set) {
-    DEBUG_INFO("HypothesesTree::processMeasurements\n");
+    ROS_DEBUG("HypothesesTree::processMeasurements\n");
 
     if (ev_set.size() == 0) {
         return;
@@ -93,7 +95,7 @@ void HypothesisTree::addEvidence(const EvidenceSet& ev_set) {
 
     tree_height_ = root_->calculateHeigth();
 
-    DEBUG_INFO("*** Free memory: assignment matrices ***\n");
+    ROS_DEBUG("*** Free memory: assignment matrices ***\n");
 
     ++n_updates_;
 
@@ -102,7 +104,7 @@ void HypothesisTree::addEvidence(const EvidenceSet& ev_set) {
     printf("Total update took %f seconds.\n", (t_end_total.tv_sec - t_start_total.tv_sec) + double(t_end_total.tv_nsec - t_start_total.tv_nsec) / 1e9);
 #endif
 
-    DEBUG_INFO("HypothesesTree::processMeasurements - end\n");
+    ROS_DEBUG("HypothesesTree::processMeasurements - end\n");
 }
 
 /* ****************************************************************************** */
@@ -116,20 +118,20 @@ struct compareAssignmentSets {
 };
 
 void HypothesisTree::applyAssignments() {
-    DEBUG_INFO("applyAssignments - begin\n");
+    ROS_DEBUG("applyAssignments - begin\n");
 
     // iterate over all leaf hypotheses
     for (std::list<Hypothesis*>::iterator it = leafs_.begin(); it != leafs_.end(); ++it) {
-        DEBUG_INFO("  materializing hyp %p, with parent %p\n", (*it), (*it)->getParent());
+        ROS_DEBUG("  materializing hyp %p, with parent %p\n", (*it), (*it)->getParent());
         (*it)->applyAssignments();
     }
 
-    DEBUG_INFO("applyAssignments - end\n");
+    ROS_DEBUG("applyAssignments - end\n");
 }
 
 void HypothesisTree::expandTree(const EvidenceSet& ev_set) {
 
-    DEBUG_INFO("expandTree - start\n");
+    ROS_DEBUG("expandTree - start\n");
 
     //** Create new objects based on measurements
 
@@ -152,7 +154,8 @@ void HypothesisTree::expandTree(const EvidenceSet& ev_set) {
 
     std::priority_queue<AssignmentSet*, std::vector<AssignmentSet*>, compareAssignmentSets > assignment_sets;
 
-    DEBUG_INFO(" - Create assignment matrices and assignment sets\n");
+    
+    ROS_DEBUG(" - Create assignment matrices and assignment sets\n");
 
     for (std::list<Hypothesis*>::iterator it_hyp = leafs_.begin(); it_hyp != leafs_.end(); ++it_hyp) {
         Hypothesis* hyp = *it_hyp;
@@ -174,10 +177,12 @@ void HypothesisTree::expandTree(const EvidenceSet& ev_set) {
 
         // create empty assignment set, add assignments and update probability (product hypothesis and assignment probs)
         AssignmentSet* ass_set = new AssignmentSet(hyp, hyp->getAssignmentMatrix());
+            ROS_DEBUG(" ass_set.getNumMeasurements = %i\n", ass_set->getNumMeasurements());
+        ass_set->print();
         assignment_sets.push(ass_set);
     }
 
-    DEBUG_INFO(" - Generate hypotheses\n");
+    ROS_DEBUG(" - Generate hypotheses\n");
 
     double min_prob = 0;
 
@@ -196,19 +201,24 @@ void HypothesisTree::expandTree(const EvidenceSet& ev_set) {
 
         // Get most probable assignment
         ++n_iterations;
-        DEBUG_INFO("  #assignment sets = %i\n", (int)assignment_sets.size());
+        ROS_DEBUG("  #assignment sets = %i\n", (int)assignment_sets.size());
         AssignmentSet* ass_set = assignment_sets.top();
 
-        DEBUG_INFO("  inspecting assignment set %p with probability %.16f\n", ass_set, ass_set->getProbability());
+        ROS_DEBUG("  inspecting assignment set %p with probability %.16f\n", ass_set, ass_set->getProbability());
 
         // remove most probable assignment (stored in ass_set pointer above)
         assignment_sets.pop();
         Hypothesis* hyp = ass_set->getHypothesis();
+        ROS_DEBUG(" Before: ass_set.getNumMeasurements() = %i\n", ass_set->getNumMeasurements() );
+          ROS_DEBUG(" Parent hypothesis: num objects = %i, probability = %f, timestamp = %f, \n", hyp->getNumObjects(), hyp->getProbability(), hyp->getTimestamp() );
 
+            std::cout << "hyp->getChildHypotheses().size() = " << hyp->getChildHypotheses().size() << std::endl;
+          
         if (ass_set->isValid()) {
             /* ************ assignment set is complete! Create hypothesis ************ */
-
+  ass_set->print();
             Hypothesis* hyp_child = new Hypothesis(ev_set.getTimestamp(), ass_set->getProbability());
+             ROS_DEBUG(" ass_set.getNumMeasurements() = %i\n", ass_set->getNumMeasurements() );
             hyp_child->setAssignments(ass_set);
             hyp->addChildHypothesis(hyp_child);
 
@@ -227,22 +237,28 @@ void HypothesisTree::expandTree(const EvidenceSet& ev_set) {
 
             //printf("%i: new leaf with prob %f\n", leafs_.size(), hyp_child->probability_);
 
-            DEBUG_INFO(" NEW LEAF: %p\n", hyp_child);
+            ROS_DEBUG(" NEW LEAF: %p\n", hyp_child);
             leafs_.push_back(hyp_child);
-            DEBUG_INFO("  #leafs = %i, #old leafs = %i\n", (int)leafs_.size(), n_old_leafs);
+         //   ROS_DEBUG("  #leafs = %i, #old leafs = %i\n", (int)leafs_.size(), n_old_leafs);
+            
+            ROS_DEBUG("  #leafs = %i\n", (int)leafs_.size());
 
             /* ************************************************************************* */
         }
 
         std::list<AssignmentSet*> child_assignment_sets;
         ass_set->expand(child_assignment_sets);
+        
+        int counter = 0;
         for(std::list<AssignmentSet*>::iterator it_child = child_assignment_sets.begin(); it_child != child_assignment_sets.end(); ++it_child) {
             assignment_sets.push(*it_child);
         }
+        
+          ROS_DEBUG("child_assignment_sets.size = %i \n", counter);
 
     }
 
-    DEBUG_INFO(" - Free memory (remaining assignment sets)\n");
+    ROS_DEBUG(" - Free memory (remaining assignment sets)\n");
 
     assert(leafs_.size() > 0);
 
@@ -252,18 +268,21 @@ void HypothesisTree::expandTree(const EvidenceSet& ev_set) {
         assignment_sets.pop();
     }
 
-    DEBUG_INFO(" ... done\n");
+    ROS_DEBUG(" ... done\n");
 
     ++tree_height_;
 
     normalizeProbabilities();
+    
+    ROS_DEBUG("  #new_assignments = %i\n", (int)new_assignments.size());
+    ROS_DEBUG("  #clutter_assignments = %i\n", (int)clutter_assignments.size());
 
 #ifdef MHF_MEASURE_TIME
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t_end);
     printf("Expansion of hypotheses took %f seconds.\n", (t_end.tv_sec - t_start.tv_sec) + double(t_end.tv_nsec - t_start.tv_nsec) / 1e9);
 #endif
 
-    DEBUG_INFO("expandTree - done\n");
+    ROS_DEBUG("expandTree - done\n");
 }
 
 void HypothesisTree::normalizeProbabilities() {
@@ -285,15 +304,15 @@ void HypothesisTree::pruneTree(const Time& timestamp) {
     //return;
 
 
-    DEBUG_INFO("pruneTree - begin\n");
+    ROS_DEBUG("pruneTree - begin\n");
 
-    DEBUG_INFO("   old #leafs = %i\n", (int)leafs_.size());
+    ROS_DEBUG("   old #leafs = %i\n", (int)leafs_.size());
 
     // determine best branch leaf per hypothesis
 
-    DEBUG_INFO(" - determine best leaf per branch\n");
+    ROS_DEBUG(" - determine best leaf per branch\n");
     root_->determineBestLeaf();
-    DEBUG_INFO("   ... done\n");
+    ROS_DEBUG("   ... done\n");
 
     double prob_ratios[] = {1e-8, 1e-7, 1e-6, 1e-5, 1e-5, 1e-4, 1};
 
@@ -333,9 +352,9 @@ void HypothesisTree::pruneTree(const Time& timestamp) {
                     if ((*it_child)->getProbability() == 0) {
                         prune_child = true;
                     } else if (hyp->getHeight() > 6) {
-                        DEBUG_INFO(" - Determine hyp similarity between %p and %p\n", best_child->getBestLeaf(), (*it_child)->getBestLeaf());
+                        ROS_DEBUG(" - Determine hyp similarity between %p and %p\n", best_child->getBestLeaf(), (*it_child)->getBestLeaf());
                         double similarity = 1;
-                        DEBUG_INFO("   ... done\n");
+                        ROS_DEBUG("   ... done\n");
 
                         //printf("  similarity = %f\n", similarity);
 
@@ -365,9 +384,9 @@ void HypothesisTree::pruneTree(const Time& timestamp) {
 
     normalizeProbabilities();
 
-    DEBUG_INFO("   #leafs after pruning = %i\n", (int)leafs_.size());
+    ROS_DEBUG("   #leafs after pruning = %i\n", (int)leafs_.size());
 
-    DEBUG_INFO("pruneTree - end\n");
+    ROS_DEBUG("pruneTree - end\n");
 }
 
 /* ****************************************************************************** */
@@ -388,7 +407,7 @@ const Hypothesis& HypothesisTree::getMAPHypothesis() const {
 }
 
 const std::list<SemanticObject*>& HypothesisTree::getMAPObjects() const {
-    DEBUG_INFO("getMAPObjects - begin\n");
+    ROS_DEBUG("getMAPObjects - begin\n");
     return getMAPHypothesis().getObjects();
 }
 

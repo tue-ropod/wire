@@ -104,7 +104,7 @@ void WorldModelROS::start() {
         publish();
         ++count;
         if (count == 15) {
-            //showStatistics();
+            showStatistics();
             count = 0;
         }
         r.sleep();

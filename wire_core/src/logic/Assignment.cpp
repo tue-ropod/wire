@@ -71,6 +71,7 @@ std::string Assignment::toString() const {
     } else if (type_ == Assignment::EXISTING) {
         ss << "Object " << target_;
     }
+     ss << " probability = " << probability_;
     return ss.str();
 }
 

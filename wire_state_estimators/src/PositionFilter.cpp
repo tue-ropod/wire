@@ -94,6 +94,11 @@ void PositionFilter::propagate(const mhf::Time& time) {
         kalman_filter_ = 0;
         return;
     }
+    
+        if(fixed_pdf_)
+    {
+             std::cout << "before: fixed_pdf_ = " << fixed_pdf_->toString();
+    }
 
     // TODO: fix the kalman filter update (we shouldn't need a loop here...)
     mhf::Duration small_dt = 0.05;
@@ -108,6 +113,12 @@ void PositionFilter::propagate(const mhf::Time& time) {
             kalman_filter_->propagate(dt - total_dt);
         }
     }
+    
+        if(fixed_pdf_)
+    {
+            std::cout << "after: fixed_pdf_ = " << fixed_pdf_->toString() << std::endl;
+    }
+    std::cout << "Kalman Filter = " << kalman_filter_->toString() << std::endl;
 }
 
 void PositionFilter::update(std::shared_ptr<const pbl::PDF> z, const mhf::Time& time) {

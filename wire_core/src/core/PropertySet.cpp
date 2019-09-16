@@ -40,6 +40,7 @@ PropertySet* PropertySet::clone() const {
 }
 
 void PropertySet::addProperty(const Attribute& att, const pbl::PDF& value) {
+         std::cout << "propertySet, addProperty value = " << value.toString() << std::endl;
     map<Attribute, Property*>::iterator it = properties_.find(att);
     if (it == properties_.end()) {
         properties_[att] = new Property(att, FixedState(value));

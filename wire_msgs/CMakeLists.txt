@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(wire_msgs)
 
 #set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE "RelWithDebInfo")
 
 find_package(catkin REQUIRED COMPONENTS
   message_generation

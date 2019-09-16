@@ -38,14 +38,19 @@ AssignmentSet::~AssignmentSet() {
 }
 
 void AssignmentSet::expand(std::list<AssignmentSet*>& children) const {
+          std::cout << "n_blocked_ = " << n_blocked_ << " evidence_assignments_.size() = " << evidence_assignments_.size() << std::endl;
     for(unsigned int i = n_blocked_; i < evidence_assignments_.size(); ++i) {
+              std::cout << "evidence_assignments_[i] = " << evidence_assignments_[i] << " assignment_matrix_->getNumAssignments(i) = " << assignment_matrix_->getNumAssignments(i) << std::endl;
         if (evidence_assignments_[i] + 1 < assignment_matrix_->getNumAssignments(i)) {
+                  std::cout << "For i = " << i << " if passed." << std::endl;
             AssignmentSet* child = new AssignmentSet(*this);
             child->evidence_assignments_[i]++;
             child->n_blocked_ = i;
             child->probability_ *= assignment_matrix_->getAssignment(i, child->evidence_assignments_[i]).getProbability()
                     / assignment_matrix_->getAssignment(i, this->evidence_assignments_[i]).getProbability();
 
+std::cout << "Setting child: n_blocked_ = " << child->n_blocked_ << "child->probability_ = " << child->probability_ << std::endl;                              
+                    
             children.push_back(child);
         }
     }
