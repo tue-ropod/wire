@@ -139,9 +139,11 @@ void Hypothesis::applyAssignments() {
         const Assignment* ass = *it_ass;
 
         if (ass->getType() == Assignment::CLUTTER) {
+                std::cout << "Assignment::CLUTTER" << std::endl;
             // remove assignment from list
             it_ass = all_assignments.erase(it_ass);
         } else if (ass->getType() == Assignment::NEW) {
+                std::cout << "Assignment::NEW" << std::endl;
             SemanticObject* new_obj = ass->getNewObject();
             addObject(new_obj);
 
@@ -155,14 +157,18 @@ void Hypothesis::applyAssignments() {
     // apply cases with target
     const list<SemanticObject*>& hyp_parent_objs = parent_->getObjects();
     for (list<SemanticObject*>::const_iterator it_obj = hyp_parent_objs.begin(); it_obj != hyp_parent_objs.end(); ++it_obj) {
+             
         SemanticObject* obj = *it_obj;
 
+        std::cout << "Assignment to object: " << obj << std::endl;
+        
         const Assignment* update_ass = 0;
 
         for(list<const Assignment*>::iterator it_ass = all_assignments.begin(); it_ass != all_assignments.end();) {
             const Assignment* ass = *it_ass;
 
             if (obj == ass->getTarget()) {
+                    std::cout << "target = " << ass->getTarget() << std::endl;
                 update_ass = ass;
                 it_ass = all_assignments.erase(it_ass);
             } else {
@@ -171,6 +177,7 @@ void Hypothesis::applyAssignments() {
         }
 
         if (update_ass) {
+                std::cout << "applyAssignment: update object" << std::endl;
             SemanticObject* updated_obj = update_ass->getUpdatedObject();
             addObject(updated_obj);
         } else {
@@ -180,6 +187,8 @@ void Hypothesis::applyAssignments() {
 
     assert(all_assignments.empty());
     clearAssignmentSet();
+    
+    std::cout << "End of applyAssignments" << std::endl;
 }
 
 /* ****************************************************************************** */

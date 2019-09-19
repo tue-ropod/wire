@@ -42,7 +42,8 @@ KalmanFilter::KalmanFilter(int dim)
 }
 
 KalmanFilter::KalmanFilter(const KalmanFilter& orig)
-: meas_dim_(orig.meas_dim_), state_dim_(orig.state_dim_), G_(orig.G_), G_small_(orig.G_small_), H_(orig.H_), a_max_(orig.a_max_) {
+: meas_dim_(orig.meas_dim_), state_dim_(orig.state_dim_), G_(orig.G_), H_(orig.H_), a_max_(orig.a_max_) {
+        G_small_ = std::make_shared<pbl::Gaussian>(*(orig.G_small_));
 }
 
 KalmanFilter::~KalmanFilter() {
@@ -75,7 +76,8 @@ void KalmanFilter::init(std::shared_ptr<const pbl::Gaussian> z) {
 }
 
 void KalmanFilter::propagate(const double& dt) {
-        std::cout << "KalmanFilter::propagate" << std::endl;
+       std::string s = this->toString();
+       std::cout << "KF propagate start: " << s << std::endl;
 	if (a_max_ > 0) {
 		//		const pbl::Vector& x = G_.getMean();
 		//		const pbl::Matrix& P = G_.getCovariance();
@@ -113,12 +115,15 @@ void KalmanFilter::propagate(const double& dt) {
 
 		G_small_->setMean(H_ * G_.getMean());
 		G_small_->setCovariance(H_ * G_.getCovariance() * H_.t());
-                 std::string s = this->toString();
-                std::cout << "KF propagate: " << s << std::endl;
+                s = this->toString();
+                std::cout << "KF propagate end: " << s << std::endl;
 	}
 }
 
 void KalmanFilter::update(std::shared_ptr<const pbl::Gaussian> z) {
+         std::string s = this->toString();
+        
+        std::cout << "KF update start: " << s << std::endl;
 	//const Eigen::MatrixXd& x = G_.getMean();
 	//const Eigen::MatrixXd& P = G_.getCovariance();
         const pbl::Vector& x = G_.getMean();
@@ -147,9 +152,9 @@ void KalmanFilter::update(std::shared_ptr<const pbl::Gaussian> z) {
 
 	G_small_->setMean(H_ * G_.getMean());
 	G_small_->setCovariance(H_ * G_.getCovariance() * H_.t());
-        std::string s = this->toString();
+        s = this->toString();
         
-        std::cout << "KF update: " << s << std::endl;
+        std::cout << "KF update end: " << s << std::endl;
 }
 
 double KalmanFilter::getLikelihood(const pbl::Gaussian& z) const {
@@ -183,6 +188,7 @@ std::string KalmanFilter::toString() const {
     " state_dim_ = "  << state_dim_ << 
     " G_ = " << G_.toString() << 
     " G_small_ = " << G_small_->toString() << 
+    " p G_small_ = " << G_small_ <<
     " H_ = " << H_ << 
     " a_max_ = "  << a_max_;
 

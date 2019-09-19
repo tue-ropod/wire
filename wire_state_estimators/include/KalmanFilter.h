@@ -108,6 +108,7 @@ public:
      * @brief Returns the Kalman state and covariance as Gaussian
      * @return The Kalman state and covariance as Gaussian
      */
+    //const pbl::Gaussian& KalmanFilter::getGaussian() const
 	std::shared_ptr<const pbl::Gaussian> getGaussian() const;
 	//std::shared_ptr<const pbl::Gaussian> getGaussian() const;
 

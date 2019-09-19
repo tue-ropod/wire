@@ -135,9 +135,13 @@ bool WorldModelROS::hypothesisToMsg(const Hypothesis& hyp, wire_msgs::WorldState
 
     msg.header.frame_id = world_model_frame_id_;
     msg.header.stamp = time;
+    
+    //std::cout << "properties_.size() = " << hyp.getObjects().size() << std::endl;
+   // int counter = 0;
 
     for(list<SemanticObject*>::const_iterator it = hyp.getObjects().begin(); it != hyp.getObjects().end(); ++it) {
-
+     //   counter++;
+       //  std::cout << "Count = " << counter << "time = " << time  << std::endl;
         SemanticObject* obj_clone = (*it)->clone();
         
         obj_clone->propagate(time.toSec());

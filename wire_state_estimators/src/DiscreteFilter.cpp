@@ -58,12 +58,12 @@ DiscreteFilter* DiscreteFilter::clone() const {
 }
 
 void DiscreteFilter::propagate(const mhf::Time& time) {
-                std::cout << "DiscreteFilter::propagate" << std::endl;
+         //       std::cout << "DiscreteFilter::propagate" << std::endl;
 }
 
 void DiscreteFilter::update(std::shared_ptr<const pbl::PDF> z, const mhf::Time& time) {
 	assert(z->type() == pbl::PDF::DISCRETE);
-           std::cout << "Discrete Filter update" << std::endl;
+     //      std::cout << "Discrete Filter update" << std::endl;
 	std::shared_ptr<const pbl::PMF> pmf = pbl::PDFtoPMF(z);
 	pmf_->update(pmf);
 }

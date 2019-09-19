@@ -99,7 +99,12 @@ void PropertySet::propagate(const Time& time) {
         return;
     }
 
+  //  std::cout << "properties_.size() = " << properties_.size() << std::endl;
+  //  int counter = 0;
     for(map<Attribute, Property*>::iterator it = properties_.begin(); it != properties_.end(); ++it) {
+    //        counter++;
+      //      std::cout << "Count = " << counter << "time = " << time  << std::endl;
+      //      std::cout << << std::endl;
         it->second->propagate(time);
     }
 

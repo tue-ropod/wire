@@ -4,7 +4,7 @@
 
     <arg name="models" default="$(find wire_core)/models/world_object_models.xml" />
 
-     <env name="ROSCONSOLE_CONFIG_FILE" value="$(find wire_core)/launch/custom_rosconsole.conf"/>   
+    <env name="ROSCONSOLE_CONFIG_FILE" value="$(find wire_core)/launch/custom_rosconsole.conf"/>
      
      <!--<node pkg="wire_core" type="wire_server" respawn="false" name="wire_server" output="screen" >-->
      <node pkg="wire_core" type="wire_server" respawn="false" name="wire_server" output="screen"  launch-prefix="gdb --args" >

@@ -50,14 +50,21 @@ SemanticObject* Assignment::getNewObject() const {
 }
 
 SemanticObject* Assignment::getUpdatedObject() const {
+        std::cout << "Assignment::getUpdatedObject start" << std::endl;
     if (updated_object_) {
         return updated_object_;
     }
 
+    std::cout << "Assignment::going to clone" << std::endl;
+    std::cout << "before: updated_object_ = " << updated_object_ << " target_ = " << target_ << std::endl;
     updated_object_ = target_->clone();
+    std::cout << "after: updated_object_ = " << updated_object_ << " target_ = " << target_ << std::endl;
+     std::cout << "Assignment::going to update" << std::endl;
     updated_object_->update(*evidence_);
 
+     std::cout << "Assignment::going to addObject" << std::endl;
     ObjectStorage::getInstance().addObject(updated_object_);
+    std::cout << "Assignment::getUpdatedObject going to return" << std::endl;
     return updated_object_;
 }
 
@@ -70,6 +77,7 @@ std::string Assignment::toString() const {
         ss << "NEW";
     } else if (type_ == Assignment::EXISTING) {
         ss << "Object " << target_;
+        ss << " with ID = " << target_->getID();
     }
      ss << " probability = " << probability_;
     return ss.str();
