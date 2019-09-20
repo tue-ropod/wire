@@ -218,6 +218,7 @@ bool WorldModelROS::transformOrientation(std::shared_ptr<const pbl::PDF> pdf_in,
 
 void WorldModelROS::evidenceCallback(const wire_msgs::WorldEvidence::ConstPtr& world_evidence_msg) {
     evidence_buffer_.push_back(*world_evidence_msg);
+    std::cout << "evidenceCallback: timestamp = " << world_evidence_msg->header.stamp  << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"<< std::endl;
 }
 
 void WorldModelROS::processEvidence(const ros::Duration max_duration) {
@@ -227,7 +228,7 @@ void WorldModelROS::processEvidence(const ros::Duration max_duration) {
     while(!evidence_buffer_.empty() && ros::Time::now() - start_time < max_duration) {
 
         ros::Time time_before_update = ros::Time::now();
-
+ std::cout << "processEvidence: going to process message with timestamp = " << evidence_buffer_.back().header.stamp << std::endl;
         processEvidence(evidence_buffer_.back());
 
         last_update_duration = (ros::Time::now().toSec() - time_before_update.toSec());
@@ -264,8 +265,10 @@ void WorldModelROS::processEvidence(const wire_msgs::WorldEvidence& world_eviden
         const wire_msgs::ObjectEvidence& evidence = (*it_ev);
 
         //Evidence* meas = new Evidence(world_evidence_msg->header.stamp.toSec(), evidence.certainty, evidence.negative);
-        Evidence* meas = new Evidence(current_time.toSec());
+        // Evidence* meas = new Evidence(current_time.toSec()); // measurement/evidence set to timestamp at the start of processEvidence!
 
+         Evidence* meas = new Evidence(world_evidence_msg.header.stamp.toSec()); // Temp, to test
+         
         measurements_mem.push_back(meas);
 
         bool position_ok = true;
@@ -311,7 +314,8 @@ void WorldModelROS::processEvidence(const wire_msgs::WorldEvidence& world_eviden
 
     } // end iteration over object evidence list
 
-    world_model_->addEvidence(evidence_set);
+    world_model_->addEvidence(evidence_set); // Here, we process the evidence in the HypothesisTree having current_time (the time at which we started the process evidence)
+    // as variable
 
     for(list<Evidence*>::iterator it = measurements_mem.begin(); it != measurements_mem.end(); ++it) {
         delete (*it);

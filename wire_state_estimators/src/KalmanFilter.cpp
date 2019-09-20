@@ -36,6 +36,8 @@
 
 #include "KalmanFilter.h"
 
+//#include <limits> // TEMP
+
 KalmanFilter::KalmanFilter(int dim)
 : meas_dim_(dim), state_dim_(dim * 2), G_(dim * 2), a_max_(0) {
        G_small_ = std::make_shared<pbl::Gaussian>(dim);
@@ -78,6 +80,8 @@ void KalmanFilter::init(std::shared_ptr<const pbl::Gaussian> z) {
 void KalmanFilter::propagate(const double& dt) {
        std::string s = this->toString();
        std::cout << "KF propagate start: " << s << std::endl;
+       
+       std::cout << "dt = " << dt << std::endl;
 	if (a_max_ > 0) {
 		//		const pbl::Vector& x = G_.getMean();
 		//		const pbl::Matrix& P = G_.getCovariance();
@@ -86,35 +90,55 @@ void KalmanFilter::propagate(const double& dt) {
 		//Eigen::MatrixXd F;
                 //F = Eigen::MatrixXd::Identity(state_dim_, state_dim_);
                 pbl::Matrix F = arma::eye(state_dim_, state_dim_);
+                
+                std::cout << "F = " << F << std::endl;
+                
 		for(int i = 0; i < meas_dim_; ++i) {
 			F(i, i + meas_dim_) = dt;
 		}
 
+		   std::cout << "F_2 = " << F << std::endl;
+		
 		pbl::Vector x = G_.getMean();
 
+                                   std::cout << "x = " << x << std::endl;
+                
 		for(int i = 0; i < meas_dim_; ++i) {
 			x(i) += x(i + meas_dim_) * dt;
 		}
 
+		               std::cout << "x_2 = " << x << std::endl;
+		
 		G_.setMean(x);
 
 		//		// set system noise
 		double q = a_max_ * a_max_ / 4;
 		double dt2 = dt * dt;
 		double dt4 = dt2 * dt2;
+                
+                std::cout << "q, dt2, dt4 = " << q << ", " << dt2 << ", " << dt4 << std::endl;
 
        // Eigen::MatrixXd P = F * G_.getCovariance() * F.transpose();
                   pbl::Matrix P = F * G_.getCovariance() * F.t();
+                    std::cout << "P = " << P << std::endl;
 		for(int i = 0; i < meas_dim_; ++i) {
 			P(i, i) += dt4 / 4 * q;						// cov pos
 			P(i, i + meas_dim_) += dt4 / 4 * q;         // cov pos~vel
 			P(i + meas_dim_, i + meas_dim_) += dt2 * q; // cov vel
 		}
-
+  std::cout << "P_2 = " << P << std::endl;
 		G_.setCovariance(P);
 
 		G_small_->setMean(H_ * G_.getMean());
 		G_small_->setCovariance(H_ * G_.getCovariance() * H_.t());
+                
+                std::cout << "G_ = " << G_.toString() << std::endl;
+                std::cout << "G_small_ = " << G_small_->toString() << std::endl;
+                
+
+
+//std::cout << "Limits = " << std::numeric_limits<float>::denorm_min() << std::endl;
+                
                 s = this->toString();
                 std::cout << "KF propagate end: " << s << std::endl;
 	}

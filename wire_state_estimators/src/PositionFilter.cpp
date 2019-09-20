@@ -49,6 +49,7 @@ PositionFilter::PositionFilter(const PositionFilter& orig) : mhf::IStateEstimato
 
     if (orig.fixed_pdf_) {
         fixed_pdf_ = orig.fixed_pdf_->CloneMethod();
+       // fixed_pdf_ = std::make_shared<pbl::Gaussian>(*(orig.fixed_pdf_->CloneMethod()));
     }
 
     if (orig.kalman_filter_) {

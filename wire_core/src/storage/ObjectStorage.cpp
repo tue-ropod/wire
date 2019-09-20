@@ -3,6 +3,9 @@
 #include "wire/storage/KnowledgeDatabase.h"
 #include "wire/storage/SemanticObject.h"
 #include "wire/core/Evidence.h"
+#include <limits> // TEMP
+#include "ros/ros.h"// TEMP
+typedef std::numeric_limits< double > dbl;
 
 using namespace std;
 
@@ -45,7 +48,11 @@ void ObjectStorage::match(const Evidence& ev) {
 
     for(list<SemanticObject*>::iterator it_obj = objects_.begin(); it_obj != objects_.end(); ++it_obj) {
         SemanticObject& obj = **it_obj;
-        obj.propagate(ev.getTimestamp());
+        cout.precision(dbl::max_digits10);
+std::cout << "Objectstorage, match: timestamp = " << ev.getTimestamp() << std::endl;
+std::cout << "Current time = " << ros::Time::now().toSec() << std::endl;
+        
+        obj.propagate(ev.getTimestamp()); // propagated to current timestamp. Why and where is this stamp stored in ev info? 
     }
 
     for(list<SemanticObject*>::iterator it_obj = objects_.begin(); it_obj != objects_.end(); ++it_obj) {
