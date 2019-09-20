@@ -19,7 +19,7 @@ using namespace mhf;
 
 WorldModelROS::WorldModelROS(tf::TransformListener* tf_listener)
     : loop_rate_(20), world_model_(0),  tf_listener_(tf_listener), is_tf_owner_(false), last_update_duration(0),
-      max_update_duration(0), world_model_frame_id_("/map"), output_frame_id_("/map"), max_num_hyps_(10), min_prob_ratio_(1e-10),
+      max_update_duration(0), world_model_frame_id_("/map"), output_frame_id_("/map"), max_num_hyps_(100), min_prob_ratio_(1e-10),
       last_update_(0) {
     initialize();
 }
@@ -265,9 +265,9 @@ void WorldModelROS::processEvidence(const wire_msgs::WorldEvidence& world_eviden
         const wire_msgs::ObjectEvidence& evidence = (*it_ev);
 
         //Evidence* meas = new Evidence(world_evidence_msg->header.stamp.toSec(), evidence.certainty, evidence.negative);
-        // Evidence* meas = new Evidence(current_time.toSec()); // measurement/evidence set to timestamp at the start of processEvidence!
+         Evidence* meas = new Evidence(current_time.toSec()); // measurement/evidence set to timestamp at the start of processEvidence!
 
-         Evidence* meas = new Evidence(world_evidence_msg.header.stamp.toSec()); // Temp, to test
+        // Evidence* meas = new Evidence(world_evidence_msg.header.stamp.toSec()); // Temp, to test
          
         measurements_mem.push_back(meas);
 
