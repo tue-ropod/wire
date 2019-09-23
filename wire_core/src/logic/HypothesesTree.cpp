@@ -178,7 +178,6 @@ void HypothesisTree::expandTree(const EvidenceSet& ev_set) {
         // create empty assignment set, add assignments and update probability (product hypothesis and assignment probs)
         AssignmentSet* ass_set = new AssignmentSet(hyp, hyp->getAssignmentMatrix());
             ROS_DEBUG(" ass_set.getNumMeasurements = %i\n", ass_set->getNumMeasurements());
-        ass_set->print();
         assignment_sets.push(ass_set);
     }
 
@@ -210,15 +209,15 @@ void HypothesisTree::expandTree(const EvidenceSet& ev_set) {
         assignment_sets.pop();
         Hypothesis* hyp = ass_set->getHypothesis();
         ROS_DEBUG(" Before: ass_set.getNumMeasurements() = %i\n", ass_set->getNumMeasurements() );
-          ROS_DEBUG(" Parent hypothesis: num objects = %i, probability = %f, timestamp = %f, \n", hyp->getNumObjects(), hyp->getProbability(), hyp->getTimestamp() );
+        ROS_DEBUG(" Parent hypothesis: num objects = %i, probability = %f, timestamp = %f, \n", hyp->getNumObjects(), hyp->getProbability(), hyp->getTimestamp() );
 
-            std::cout << "hyp->getChildHypotheses().size() = " << hyp->getChildHypotheses().size() << std::endl;
+            //std::cout << "hyp->getChildHypotheses().size() = " << hyp->getChildHypotheses().size() << std::endl;
           
         if (ass_set->isValid()) {
             /* ************ assignment set is complete! Create hypothesis ************ */
-  ass_set->print();
             Hypothesis* hyp_child = new Hypothesis(ev_set.getTimestamp(), ass_set->getProbability());
-             ROS_DEBUG(" ass_set.getNumMeasurements() = %i\n", ass_set->getNumMeasurements() );
+            ROS_DEBUG(" ass_set.getNumMeasurements() = %i\n", ass_set->getNumMeasurements() );
+            
             hyp_child->setAssignments(ass_set);
             hyp->addChildHypothesis(hyp_child);
 
@@ -228,14 +227,6 @@ void HypothesisTree::expandTree(const EvidenceSet& ev_set) {
 
                 MAP_hypothesis_ = hyp_child;
             }
-
-            /*
-            if (leafs_.size() <= 3) {
-                ass_set->print();
-            }
-            */
-
-            //printf("%i: new leaf with prob %f\n", leafs_.size(), hyp_child->probability_);
 
             ROS_DEBUG(" NEW LEAF: %p\n", hyp_child);
             leafs_.push_back(hyp_child);

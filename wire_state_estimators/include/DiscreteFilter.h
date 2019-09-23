@@ -60,12 +60,6 @@ public:
 	virtual ~DiscreteFilter();
 
 	virtual DiscreteFilter* clone() const;
-        /* std::shared_ptr<IStateEstimator> clone() const{ return CloneMethod(); };
-    
-        std::shared_ptr<DiscreteFilter> CloneMethod() const { 
-            std::shared_ptr<DiscreteFilter> PF = std::make_shared< DiscreteFilter>(*this);
-            return PF;
-}*/
 
     /**
      * @brief Updates the internal state based on measurement z

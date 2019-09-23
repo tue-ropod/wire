@@ -126,8 +126,6 @@ double KnowledgeDatabase::getProbabilityNew(const Evidence& z) {
 
     double p_new = getPriorNew() * likelihood;
 
-    //cout << "p_new = " << getPriorNew() << " * " << likelihood << " = " << p_new << endl;
-
     return p_new;
 }
 

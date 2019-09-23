@@ -61,14 +61,6 @@ public:
      * @brief Clone operator
      */
 	virtual KalmanFilter* clone() const;
-	 
-    /*std::shared_ptr<KalmanFilter> clone() const{ return CloneMethod(); };
-   
-              std::shared_ptr<KalmanFilter> CloneMethod() const { 
-            std::shared_ptr<KalmanFilter> KF = std::make_shared< KalmanFilter>(*this);
-            return KF;
-}     */ 
-
 
     /**
      * @brief Destructor

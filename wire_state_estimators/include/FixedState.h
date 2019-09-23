@@ -58,10 +58,6 @@ public:
 
     FixedState* clone() const;
     
-    /*std::shared_ptr<IStateEstimator> clone() const{ return CloneMethod(); };
-   
-    std::shared_ptr<FixedState> CloneMethod() const {return std::make_shared< FixedState>(*this);}
-*/
     /**
      * @brief Performs an update, but since the state is fixed, update will do nothing.
      */

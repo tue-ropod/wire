@@ -50,14 +50,12 @@ std::shared_ptr<const pbl::PDF> Property::getValue() const {
 }
 
 void Property::update(std::shared_ptr<const pbl::PDF> z, const Time& time) {
-         std::cout << "estimator_ update: before z->getValue() = " << z->toString() << std::endl;
      if (time < time_)
     {
                 std::cout << "Timing issues!!" << std::endl;
             return;
     }
     estimator_->update(z, time);
-     std::cout << "estimator_ update: after estimator_->getValue() = " << estimator_->getValue()->toString() << std::endl;
     time_ = time;
 }
 
@@ -72,10 +70,6 @@ void Property::reset() {
 }
 
 double Property::getLikelihood(std::shared_ptr<const pbl::PDF> pdf) const {
-                  std::cout << "PDF getLikelihood:estimator_->getValue()->getLikelihood(pdf) = " << estimator_->getValue()->getLikelihood(pdf);
-           printf(" timestamp = %f, \n", time_ );
-         std::cout << "PDF = " << pdf->toString() << std::endl;
-         std::cout << "estimator_ = " << estimator_->getValue()->toString() << std::endl;
     return estimator_->getValue()->getLikelihood(pdf);
 }
 

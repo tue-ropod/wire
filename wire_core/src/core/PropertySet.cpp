@@ -40,7 +40,6 @@ PropertySet* PropertySet::clone() const {
 }
 
 void PropertySet::addProperty(const Attribute& att, const pbl::PDF& value) {
-         std::cout << "propertySet, addProperty value = " << value.toString() << std::endl;
     map<Attribute, Property*>::iterator it = properties_.find(att);
     if (it == properties_.end()) {
         properties_[att] = new Property(att, FixedState(value));
@@ -99,12 +98,8 @@ void PropertySet::propagate(const Time& time) {
         return;
     }
 
-  //  std::cout << "properties_.size() = " << properties_.size() << std::endl;
-  //  int counter = 0;
-    for(map<Attribute, Property*>::iterator it = properties_.begin(); it != properties_.end(); ++it) {
-    //        counter++;
-      //      std::cout << "Count = " << counter << "time = " << time  << std::endl;
-      //      std::cout << << std::endl;
+    for(map<Attribute, Property*>::iterator it = properties_.begin(); it != properties_.end(); ++it) 
+    {
         it->second->propagate(time);
     }
 
@@ -138,14 +133,6 @@ double PropertySet::getLikelihood(const PropertySet& P) const {
         const Property* this_prop = getProperty(attribute);
 
         if (this_prop) {
-
-            /*
-            std::cout << "Attribute: " << AttributeConv::attribute_str(it->first) << std::endl;
-            std::cout << "PDF mine:  " << it_prop->second->getValue().toString() << std::endl;
-            std::cout << "PDF other: " << it->second->getValue().toString() << std::endl;
-            std::cout << "Likelihood: " << it_prop->second->getLikelihood(it->second->getValue()) << std::endl;
-            */
-
             likelihood *= this_prop->getLikelihood(other_prop->getValue());
         } else {
             printf("Error during likelihood calculation: property '%s' is not in property set.\n", AttributeConv::attribute_str(attribute).c_str());

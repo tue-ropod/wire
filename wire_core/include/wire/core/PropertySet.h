@@ -22,13 +22,6 @@ public:
     virtual ~PropertySet();
 
     PropertySet* clone() const;
- /*    std::shared_ptr<IStateEstimator> clone() const{ return CloneMethod(); };
-     
-      std::shared_ptr<PropertySet> CloneMethod() const { 
-            std::shared_ptr<PropertySet> PS = std::make_shared< PropertySet>(*this);
-            
-            return PS;
-}*/
 
     void addProperty(const Attribute& attribute, const pbl::PDF& value);
 

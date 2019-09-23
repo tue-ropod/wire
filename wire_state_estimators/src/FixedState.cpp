@@ -58,15 +58,10 @@ void FixedState::update(std::shared_ptr<const pbl::PDF> z, const mhf::Time& time
 }
 
 void FixedState::propagate(const mhf::Time& time) {
-        std::cout << "FixedState::propagate" << std::endl;
 }
 
 void FixedState::reset() {
 }
-
-/*const pbl::PDF& FixedState::getValue() const {
-	return *pdf_;
-}*/
 
 std::shared_ptr<const pbl::PDF> FixedState::getValue() const {
     return pdf_;

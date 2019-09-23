@@ -58,19 +58,12 @@ public:
     PositionFilter(const PositionFilter& orig);
 
     virtual PositionFilter* clone() const;
-   /* 
-    std::shared_ptr<IStateEstimator> clone() const{ return CloneMethod(); };
-    
-    std::shared_ptr<PositionFilter> CloneMethod() const { 
-            std::shared_ptr<PositionFilter> G = std::make_shared< PositionFilter>(*this);
-            
-            return G;
-}*/
   
-      std::shared_ptr<PositionFilter> cloneThis() const {             
+    std::shared_ptr<PositionFilter> cloneThis() const 
+    {             
             return std::make_shared< PositionFilter>(*this);
-}
-
+    }
+    
     virtual ~PositionFilter();
 
     /**

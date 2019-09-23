@@ -39,8 +39,6 @@
 
 PositionFilter::PositionFilter() : t_last_update_(0), t_last_propagation_(0), kalman_filter_(0),
     fixed_pdf_(0), max_acceleration_(0), fixed_pdf_cov_(0), kalman_timeout_(0) {
-            
-         //   std::cout << "PositionFilter constructor: KF = " << kalman_filter_->toString() << std::endl;
 }
 
 PositionFilter::PositionFilter(const PositionFilter& orig) : mhf::IStateEstimator(orig), t_last_update_(orig.t_last_update_),
@@ -49,13 +47,11 @@ PositionFilter::PositionFilter(const PositionFilter& orig) : mhf::IStateEstimato
 
     if (orig.fixed_pdf_) {
         fixed_pdf_ = orig.fixed_pdf_->CloneMethod();
-       // fixed_pdf_ = std::make_shared<pbl::Gaussian>(*(orig.fixed_pdf_->CloneMethod()));
     }
 
     if (orig.kalman_filter_) {
         kalman_filter_ = new KalmanFilter(*orig.kalman_filter_);
     }
-     //std::cout << "PositionFilter constructor v2: KF = " << kalman_filter_->toString() << std::endl;
 }
 
 PositionFilter::~PositionFilter() {
@@ -64,19 +60,13 @@ PositionFilter::~PositionFilter() {
 }
 
 PositionFilter* PositionFilter::clone() const {
-         std::cout << "PositionFilter clone" << std::endl;
     return new PositionFilter(*this);
 }
 
 void PositionFilter::propagate(const mhf::Time& time) {
-                std::cout << "PositionFilter::propagate" << std::endl;
 
-                if (kalman_filter_) {
-        std::cout << "Kalman Filter @ start of propagation = " << kalman_filter_->toString() << std::endl;
-                }
     if (t_last_propagation_ == 0) {
         t_last_propagation_ = time;
-         std::cout << "Kalman Filter @ propagation, return 1 = " << kalman_filter_->toString() << std::endl;
         return;
     }
 
@@ -86,31 +76,21 @@ void PositionFilter::propagate(const mhf::Time& time) {
     assert(dt >= 0);
 
     if (!kalman_filter_) {
-             std::cout << "Kalman Filter @ propagation, return 2 " << std::endl;
         return;
     }
 
     if ((time - t_last_update_) > kalman_timeout_ && kalman_timeout_ > 0) {
-    //if ((time - t_last_update_) > 10.0) {
         if (!fixed_pdf_) {
             int dimensions = kalman_filter_->getGaussian()->getMean().n_rows;
-         //   pbl::Matrix cov = Eigen::Matrix2Xd::Identity(dimensions, dimensions) * fixed_pdf_cov_;
             pbl::Matrix cov = arma::eye(dimensions, dimensions) * fixed_pdf_cov_;
-            //fixed_pdf_ = new pbl::Gaussian(kalman_filter_->getGaussian().getMean(), cov);
              fixed_pdf_ = std::make_shared<pbl::Gaussian>(kalman_filter_->getGaussian()->getMean(), cov);
         } else {
             fixed_pdf_->setMean(kalman_filter_->getGaussian()->getMean());
         }
 
-        std::cout << "Kalman Filter @ propagation, return 3 = " << kalman_filter_->toString() << std::endl;
         delete kalman_filter_;
         kalman_filter_ = 0;
         return;
-    }
-    
-        if(fixed_pdf_)
-    {
-             std::cout << "before: fixed_pdf_ = " << fixed_pdf_->toString();
     }
 
     // TODO: fix the kalman filter update (we shouldn't need a loop here...)
@@ -126,19 +106,9 @@ void PositionFilter::propagate(const mhf::Time& time) {
             kalman_filter_->propagate(dt - total_dt);
         }
     }
-    
-        if(fixed_pdf_)
-    {
-            std::cout << "after: fixed_pdf_ = " << fixed_pdf_->toString() << std::endl;
-    }
-    std::cout << "Kalman Filter @ propagation, end of function = " << kalman_filter_->toString() << std::endl;
 }
 
 void PositionFilter::update(std::shared_ptr<const pbl::PDF> z, const mhf::Time& time) {
-      if(kalman_filter_)
-      {
-              std::cout << "PositionFilter update start: KF = " << kalman_filter_->toString() << std::endl;
-      }
     t_last_update_ = time;
 
     if (z->type() == pbl::PDF::GAUSSIAN) {
@@ -154,10 +124,6 @@ void PositionFilter::update(std::shared_ptr<const pbl::PDF> z, const mhf::Time& 
     } else {
         printf("PositionFilter can only be updated with Gaussians.\n");
     }
-     if(kalman_filter_)
-      {
-              std::cout << "PositionFilter update end: KF = " << kalman_filter_->toString() << std::endl;
-              }
 }
 
 void PositionFilter::reset() {

@@ -50,14 +50,7 @@ public:
 
     MultiModelFilter(const MultiModelFilter& orig);
 
-    virtual MultiModelFilter* clone() const;
-    
-  /*  std::shared_ptr<IStateEstimator> clone() const{ return CloneMethod(); };
-         
-    std::shared_ptr<MultiModelFilter> CloneMethod() const { 
-        std::shared_ptr<MultiModelFilter> MMF = std::make_shared< MultiModelFilter>(*this);
-        return MMF;
-}   */   
+    virtual MultiModelFilter* clone() const; 
 
     virtual ~MultiModelFilter();
 

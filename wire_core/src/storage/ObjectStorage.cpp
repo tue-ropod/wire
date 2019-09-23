@@ -49,10 +49,8 @@ void ObjectStorage::match(const Evidence& ev) {
     for(list<SemanticObject*>::iterator it_obj = objects_.begin(); it_obj != objects_.end(); ++it_obj) {
         SemanticObject& obj = **it_obj;
         cout.precision(dbl::max_digits10);
-std::cout << "Objectstorage, match: timestamp = " << ev.getTimestamp() << std::endl;
-std::cout << "Current time = " << ros::Time::now().toSec() << std::endl;
         
-        obj.propagate(ev.getTimestamp()); // propagated to current timestamp. Why and where is this stamp stored in ev info? 
+        obj.propagate(ev.getTimestamp()); // propagated to current timestamp, which is being set in process evidence of WorldModelROS.cpp
     }
 
     for(list<SemanticObject*>::iterator it_obj = objects_.begin(); it_obj != objects_.end(); ++it_obj) {
@@ -60,9 +58,6 @@ std::cout << "Current time = " << ros::Time::now().toSec() << std::endl;
 
         double prob_existing = KnowledgeDatabase::getInstance().getProbabilityExisting(ev, obj);
         if (prob_existing > 0) {
-
-            //cout << "Adding evidence " << &ev << " to object " << &obj << endl;
-
             obj.addPotentialAssignment(ev, prob_existing);
         }
     }

@@ -104,7 +104,7 @@ void WorldModelROS::start() {
         publish();
         ++count;
         if (count == 15) {
-            showStatistics();
+            //showStatistics();
             count = 0;
         }
         r.sleep();
@@ -160,7 +160,7 @@ bool WorldModelROS::hypothesisToMsg(const Hypothesis& hyp, wire_msgs::WorldState
 
 bool WorldModelROS::transformPosition(std::shared_ptr<const pbl::PDF> pdf_in, const string& frame_in, std::shared_ptr<pbl::Gaussian> pdf_out) const {
     std::shared_ptr<const pbl::Gaussian> gauss = pbl::PDFtoGaussian(pdf_in);
- std::cout << "transformPosition gauss: " << gauss->toString() << std::endl;
+
     if (!gauss) {
         ROS_ERROR("Position evidence is not a gaussian!");
         return false;
@@ -189,7 +189,7 @@ bool WorldModelROS::transformPosition(std::shared_ptr<const pbl::PDF> pdf_in, co
 
 bool WorldModelROS::transformOrientation(std::shared_ptr<const pbl::PDF> pdf_in, const string& frame_in, std::shared_ptr<pbl::Gaussian> pdf_out) const {
     std::shared_ptr<const pbl::Gaussian> gauss = pbl::PDFtoGaussian(pdf_in);
- std::cout << "transformOrientation gauss: " << gauss->toString() << std::endl;
+
     if (!gauss) {
         ROS_ERROR("Orientation evidence is not a gaussian!");
         return false;
@@ -218,7 +218,6 @@ bool WorldModelROS::transformOrientation(std::shared_ptr<const pbl::PDF> pdf_in,
 
 void WorldModelROS::evidenceCallback(const wire_msgs::WorldEvidence::ConstPtr& world_evidence_msg) {
     evidence_buffer_.push_back(*world_evidence_msg);
-    std::cout << "evidenceCallback: timestamp = " << world_evidence_msg->header.stamp  << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"<< std::endl;
 }
 
 void WorldModelROS::processEvidence(const ros::Duration max_duration) {
@@ -228,7 +227,7 @@ void WorldModelROS::processEvidence(const ros::Duration max_duration) {
     while(!evidence_buffer_.empty() && ros::Time::now() - start_time < max_duration) {
 
         ros::Time time_before_update = ros::Time::now();
- std::cout << "processEvidence: going to process message with timestamp = " << evidence_buffer_.back().header.stamp << std::endl;
+ //std::cout << "processEvidence: going to process message with timestamp = " << evidence_buffer_.back().header.stamp << std::endl;
         processEvidence(evidence_buffer_.back());
 
         last_update_duration = (ros::Time::now().toSec() - time_before_update.toSec());
@@ -237,11 +236,12 @@ void WorldModelROS::processEvidence(const ros::Duration max_duration) {
         evidence_buffer_.pop_back();
     }
     
+    /*
     ros::Duration duration = ros::Time::now() - start_time;
     bool timeCheck = ros::Time::now() - start_time < max_duration;
-    
    
     std::cout << "Duration = " << duration.toSec() << " time check = "  << timeCheck << " max_duration = " << max_duration << " evidence buffer size  = " << evidence_buffer_.size() << std::endl;
+    */
 }
 
 void WorldModelROS::processEvidence(const wire_msgs::WorldEvidence& world_evidence_msg) {
@@ -265,9 +265,10 @@ void WorldModelROS::processEvidence(const wire_msgs::WorldEvidence& world_eviden
         const wire_msgs::ObjectEvidence& evidence = (*it_ev);
 
         //Evidence* meas = new Evidence(world_evidence_msg->header.stamp.toSec(), evidence.certainty, evidence.negative);
-         Evidence* meas = new Evidence(current_time.toSec()); // measurement/evidence set to timestamp at the start of processEvidence!
+        //Evidence* meas = new Evidence(world_evidence_msg.header.stamp.toSec()); // Temp, to test
+        Evidence* meas = new Evidence(current_time.toSec()); // measurement/evidence set to timestamp at the start of processEvidence!
 
-        // Evidence* meas = new Evidence(world_evidence_msg.header.stamp.toSec()); // Temp, to test
+        
          
         measurements_mem.push_back(meas);
 
@@ -277,7 +278,6 @@ void WorldModelROS::processEvidence(const wire_msgs::WorldEvidence& world_eviden
             const wire_msgs::Property& prop = *it_prop;
 
             std::shared_ptr<pbl::PDF> pdf = pbl::msgToPDF(prop.pdf);
-            std::cout << "pos_pdf: " << pdf->toString() << std::endl;
 
             if (pdf) {
                 if (prop.attribute == "position") {
