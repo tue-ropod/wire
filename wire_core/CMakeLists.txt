@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   problib
   std_srvs
   cmake_modules
+  tue_config
 )
 
 # TinyXML
@@ -31,6 +32,7 @@ catkin_package(
     pluginlib
     problib
     std_srvs
+tue_config
   DEPENDS
     TinyXML
 )
@@ -80,7 +82,7 @@ add_library(wire
     
 )
 
-target_link_libraries(wire ${catkin_LIBRARIES} ${TinyXML_LIBRARIES})
+target_link_libraries(wire ${catkin_LIBRARIES} ${TinyXML_LIBRARIES} ${tue_config_LIBRARIES})
 
 # ROS nodes
 add_executable(wire_server src/world_model.cpp) 

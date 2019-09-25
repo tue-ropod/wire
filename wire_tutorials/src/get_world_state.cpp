@@ -40,7 +40,7 @@ std::shared_ptr<const pbl::Gaussian> getBestGaussianFromMixture(std::shared_ptr<
 
 void worldStateCallback(const wire_msgs::WorldState::ConstPtr& msg) {
 
-	ROS_INFO("Received world state with %d objects", msg->objects.size());
+	ROS_INFO("Received world state with %lu objects", msg->objects.size());
 
 
 	// Iterate over world model objects

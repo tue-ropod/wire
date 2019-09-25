@@ -12,6 +12,8 @@
 
 #include "boost/thread.hpp"
 
+#include <tue/config/loaders/yaml.h>
+
 #include <list>
 
 using namespace std;
@@ -59,8 +61,26 @@ bool WorldModelROS::initialize() {
     }
 
     // Parse object models
-    // ObjectModelParser parser(object_models_filename);
-    ObjectModelParser parser(object_models_filename);
+    
+    ObjectModelParser parser;
+    
+    std::string extension = object_models_filename.substr(object_models_filename.find_last_of(".") + 1);
+    if(extension == "yaml") 
+    {
+        tue::Configuration config;
+        tue::config::loadFromYAMLFile(object_models_filename, config);
+        parser.configure(config);
+    } 
+    else if(extension == "xml") 
+    {
+        parser.configure(object_models_filename);
+    }
+    else
+    {
+         ROS_ERROR_STREAM("Unkown file extension. Specify a .yaml or .xml");
+         return false;       
+    }
+    
     if (!parser.parse(KnowledgeDatabase::getInstance())) {
         // parsing failed
         ROS_ERROR_STREAM("While parsing '" << object_models_filename << "': " << endl << endl << parser.getErrorMessage());
