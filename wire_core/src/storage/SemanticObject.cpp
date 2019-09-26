@@ -134,7 +134,6 @@ void SemanticObject::update(const Evidence& ev) {
             }
         }
     }
-
 }
 
 SemanticObject* SemanticObject::clone() const {

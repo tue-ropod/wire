@@ -268,11 +268,10 @@ bool ObjectModelParser::parse(KnowledgeDatabase& knowledge_db)
         
         if(filename_ == NO_FILE) // yaml version
         {
-                std::cout << "Going to parse yaml" << std::endl;
                 return parseYAML(knowledge_db);
         }
         else // xml version
-        {std::cout << "Going to parse xml" << std::endl;
+        {
                 return parseXML(knowledge_db);
         }
 }
