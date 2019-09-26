@@ -404,23 +404,10 @@ std::shared_ptr<pbl::PDF> ObjectModelParser::parsePDFYAML(std::stringstream& err
     return 0;
 }
 
-
-
-bool ObjectModelParser::parseYAML(KnowledgeDatabase& knowledge_db) {
-
-   // TiXmlDocument doc(filename_);
-   // doc.LoadFile();
-
-   /* if (doc.Error()) {
-        ROS_ERROR_STREAM("While parsing '" << filename_ << "': " << endl << endl << doc.ErrorDesc() << " at line " << doc.ErrorRow() << ", col " << doc.ErrorCol());
-        return false;
-    }
-*/
-   
+bool ObjectModelParser::parseYAML(KnowledgeDatabase& knowledge_db) 
+{
     if (config_.readGroup("knowledge", tue::REQUIRED))
-    {
-            std::cout << "HAHAHAHA" << std::endl;
-            
+    {            
         float prior_new = 0.0, prior_existing = 0.0, prior_clutter = 0.0; // todo: pass to the corresponding place
         config_.value("prior_new", prior_new);
         config_.value("prior_existing", prior_existing);
@@ -436,164 +423,112 @@ bool ObjectModelParser::parseYAML(KnowledgeDatabase& knowledge_db) {
 
         if(config_.readArray("object_class", tue::REQUIRED)) 
         {
-                std::string objectClassName;
-                config_.value("name", objectClassName, tue::REQUIRED);// TODO make base class?!
-
-                 std::cout << "\nClass name = " << objectClassName << std::endl;
-                 ClassModel* class_model = new ClassModel(objectClassName);
+                std::cout << "Attributes:" << std::endl;
                 
-                if (config_.readArray("behavior_model"))
+                while(config_.nextArrayItem())
                 {
-                        std::cout << "Attributes:" << std::endl;
-                        while(config_.nextArrayItem())
-                        {
-                               
-                               
-                                std::string attribute_name, model_type;
-                                config_.value("attribute", attribute_name);
-                                config_.value("model", model_type);
-                                std::cout << "\n\tFor attribute " << attribute_name << 
-                                "\n\tmodel = " << model_type << std::endl;
-                                
+                        std::string objectClassName;
+                        config_.value("name", objectClassName, tue::REQUIRED);// TODO make base class?!
 
-                                Attribute attribute = AttributeConv::attribute(attribute_name);
-                                
-                                if (!object_model_loader_->isClassAvailable(model_type))
+                        /* PARSE ALL OBJECT MODELS */
+                        std::cout << "\nClass name = " << objectClassName << std::endl;
+                        ClassModel* class_model = new ClassModel(objectClassName);
+                        
+                        if (config_.readArray("behavior_model"))
+                        {
+                                std::cout << "Attributes:" << std::endl;
+                                while(config_.nextArrayItem())
                                 {
-                                        std::vector<std::string> classes = object_model_loader_->getDeclaredClasses();
-                                        for(unsigned int i = 0; i < classes.size(); ++i)
+                                        std::string attribute_name, model_type;
+                                        config_.value("attribute", attribute_name);
+                                        config_.value("model", model_type);
+                                        std::cout << "\n\tFor attribute '" << attribute_name << 
+                                        "'\n\tmodel = " << model_type << std::endl;
+
+                                        Attribute attribute = AttributeConv::attribute(attribute_name);
+                                        
+                                        if (!object_model_loader_->isClassAvailable(model_type))
                                         {
-                                                if(model_type == object_model_loader_->getName(classes[i]))
+                                                std::vector<std::string> classes = object_model_loader_->getDeclaredClasses();
+                                                for(unsigned int i = 0; i < classes.size(); ++i)
                                                 {
-                                                        //if we've found a match... we'll get the fully qualified name and break out of the loop
-                                                        ROS_WARN("Planner specifications should now include the package name. You are using a deprecated API. Please switch from %s to %s in your yaml file.",
-                                                                 model_type.c_str(), classes[i].c_str());
-                                                        model_type = classes[i];
-                                                        break;
+                                                        if(model_type == object_model_loader_->getName(classes[i]))
+                                                        {
+                                                                //if we've found a match... we'll get the fully qualified name and break out of the loop
+                                                                ROS_WARN("Planner specifications should now include the package name. You are using a deprecated API. Please switch from %s to %s in your yaml file.",
+                                                                        model_type.c_str(), classes[i].c_str());
+                                                                model_type = classes[i];
+                                                                break;
+                                                        }
                                                 }
                                         }
-                                }
-                                
-                                IStateEstimator* estimator;
+                                                                
+                                        IStateEstimator* estimator;
 
-                                if (object_model_loader_->isClassAvailable(model_type)) {
-                                        estimator = object_model_loader_->createClassInstance(model_type)->clone();
-                                } else {
-                                        std::cout << "Unknown model: " << model_type << endl;
-                                        return false;
-                                }
-                                
-                                if(config_.readGroup("pnew", tue::REQUIRED))
-                                {
-                                        std::stringstream errorTest;
-                                        std::shared_ptr<pbl::PDF> pdf_new = parsePDFYAML( errorTest);
-                                        
-                                        class_model->setNewPDF(attribute, *pdf_new);
-                                        estimator->update(pdf_new, 0);
-   
-                                        std::cout << "\tpnew = " << pdf_new->toString() << std::endl;
-                                        config_.endGroup();
-                                }
-                                
-                                if(config_.readGroup("pclutter", tue::REQUIRED))
-                                {
-                                        std::stringstream errorTest;
-                                        std::shared_ptr<pbl::PDF> pdf_new = parsePDFYAML( errorTest);
-                                        
-                                        class_model->setNewPDF(attribute, *pdf_new);
-                                        estimator->update(pdf_new, 0);
-                                        
-                                        std::cout << "\tpclutter = " << pdf_new->toString() << std::endl;
-
-                                        config_.endGroup();
-                                }
-                                
-                                if (config_.readArray("parameters"))
-                                {
-                                        std::cout << "\tparameters:" << std::endl;
-                                        while(config_.nextArrayItem())
+                                        if (object_model_loader_->isClassAvailable(model_type)) 
                                         {
-                                                std::string name; // TODO parameters for different types?! (bool and int still remain)
-                                                double value;
-                                                config_.value("name", name);
-                                                config_.value("value", value);
-                                                
-                                                std::cout << "\t\tName = " << name  << " value: " << value << std::endl;
-                                                estimator->setParameter(name, value);
+                                                estimator = object_model_loader_->createClassInstance(model_type)->clone();
+                                        } 
+                                        else
+                                        {
+                                                std::cout << "Unknown model: " << model_type << endl;
+                                                return false;
                                         }
-                                        config_.endArray();
+                                        
+                                        if(config_.readGroup("pnew", tue::REQUIRED))
+                                        {
+                                                std::stringstream errorTest;
+                                                std::shared_ptr<pbl::PDF> pdf_new = parsePDFYAML( errorTest);
+                                                
+                                                class_model->setNewPDF(attribute, *pdf_new);
+                                                estimator->update(pdf_new, 0);
+        
+                                                std::cout << "\tpnew = " << pdf_new->toString() << std::endl;
+                                                config_.endGroup(); // pnew  
+                                        }
+                                        
+                                        if(config_.readGroup("pclutter", tue::REQUIRED))
+                                        {
+                                                std::stringstream errorTest;
+                                                std::shared_ptr<pbl::PDF> pdf_new = parsePDFYAML( errorTest);
+                                                
+                                                class_model->setClutterPDF(attribute, *pdf_new);
+                                                estimator->update(pdf_new, 0);
+                                                
+                                                std::cout << "\tpclutter = " << pdf_new->toString() << std::endl;
+                                                config_.endGroup(); // pclutter
+                                        }
+                                        
+                                        if (config_.readArray("parameters"))
+                                        {
+                                                std::cout << "\tparameters:" << std::endl;
+                                                while(config_.nextArrayItem())
+                                                {
+                                                        std::string name; // TODO parameters for different types?! (bool and int still remain)
+                                                        double value;
+                                                        config_.value("name", name);
+                                                        config_.value("value", value);
+                                                        
+                                                        std::cout << "\t\tName = " << name  << " value: " << value << std::endl;
+                                                        estimator->setParameter(name, value);
+                                                }
+                                                config_.endArray(); // parameters
+                                        }
+                                        
+                                        class_model->setEstimator(attribute, *estimator);
                                 }
                                 
-                         class_model->setEstimator(attribute, *estimator);
-                         
+                                config_.endArray(); // behavior_model
                         }
-                         
-                       config_.endArray();
-                       
-                }
-                config_.endArray();
-                
-                knowledge_db.addClassModel(class_model->getModelName(), class_model);
+                        
+                        knowledge_db.addClassModel(class_model->getModelName(), class_model);                        
+                 }
+                config_.endArray(); // object_class
         }
         
-        config_.endGroup();
+        config_.endGroup(); // knowledge
     }
-   
-   /* PARSE ALL OBJECT MODELS */
-/*
-    while(class_element) {
-        ClassModel* class_model = 0;
-
-        string model_name;
-        getAttributeValue(class_element, "name", model_name, parse_errors_);
-
-        cout << "Parsing model for class " << model_name << endl;
-
-        string base_class = "";
-        const char* value = class_element->Attribute("base");
-
-        if (value) {
-            // class derives from base class
-            base_class = value;
-
-            const ClassModel* base_model = knowledge_db.getClassModel(base_class);
-            if (base_model) {
-                class_model = new ClassModel(*base_model);
-                class_model->setModelName(model_name);
-            } else {
-                parse_errors_ << "Error in class definition of '" << model_name << "': unknown base class '" << base_class << "'." << endl;
-                class_model = new ClassModel(model_name);
-            }
-        } else {
-            class_model = new ClassModel(model_name);
-        }
-
-        // parse properties
-        const TiXmlElement* prop = class_element->FirstChildElement();
-        while(prop) {
-            string prop_name = prop->Value();
-            if (prop_name == "behavior_model") {
-                stringstream bh_errors;
-                parseStateEstimator(class_model, prop, bh_errors);
-                if (bh_errors.str() != "") {
-                    parse_errors_ << "In class description for '" << class_model->getModelName() << "': " << bh_errors.str() << endl;
-                }
-            } else {
-                parse_errors_ << "In class description for '" << class_model->getModelName() << "': Unknown class property: '" << prop_name << "'" << endl;
-            }
-            prop = prop->NextSiblingElement();
-        }
-
-        knowledge_db.addClassModel(class_model->getModelName(), class_model);
-
-        class_element = class_element->NextSiblingElement("object_class");
-    }
-
-    if (parse_errors_.str() != "") {
-        return false;
-    }
-    */
-
+    
     return true;
 }
 

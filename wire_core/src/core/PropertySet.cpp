@@ -131,18 +131,18 @@ double PropertySet::getLikelihood(const PropertySet& P) const {
         const Property* other_prop = it->second;
 
         const Property* this_prop = getProperty(attribute);
-
+        
         if (this_prop) {
             likelihood *= this_prop->getLikelihood(other_prop->getValue());
         } else {
             printf("Error during likelihood calculation: property '%s' is not in property set.\n", AttributeConv::attribute_str(attribute).c_str());
 
-            printf("This (%p) constains:\n", this);
+            printf("This (%p) contains:\n", this);
             for(map<Attribute, Property*>::const_iterator it = properties_.begin(); it != properties_.end(); ++it) {
                 printf(" - %s\n", AttributeConv::attribute_str(it->first).c_str());
             }
 
-            printf("Other (%p) constains:\n", &P);
+            printf("Other (%p) contains:\n", &P);
             for(map<Attribute, Property*>::const_iterator it = other_props.begin(); it != other_props.end(); ++it) {
                 printf(" - %s\n", AttributeConv::attribute_str(it->first).c_str());
             }
