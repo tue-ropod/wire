@@ -79,6 +79,8 @@ public:
     const PropertySet& getClutterPDFs() const;
 
     const IStateEstimator* getEstimator(const Attribute& attribute) const;
+    
+    std::string toString();
 
     //void setProbDetectedGivenVisible(double prob);
 

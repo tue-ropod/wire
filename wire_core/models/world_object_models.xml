@@ -32,4 +32,13 @@
 
     </object_class>
     
+    <object_class name="person" base="object">
+    
+        <behavior_model attribute="name" model="wire_state_estimators/DiscreteEstimator">
+            <pnew type="discrete" domain_size="10" />            
+            <pclutter type="discrete" domain_size="10" />
+        </behavior_model>  
+     
+    </object_class>
+    
 </knowledge>

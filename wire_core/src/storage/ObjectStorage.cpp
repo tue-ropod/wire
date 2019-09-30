@@ -44,8 +44,6 @@ long ObjectStorage::getUniqueID() {
 
 void ObjectStorage::match(const Evidence& ev) {
 
-    //cout << endl << "ObjectStorage::match" << endl;
-
     for(list<SemanticObject*>::iterator it_obj = objects_.begin(); it_obj != objects_.end(); ++it_obj) {
         SemanticObject& obj = **it_obj;
         cout.precision(dbl::max_digits10);

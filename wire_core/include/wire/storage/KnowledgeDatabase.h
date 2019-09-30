@@ -59,6 +59,8 @@ public:
     double getProbabilityExisting(const Evidence& z, const SemanticObject& obj);
 
     std::vector<Property> inferProperties(const PropertySet& prop_set, std::vector<Attribute>) const;
+    
+    std::string classModelsToString() const;
 
 protected:
 

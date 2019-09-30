@@ -203,4 +203,20 @@ vector<Property> KnowledgeDatabase::inferProperties(const PropertySet& prop_set,
     return inferred_props;
 }
 
+ std::string KnowledgeDatabase::classModelsToString() const
+ {
+    std::stringstream s;
+    std::cout << "class_models_.size() = " << class_models_.size() << std::endl;
+    for( std::map<std::string, ClassModel*>::const_iterator it_models = class_models_.begin(); it_models != class_models_.end(); ++it_models)
+    {
+         std::string model = it_models->first;
+         ClassModel* class_p = it_models->second;
+         
+         s << "For model " << model << "class properties are" << class_p->toString();
+    }
+    
+     return s.str();  
+}
+         
+
 }

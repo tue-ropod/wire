@@ -165,6 +165,10 @@ string PropertySet::toString() const {
     stringstream s;
     for(map<Attribute, Property*>::const_iterator it = properties_.begin(); it != properties_.end(); ++it) {
         s << " - " << AttributeConv::attribute_str(it->first) << endl;
+        if (it->second != 0)
+        {
+                s << "   PDF = " << it->second->toString() << endl;
+        }
     }
     return s.str();
 }

@@ -142,6 +142,7 @@ std::shared_ptr<const pbl::PDF> PositionFilter::getValue() const {
     }
 
     std::cout << "SOMETHINGS WRONG" << std::endl;
+    //return std::shared_ptr<const pbl::PDF>(nullptr); // Temp to print out the properties
 }
 
 bool PositionFilter::setParameter(const std::string& param, bool b) {

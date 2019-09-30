@@ -265,15 +265,22 @@ bool ObjectModelParser::getStateEstimatorParameter(const TiXmlElement* elem, con
 
 bool ObjectModelParser::parse(KnowledgeDatabase& knowledge_db) 
 {
-        
+ std::cout <<  "Going to parse" << std::endl;  
+ bool parseSucceeded;
         if(filename_ == NO_FILE) // yaml version
         {
-                return parseYAML(knowledge_db);
+                parseSucceeded = parseYAML(knowledge_db);
         }
         else // xml version
         {
-                return parseXML(knowledge_db);
+                parseSucceeded = parseXML(knowledge_db);
         }
+
+    std::cout << "Info in knowledge_db = \n";
+    std::cout << knowledge_db.classModelsToString();
+    
+    return parseSucceeded;
+    
 }
 
 bool ObjectModelParser::parseXML(KnowledgeDatabase& knowledge_db) {
@@ -426,12 +433,33 @@ bool ObjectModelParser::parseYAML(KnowledgeDatabase& knowledge_db)
                 
                 while(config_.nextArrayItem())
                 {
-                        std::string objectClassName;
-                        config_.value("name", objectClassName, tue::REQUIRED);// TODO make base class?!
-
                         /* PARSE ALL OBJECT MODELS */
+                         ClassModel* class_model = 0;
+                         
+                        std::string objectClassName, baseName;
+                        config_.value("name", objectClassName, tue::REQUIRED);
+                        
                         std::cout << "\nClass name = " << objectClassName << std::endl;
-                        ClassModel* class_model = new ClassModel(objectClassName);
+                        if( config_.value("base", baseName, tue::OPTIONAL) )
+                        {
+                                 std::cout << "base_class = " << baseName << std::endl;
+                                 const ClassModel* base_model = knowledge_db.getClassModel(baseName);
+                                 
+                                 if (base_model) 
+                                 {
+                                         class_model = new ClassModel(*base_model);
+                                         class_model->setModelName(objectClassName);
+                                 }
+                                 else 
+                                 {
+                                         ROS_WARN( "Error in class definition of '%s': unknown base class '%s'.\n", objectClassName.c_str(), baseName.c_str());
+                                         class_model = new ClassModel(objectClassName);
+                                 }
+                        } 
+                        else
+                        {
+                                class_model = new ClassModel(objectClassName);
+                        }
                         
                         if (config_.readArray("behavior_model"))
                         {
@@ -441,7 +469,7 @@ bool ObjectModelParser::parseYAML(KnowledgeDatabase& knowledge_db)
                                         std::string attribute_name, model_type;
                                         config_.value("attribute", attribute_name);
                                         config_.value("model", model_type);
-                                        std::cout << "\n\tFor attribute '" << attribute_name << 
+                                        std::cout << "\tFor attribute '" << attribute_name << 
                                         "'\n\tmodel = " << model_type << std::endl;
 
                                         Attribute attribute = AttributeConv::attribute(attribute_name);
@@ -490,9 +518,7 @@ bool ObjectModelParser::parseYAML(KnowledgeDatabase& knowledge_db)
                                         {
                                                 std::stringstream errorTest;
                                                 std::shared_ptr<pbl::PDF> pdf_new = parsePDFYAML( errorTest);
-                                                
                                                 class_model->setClutterPDF(attribute, *pdf_new);
-                                                estimator->update(pdf_new, 0);
                                                 
                                                 std::cout << "\tpclutter = " << pdf_new->toString() << std::endl;
                                                 config_.endGroup(); // pclutter

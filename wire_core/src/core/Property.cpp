@@ -74,7 +74,15 @@ double Property::getLikelihood(std::shared_ptr<const pbl::PDF> pdf) const {
 }
 
 std::string Property::toString(const std::string& prefix) const {
-    return estimator_->getValue()->toString();
+        if(estimator_->getValue())
+        {
+                return estimator_->getValue()->toString();
+        } 
+        else
+        {
+                return "Property equals nullptr \n";
+        }
 }
+    
 
 }

@@ -61,4 +61,16 @@ const PropertySet& ClassModel::getClutterPDFs() const {
     return clutter_pdfs_;
 }
 
+std::string ClassModel::toString()
+{
+      std::stringstream s;
+       
+       s << "Class model for " << model_name_ << " equals \n"
+         << new_pdfs_.toString() 
+         << clutter_pdfs_.toString()
+         << estimators_.toString();
+    
+       return s.str();
+}
+
 }
