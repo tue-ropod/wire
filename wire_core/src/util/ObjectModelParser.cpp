@@ -276,8 +276,8 @@ bool ObjectModelParser::parse(KnowledgeDatabase& knowledge_db)
                 parseSucceeded = parseXML(knowledge_db);
         }
 
-    std::cout << "Info in knowledge_db = \n";
-    std::cout << knowledge_db.classModelsToString();
+   // std::cout << "Info in knowledge_db = \n";
+   // std::cout << knowledge_db.classModelsToString();
     
     return parseSucceeded;
     
