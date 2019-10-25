@@ -76,7 +76,7 @@ void HypothesisTree::addEvidence(const EvidenceSet& ev_set) {
 
     //** Propagate all objects, compute association probabilities and add all possible measurement-track assignments
     for(EvidenceSet::const_iterator it_ev = ev_set.begin(); it_ev != ev_set.end(); ++it_ev) {
-        ObjectStorage::getInstance().match(**it_ev);
+        ObjectStorage::getInstance().match(**it_ev); // In here, the associations to existing objects are solved -> addPotentialAssignment in match-method.
     }
 
     t_last_update_ = ev_set.getTimestamp();

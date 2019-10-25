@@ -428,9 +428,7 @@ bool ObjectModelParser::parseYAML(KnowledgeDatabase& knowledge_db)
                   "\nprior_clutter = " <<  prior_clutter << std::endl;
 
         if(config_.readArray("object_class", tue::REQUIRED)) 
-        {
-                std::cout << "Attributes:" << std::endl;
-                
+        {                
                 while(config_.nextArrayItem())
                 {
                         /* PARSE ALL OBJECT MODELS */
