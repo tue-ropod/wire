@@ -490,6 +490,7 @@ bool ObjectModelParser::parseYAML(KnowledgeDatabase& knowledge_db)
                                                                 
                                         IStateEstimator* estimator;
 
+                                        std::cout << "model_type = " << model_type << std::endl;
                                         if (object_model_loader_->isClassAvailable(model_type)) 
                                         {
                                                 estimator = object_model_loader_->createClassInstance(model_type)->clone();
@@ -502,8 +503,8 @@ bool ObjectModelParser::parseYAML(KnowledgeDatabase& knowledge_db)
                                         
                                         if(config_.readGroup("pnew", tue::REQUIRED))
                                         {
-                                                std::stringstream errorTest;
-                                                std::shared_ptr<pbl::PDF> pdf_new = parsePDFYAML( errorTest);
+                                                //std::stringstream errorTest;
+                                                std::shared_ptr<pbl::PDF> pdf_new = parsePDFYAML( parse_errors_);
                                                 
                                                 class_model->setNewPDF(attribute, *pdf_new);
                                                 estimator->update(pdf_new, 0);
@@ -514,8 +515,8 @@ bool ObjectModelParser::parseYAML(KnowledgeDatabase& knowledge_db)
                                         
                                         if(config_.readGroup("pclutter", tue::REQUIRED))
                                         {
-                                                std::stringstream errorTest;
-                                                std::shared_ptr<pbl::PDF> pdf_new = parsePDFYAML( errorTest);
+                                              //  std::stringstream errorTest;
+                                                std::shared_ptr<pbl::PDF> pdf_new = parsePDFYAML( parse_errors_);
                                                 class_model->setClutterPDF(attribute, *pdf_new);
                                                 
                                                 std::cout << "\tpclutter = " << pdf_new->toString() << std::endl;
@@ -524,34 +525,64 @@ bool ObjectModelParser::parseYAML(KnowledgeDatabase& knowledge_db)
                                         
                                         if (config_.readArray("parameters"))
                                         {
+                                               // std::stringstream errorTest;
                                                 std::cout << "\tparameters:" << std::endl;
                                                 while(config_.nextArrayItem())
-                                                {
+                                                {                                                        
                                                         std::string name; // TODO parameters for different types?! (bool and int still remain)
                                                         double value;
-                                                        config_.value("name", name);
-                                                        config_.value("value", value);
+                                                        std::string v_str;            
+                                                        bool v_bool;
+                                                        int v_int;
                                                         
-                                                        std::cout << "\t\tName = " << name  << " value: " << value << std::endl;
-                                                        estimator->setParameter(name, value);
-                                                }
-                                                config_.endArray(); // parameters
+                                                        config_.value("name", name);                                                       
+                                                       
+                                                          bool set_param_ok = true;
+                                                       if(        config_.value("value", value))
+                                                       {
+                                                              set_param_ok =  estimator->setParameter(name, value);
+                                                                 std::cout << "\t\tName = " << name  << " value: " << value << std::endl;
+                                                       }else if (config_.value("value", v_int)) {
+                                                               set_param_ok = estimator->setParameter(name,(double) v_int);     
+                                                                std::cout << "\t\tname = " << name << " int = " << v_int << std::endl;
+                                                      }else if (config_.value("value", v_bool)) {
+                                                               set_param_ok = estimator->setParameter(name, v_bool);     
+                                                                std::cout << "\t\tname = " << name << " bool = " << v_bool << std::endl;
+                                                       }else if (config_.value("value", v_str)) {
+                                                               set_param_ok = estimator->setParameter(name, v_str);     
+                                                                std::cout << "\t\tname = " << name << " string = " << v_str << std::endl;
+                                                       }else {
+                                                                parse_errors_ << "State estimator parameters should always have a 'name' and 'value' attribute." << endl;
+                                                        }
+                                                 
+                                                        if (!set_param_ok) {
+                                                                parse_errors_ << "Unknown parameter for estimator '" << model_type << "': " << name << endl;
+                                                        }
+                                                }                                                
                                         }
-                                        
+
+                                        config_.endArray(); // parameters
+
                                         class_model->setEstimator(attribute, *estimator);
+                                        std::cout << "State estimator set" << std::endl;
                                 }
                                 
                                 config_.endArray(); // behavior_model
+                                std::cout << "behavior_model set" << std::endl;
                         }
                         
                         knowledge_db.addClassModel(class_model->getModelName(), class_model);                        
                  }
                 config_.endArray(); // object_class
+                 std::cout << "object_class set" << std::endl;
         }
         
         config_.endGroup(); // knowledge
+        std::cout << "knowledge set" << std::endl;
+        
     }
     
+    std::cout << "Config read, going to return" << std::endl;
     return true;
 }
 

@@ -170,7 +170,7 @@ void HypothesisTree::expandTree(const EvidenceSet& ev_set) {
             hyp->addPotentialAssignment(*it_ass);
         }
 
-        // evidence-to-object assignments are added in addEvidence() method already
+        // evidence-to-object assignments are added in addEvidence() method
 
         // sort assignment matrix based on assignment probabilities
         hyp->getAssignmentMatrix()->sortAssignments();

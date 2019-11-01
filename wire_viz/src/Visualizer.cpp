@@ -347,7 +347,9 @@ bool Visualizer::getMarkerParameters(ros::NodeHandle& n, const string& ns) {
 
 			// Get class
 			string class_name = "";
-			getStructValue(v, "class", class_name, "");
+			getStructValue(v, "class", class_name, ""); // get getStructValue(v, "shape", class_name, "")
+                        
+                        std::cout << "Test: class = " << class_name << std::endl;
 
 			// If no class defined, no marker can be added
 			if (class_name == "") {

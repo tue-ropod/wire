@@ -38,12 +38,12 @@
 #include "KalmanFilter.h"
 
 PositionFilter::PositionFilter() : t_last_update_(0), t_last_propagation_(0), kalman_filter_(0),
-    fixed_pdf_(0), max_acceleration_(0), fixed_pdf_cov_(0), kalman_timeout_(0) {
+    fixed_pdf_(0), max_acceleration_(0), fixed_pdf_cov_(0), kalman_timeout_(0), ProcessModel_(ProcessModel::NONE) {
 }
 
 PositionFilter::PositionFilter(const PositionFilter& orig) : mhf::IStateEstimator(orig), t_last_update_(orig.t_last_update_),
     t_last_propagation_(orig.t_last_propagation_), kalman_filter_(0), fixed_pdf_(0), max_acceleration_(orig.max_acceleration_),
-    fixed_pdf_cov_(orig.fixed_pdf_cov_ ), kalman_timeout_(orig.kalman_timeout_) {
+    fixed_pdf_cov_(orig.fixed_pdf_cov_ ), kalman_timeout_(orig.kalman_timeout_), ProcessModel_(orig.ProcessModel_) {
 
     if (orig.fixed_pdf_) {
         fixed_pdf_ = orig.fixed_pdf_->CloneMethod();
@@ -94,7 +94,8 @@ void PositionFilter::propagate(const mhf::Time& time) {
     }
 
     // TODO: fix the kalman filter update (we shouldn't need a loop here...)
-    mhf::Duration small_dt = 0.05;
+    //mhf::Duration small_dt = 0.05;
+    mhf::Duration small_dt = kalman_timeout_;
     if (dt < small_dt) {
         kalman_filter_->propagate(dt);
     } else {
@@ -115,7 +116,7 @@ void PositionFilter::update(std::shared_ptr<const pbl::PDF> z, const mhf::Time& 
         std::shared_ptr<const pbl::Gaussian> G = pbl::PDFtoGaussian(z);
 
         if (!kalman_filter_) {
-            kalman_filter_ = new KalmanFilter(z->dimensions());
+            kalman_filter_ = new KalmanFilter(z->dimensions(), ProcessModel_);
             kalman_filter_->setMaxAcceleration(max_acceleration_);
             kalman_filter_->init(G);
         } else {
@@ -163,6 +164,23 @@ bool PositionFilter::setParameter(const std::string &param, double v) {
         return false;
     }
     return true;
+}
+
+bool PositionFilter::setParameter(const std::string& param, const std::string& s)
+{
+        if (param == "process_model") 
+        {
+                if(s == "constant")
+                {
+                        this->ProcessModel_ = ProcessModel::CONSTANT;
+                        return true;
+                } else if ( s == "constant_velocity")
+                {
+                        this->ProcessModel_ = ProcessModel::CONSTANT_VELOCITY;
+                        return true;
+                }
+        }
+         return false;
 }
 
 #include <pluginlib/class_list_macros.h>

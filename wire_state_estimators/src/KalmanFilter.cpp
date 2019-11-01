@@ -36,15 +36,13 @@
 
 #include "KalmanFilter.h"
 
-//#include <limits> // TEMP
-
-KalmanFilter::KalmanFilter(int dim)
-: meas_dim_(dim), state_dim_(dim * 2), G_(dim * 2), a_max_(0) {
+KalmanFilter::KalmanFilter(int dim, ProcessModel process_model)
+: meas_dim_(dim), state_dim_(dim * 2), G_(dim * 2), a_max_(0), ProcessModel_(process_model) {
        G_small_ = std::make_shared<pbl::Gaussian>(dim);
 }
 
 KalmanFilter::KalmanFilter(const KalmanFilter& orig)
-: meas_dim_(orig.meas_dim_), state_dim_(orig.state_dim_), G_(orig.G_), H_(orig.H_), a_max_(orig.a_max_) {
+: meas_dim_(orig.meas_dim_), state_dim_(orig.state_dim_), G_(orig.G_), H_(orig.H_), a_max_(orig.a_max_), ProcessModel_(orig.ProcessModel_) {
         G_small_ = std::make_shared<pbl::Gaussian>(*(orig.G_small_));
 }
 
@@ -68,13 +66,25 @@ void KalmanFilter::init(std::shared_ptr<const pbl::Gaussian> z) {
 void KalmanFilter::propagate(const double& dt) {
 	if (a_max_ > 0) 
         {
-		// set state transition matrix
-                pbl::Matrix F = arma::eye(state_dim_, state_dim_);
+                pbl::Matrix F;
                 
-		for(int i = 0; i < meas_dim_; ++i) 
+                if(ProcessModel_ ==  ProcessModel::CONSTANT)
                 {
-			F(i, i + meas_dim_) = dt;
-		}
+                        // set state transition matrix: constant state model
+                        F = arma::eye(state_dim_, state_dim_);
+                }
+                else if(ProcessModel_ == ProcessModel::CONSTANT_VELOCITY)
+                {
+                         // set state transition matrix: constant velocity model
+                        F = arma::eye(state_dim_, state_dim_);
+                        
+                        for(int i = 0; i < meas_dim_; ++i) 
+                        {
+                                F(i, i + meas_dim_) = dt;
+                        }
+                } else {
+                        std::cout << "ERROR: no process model found." << std::endl;
+                }
 		
 		pbl::Vector x = G_.getMean();
                 
@@ -86,15 +96,19 @@ void KalmanFilter::propagate(const double& dt) {
 		G_.setMean(x);
 
                 // set system noise
-		double q = a_max_ * a_max_ / 4;
-		double dt2 = dt * dt;
-		double dt4 = dt2 * dt2;
+		//double q = a_max_ * a_max_ / 4;
+		//double dt2 = dt * dt;
+		//double dt4 = dt2 * dt2;
 
                 pbl::Matrix P = F * G_.getCovariance() * F.t();
+                double Q = 0.4;
 		for(int i = 0; i < meas_dim_; ++i) {
-			P(i, i) += dt4 / 4 * q;						// cov pos
-			P(i, i + meas_dim_) += dt4 / 4 * q;         // cov pos~vel
-			P(i + meas_dim_, i + meas_dim_) += dt2 * q; // cov vel
+			//P(i, i) += dt4 / 4 * q;						// cov pos
+                        P(i,i) += Q;
+			//P(i, i + meas_dim_) += dt4 / 4 * q;         // cov pos~vel			
+			//P(i + meas_dim_, i + meas_dim_) += dt2 * q; // cov vel
+			P(i + meas_dim_, i + meas_dim_) += 20*Q; // cov vel
+			
 		}
 		
 		G_.setCovariance(P);
@@ -145,6 +159,24 @@ const pbl::Matrix& KalmanFilter::getStateCovariance() const {
 
 void KalmanFilter::setMaxAcceleration(double a_max) {
 	a_max_ = a_max;
+}
+
+bool KalmanFilter::setParameter(const std::string& param, const std::string& s)
+{
+        std::cout << "KalmanFilter::setParameter" << std::endl;
+        if (param == "process_model") 
+        {
+                if(s == "constant")
+                {
+                        ProcessModel_ = ProcessModel::CONSTANT;
+                        return true;
+                } else if ( s == "constant_velocity")
+                {
+                        ProcessModel_ = ProcessModel::CONSTANT_VELOCITY;
+                        return true;
+                }
+        }
+        return false;
 }
 
 std::string KalmanFilter::toString() const {

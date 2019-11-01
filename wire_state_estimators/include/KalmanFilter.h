@@ -39,6 +39,14 @@
 
 #include "problib/pdfs/Gaussian.h"
 
+
+enum class ProcessModel
+        {
+                CONSTANT,
+                CONSTANT_VELOCITY, 
+                NONE
+        };
+
 /**
  * @brief Kalman filter with constant-velocity system model. The system noise is automatically
  * calculated from the maximum expected acceleration which can be set as a parameter.
@@ -50,7 +58,7 @@ public:
      * @brief Constructs a Kalman filter with specified state dimensionality
      * @param dim Dimensionality of the state
      */
-	KalmanFilter(int dim);
+	KalmanFilter(int dim, ProcessModel process_model);
 
     /**
      * @brief Copy constructor
@@ -124,9 +132,13 @@ public:
      * @param a_max The maximum expected acceleration
      */
 	void setMaxAcceleration(double a_max);
+
+        bool setParameter(const std::string& param, const std::string& s);
         
         std::string toString() const;
 
+        
+        
 protected:
 
     /** Dimensionality of the measurements **/
@@ -147,6 +159,9 @@ protected:
 
     /** Maximum expected acceleration **/
 	double a_max_;
+        
+        ProcessModel ProcessModel_;
+
 };
 
 #endif /* KALMANTRACKER_H_ */

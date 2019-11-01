@@ -39,6 +39,7 @@
 
 #include "wire/core/IStateEstimator.h"
 #include "problib/conversions.h"
+#include "KalmanFilter.h"
 
 class KalmanFilter;
 
@@ -107,6 +108,8 @@ public:
      * @return Returns true if the parameter was known to the estimator; false otherwise
      */
     bool setParameter(const std::string& param, double v);
+    
+    bool setParameter(const std::string& param, const std::string& s);
 
 protected:
 
@@ -115,6 +118,8 @@ protected:
     mhf::Time t_last_propagation_;
 
     KalmanFilter* kalman_filter_;
+    
+    ProcessModel ProcessModel_;
 
     std::shared_ptr<pbl::Gaussian> fixed_pdf_;
 

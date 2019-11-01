@@ -46,7 +46,7 @@ void ObjectStorage::match(const Evidence& ev) {
 
     for(list<SemanticObject*>::iterator it_obj = objects_.begin(); it_obj != objects_.end(); ++it_obj) {
         SemanticObject& obj = **it_obj;
-        cout.precision(dbl::max_digits10);
+        //cout.precision(dbl::max_digits10);
         
         obj.propagate(ev.getTimestamp()); // propagated to current timestamp, which is being set in process evidence of WorldModelROS.cpp
     }
