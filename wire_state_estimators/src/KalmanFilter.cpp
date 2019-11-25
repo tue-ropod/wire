@@ -101,13 +101,13 @@ void KalmanFilter::propagate(const double& dt) {
 		//double dt4 = dt2 * dt2;
 
                 pbl::Matrix P = F * G_.getCovariance() * F.t();
-                double Q = 0.4;
+                double q = 0.4;
 		for(int i = 0; i < meas_dim_; ++i) {
 			//P(i, i) += dt4 / 4 * q;						// cov pos
-                        P(i,i) += Q;
+                        P(i,i) += q;
 			//P(i, i + meas_dim_) += dt4 / 4 * q;         // cov pos~vel			
 			//P(i + meas_dim_, i + meas_dim_) += dt2 * q; // cov vel
-			P(i + meas_dim_, i + meas_dim_) += 20*Q; // cov vel
+			P(i + meas_dim_, i + meas_dim_) += 20*q; // cov vel
 			
 		}
 		

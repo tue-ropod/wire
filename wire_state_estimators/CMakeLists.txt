@@ -13,12 +13,14 @@ add_compile_options(-std=c++11)
 find_package(catkin REQUIRED COMPONENTS
   wire_core
   pluginlib
+  geolib2
 )
 
 # Declare a catkin package                                                                                                                                
 catkin_package(
   INCLUDE_DIRS
     include
+  LIBRARIES wire_state_estimators
   CATKIN_DEPENDS
     wire_core
     pluginlib
@@ -27,13 +29,16 @@ catkin_package(
 include_directories(include ${catkin_INCLUDE_DIRS})
 
 ## Build
-
 add_library(position_estimator src/PositionFilter.cpp src/KalmanFilter.cpp)
 add_library(multimodel_estimator src/MultiModelFilter.cpp src/PositionFilter.cpp)
 add_library(discrete_estimator src/DiscreteFilter.cpp)
 add_library(fixed_estimator src/FixedState.cpp)
+add_library(wire_state_estimators src/featureProperties.cpp)
+add_library(position2_estimator src/PositionAndDimensionFilter.cpp)
 
 target_link_libraries(position_estimator ${catkin_LIBRARIES})
 target_link_libraries(multimodel_estimator ${catkin_LIBRARIES})
 target_link_libraries(discrete_estimator ${catkin_LIBRARIES})
 target_link_libraries(fixed_estimator ${catkin_LIBRARIES})
+target_link_libraries(wire_state_estimators ${catkin_LIBRARIES})
+target_link_libraries(position2_estimator ${catkin_LIBRARIES})

@@ -13,3 +13,7 @@
 <library path="lib/libfixed_estimator">
   <class name="wire_state_estimators/FixedEstimator" type="FixedState" base_class_type="IStateEstimator" />
 </library>
+
+<library path="lib/libposition2_estimator">
+  <class name="wire_state_estimators/position2_estimator" type="Position2Filter" base_class_type="IStateEstimator" />
+</library>
