@@ -34,17 +34,29 @@
  *  implied, of TU/e.                                                   *
  ************************************************************************/
 
-#ifndef SE_POSITION__AND_DIMENSION_FILTER_H_
-#define SE_POSITION__AND_DIMENSION_FILTER_H_
+#ifndef SE_POSITION_AND_DIMENSION_FILTER_H_
+#define SE_POSITION_AND_DIMENSION_FILTER_H_
 
 #include "wire/core/IStateEstimator.h"
 #include "problib/conversions.h"
-#include "KalmanFilter.h"
+#include "problib/datatypes.h"
 #include "featureProperties.h"
+
+#include "wire/core/IStateEstimator.h"
+#include "problib/pdfs/PMF.h"
+#include "ros/ros.h"
+
+#include <armadillo>
+
+#include <iostream>
+
+#include <time.h>
+
+//#include <armadillo>
 
 
 //#define TIMEOUT_TIME                    0.5             // [s]
-class KalmanFilter;
+//class KalmanFilter;
 
 /**
  * @brief Estimator specialized in estimating the position of a target. The estimator
@@ -53,22 +65,22 @@ class KalmanFilter;
  * a predefined Gaussian distribution over the current state of the filter (to avoid
  * unrealistic propagation of the state).
  */
-class Position2Filter : public mhf::IStateEstimator {
+class PositionAndDimensionFilter : public mhf::IStateEstimator {
 
 public:
 
-    Position2Filter();
+    PositionAndDimensionFilter();
 
-    Position2Filter(const Position2Filter& orig);
+    PositionAndDimensionFilter(const PositionAndDimensionFilter& orig);
 
-    virtual Position2Filter* clone() const;
+    virtual PositionAndDimensionFilter* clone() const;
   
-    std::shared_ptr<Position2Filter> cloneThis() const 
+    std::shared_ptr<PositionAndDimensionFilter> cloneThis() const 
     {             
-            return std::make_shared< Position2Filter>(*this);
+            return std::make_shared< PositionAndDimensionFilter>(*this);
     }
     
-    virtual ~Position2Filter();
+    virtual ~PositionAndDimensionFilter();
 
     /**
      * @brief Propagates the internal state to Time time
@@ -132,7 +144,7 @@ protected:
 
      tracking::FeatureProperties* properties_;
      
-     std::shared_ptr<pbl::Mixture> observedProperties_;
+ //    std::shared_ptr<pbl::Mixture> observedProperties_;
     
 //    std::shared_ptr<pbl::Gaussian> fixed_pdf_;
 

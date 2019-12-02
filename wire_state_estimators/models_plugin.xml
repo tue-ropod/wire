@@ -14,6 +14,6 @@
   <class name="wire_state_estimators/FixedEstimator" type="FixedState" base_class_type="IStateEstimator" />
 </library>
 
-<library path="lib/libposition2_estimator">
-  <class name="wire_state_estimators/position2_estimator" type="Position2Filter" base_class_type="IStateEstimator" />
+<library path="lib/libpositionanddimension_estimator">
+  <class name="wire_state_estimators/PositionAndDimensionEstimator" type="PositionAndDimensionFilter" base_class_type="IStateEstimator" />
 </library>

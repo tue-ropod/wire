@@ -489,10 +489,10 @@ bool ObjectModelParser::parseYAML(KnowledgeDatabase& knowledge_db)
                                         }
                                                                 
                                         IStateEstimator* estimator;
-
-                                        std::cout << "model_type = " << model_type << std::endl;
+                                        
                                         if (object_model_loader_->isClassAvailable(model_type)) 
                                         {
+                                                std::cout << "Class available for type = " << model_type << std::endl;
                                                 estimator = object_model_loader_->createClassInstance(model_type)->clone();
                                         } 
                                         else

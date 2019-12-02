@@ -35,12 +35,13 @@
  ************************************************************************/
 
 #include "PositionAndDimensionFilter.h"
-#include "KalmanFilter.h"
+//#include "KalmanFilter.h"
 
-Position2Filter::Position2Filter() : 
+PositionAndDimensionFilter::PositionAndDimensionFilter() : 
 
 t_last_update_(0),
-t_last_propagation_(0)
+t_last_propagation_(0),
+properties_(0)
 //kalman_filter_(0),
 //fixed_pdf_(0),
 //max_acceleration_(0),
@@ -48,12 +49,13 @@ t_last_propagation_(0)
 //kalman_timeout_(0),
 //ProcessModel_(ProcessModel::NONE)
 {
-        std::cout << "PositionAndDimensionFilter constructed" << std::endl;
+//         std::cout << "PositionAndDimensionFilter constructed" << std::endl;
 }
 
-Position2Filter::Position2Filter(const Position2Filter& orig) : mhf::IStateEstimator(orig), 
+PositionAndDimensionFilter::PositionAndDimensionFilter(const PositionAndDimensionFilter& orig) : mhf::IStateEstimator(orig), 
 t_last_update_(orig.t_last_update_),
-t_last_propagation_(orig.t_last_propagation_)
+t_last_propagation_(orig.t_last_propagation_),
+properties_(0)
 // properties_(0)
 //kalman_filter_(0),
 //fixed_pdf_(0),
@@ -71,24 +73,29 @@ t_last_propagation_(orig.t_last_propagation_)
         kalman_filter_ = new KalmanFilter(*orig.kalman_filter_);
     }
     */
-        if (orig.properties_) {
+// std::cout << "orig.properties_ = " << orig.properties_ << std::endl;
+    if (orig.properties_) 
+    {
+//             std::cout << "printProperties: " << std::endl;
+//             orig.properties_->printProperties();
         properties_ = new tracking::FeatureProperties(*orig.properties_);
     }
-    std::cout << "Position2Filter copy constructed" << std::endl;
+//     std::cout << "PositionAndDimensionFilter copy constructed" << std::endl;
 }
 
-Position2Filter::~Position2Filter() {
+PositionAndDimensionFilter::~PositionAndDimensionFilter() {
 //    delete kalman_filter_;
     //delete fixed_pdf_;
         delete properties_;
+        
 }
 
-Position2Filter* Position2Filter::clone() const {
-        std::cout << "Position2Filter: going to clone" << std::endl;
-    return new Position2Filter(*this);
+PositionAndDimensionFilter* PositionAndDimensionFilter::clone() const {
+//         std::cout << "PositionAndDimensionFilter: going to clone" << std::endl;
+    return new PositionAndDimensionFilter(*this);
 }
 
-void Position2Filter::propagate(const mhf::Time& time) {
+void PositionAndDimensionFilter::propagate(const mhf::Time& time) {
 
     if (t_last_propagation_ == 0) {
         t_last_propagation_ = time;
@@ -106,7 +113,7 @@ void Position2Filter::propagate(const mhf::Time& time) {
 
     float Q = 0.4;
     pbl::Vector diagQRect, diagQCircle;
-    diagQRect << Q << Q << Q << 20*Q << 20*Q << 20*Q << Q << Q << arma::endr; // TODO why this difference?
+    diagQRect << Q << Q << Q << 20*Q << 20*Q << 20*Q << Q << Q << arma::endr; // TODO why this difference in Q?
     diagQCircle << Q << Q << Q << Q << Q << arma::endr;
     pbl::Matrix QmRectangle = arma::diagmat( diagQRect );
     pbl::Matrix QmCircle = arma::diagmat( diagQCircle );
@@ -115,51 +122,70 @@ void Position2Filter::propagate(const mhf::Time& time) {
     properties_->propagateCircleFeatures( QmCircle, dt);
 }
 
-void Position2Filter::update(std::shared_ptr<const pbl::PDF> z, const mhf::Time& time) {
+void PositionAndDimensionFilter::update(std::shared_ptr<const pbl::PDF> z, const mhf::Time& time) {
 
-    if (z->type() == pbl::PDF::GAUSSIAN) {
-        std::shared_ptr<const pbl::Gaussian> G = pbl::PDFtoGaussian(z);
+    if (z->type() == pbl::PDF::HYBRID) {
+        std::shared_ptr<const pbl::Hybrid> H = pbl::PDFtoHybrid(z);
      
-         // properties_->updateProbabilities ( measuredProb ); andere filter!!?!
-
+       
+         
         if (!properties_) 
         {
-            properties_ = new tracking::FeatureProperties( );
-            //kalman_filter_->setMaxAcceleration(max_acceleration_);
-            //kalman_filter_->init(G);
+            properties_ = new tracking::FeatureProperties();
+            properties_->setFeatureProperties(H);
+//             std::cout << "PositionAndDimensionFilter::update values initialized. properties = " << std::endl;
+//              properties_->printProperties();
         }
-        //else {
-            int rectangle_total_statesize = RECTANGLE_STATESIZE + RECTANGLE_DIM_STATESIZE;
-            int circle_total_statesize = CIRCLE_STATESIZE + CIRCLE_DIM_STATESIZE;
+       else 
+       {     
+               
+            tracking::FeatureProperties measuredProperties; 
+            measuredProperties.setFeatureProperties(H);
+               
+            // properties_->updateProbabilities ( measuredProb ); andere filter!!?!
+         /*   int rectangle_total_statesize = RECTANGLE_MEASURED_STATE_SIZE + RECTANGLE_MEASURED_DIM_STATE_SIZE;
+            int circle_total_statesize = CIRCLE_MEASURED_STATE_SIZE + CIRCLE_DIM_STATE_SIZE;
             pbl::Matrix RmRectangle = G->getCovariance().submat( 0, 0, rectangle_total_statesize - 1, rectangle_total_statesize - 1 );
             pbl::Matrix RmCircle = G->getCovariance().submat( rectangle_total_statesize, rectangle_total_statesize, rectangle_total_statesize + circle_total_statesize - 1, rectangle_total_statesize + circle_total_statesize - 1);
-        
+       
             pbl::Vector zmRectangle = G->getMean().subvec(0, rectangle_total_statesize - 1);
             pbl::Vector zmCircle = G->getMean().subvec(rectangle_total_statesize, rectangle_total_statesize + circle_total_statesize - 1);
-            properties_->updateRectangleFeatures( RmRectangle, zmRectangle );
-            properties_->updateCircleFeatures( RmCircle, zmCircle);
-        //}
+        */
+//             std::cout << "PositionAndDimensionFilter::update rectangle"<< std::endl;
+            properties_->updateRectangleFeatures( measuredProperties.rectangle_.getCovariance(), measuredProperties.rectangle_.getState() );
+//             std::cout << "PositionAndDimensionFilter::update circle" << std::endl;
+            properties_->updateCircleFeatures( measuredProperties.circle_.getCovariance(), measuredProperties.circle_.getState() );
+//             std::cout << "PositionAndDimensionFilter::update updateProbabilities." << std::endl;
+            properties_->updateProbabilities(measuredProperties.featureProbabilities_);
+//             std::cout << "PositionAndDimensionFilter::update finished. Updated properties = " << std::endl;
+//             properties_->printProperties();
+        }
         
     } else {
-        printf("Position2Filter can only be updated with Gaussians.\n");
+        printf("PositionAndDimensionFilter can only be updated with Gaussians.\n");
     }
     
 }
 
-void Position2Filter::reset() {
+void PositionAndDimensionFilter::reset() {
     delete properties_;
     properties_ = 0;
 }
 
-std::shared_ptr<const pbl::PDF> Position2Filter::getValue() const {  
-   if(observedProperties_)
+std::shared_ptr<const pbl::PDF> PositionAndDimensionFilter::getValue() const {  
+   if(properties_)
    {
-           observedProperties_->clear();
+         /*  observedProperties_->clear();
            std::shared_ptr<pbl::Gaussian> rectPDF = std::make_shared<pbl::Gaussian>( properties_->rectangle_.observedRectangle2PDF() );
            std::shared_ptr<pbl::Gaussian> circPDF = std::make_shared<pbl::Gaussian>( properties_->circle_.observedCircle2PDF() );
            
            observedProperties_->addComponent(rectPDF, properties_->featureProbabilities_.get_pRectangle());
            observedProperties_->addComponent(circPDF, properties_->featureProbabilities_.get_pCircle());
+           */
+//          std::cout << "PositionAndDimensionFilter::getValue(): ";
+//          properties_->printProperties();
+         
+           return properties_->getPDF();
            
 /*           
            pbl::Matrix zeroMatrix(rectPDF.getMean().n_rows,circPDF.getMean().n_cols);
@@ -171,22 +197,22 @@ std::shared_ptr<const pbl::PDF> Position2Filter::getValue() const {
            observedProperties_->setMean(fusedMean);
            observedProperties_->setCovariance(fusedMean);
            */
-           return observedProperties_;
+          // return observedProperties_;
    }
    
-    std::cout << "Position2Filter::getValue(): SOMETHINGS WRONG" << std::endl;
+    std::cout << "PositionAndDimensionFilter::getValue(): SOMETHINGS WRONG" << std::endl;
 }
 
-/*bool Position2Filter::setParameter(const std::string& param, bool b) {
+/*bool PositionAndDimensionFilter::setParameter(const std::string& param, bool b) {
     return false;
 }
 */
 
-bool Position2Filter::setParameter(const std::string& param, bool b) {
+bool PositionAndDimensionFilter::setParameter(const std::string& param, bool b) {
     return false;
 }
 
-bool Position2Filter::setParameter(const std::string &param, double v) {
+bool PositionAndDimensionFilter::setParameter(const std::string &param, double v) {
    /* if (param == "max_acceleration") {
         max_acceleration_ = v;
         if (kalman_filter_) {
@@ -202,7 +228,7 @@ bool Position2Filter::setParameter(const std::string &param, double v) {
     return true;
 }
 
-bool Position2Filter::setParameter(const std::string& param, const std::string& s)
+bool PositionAndDimensionFilter::setParameter(const std::string& param, const std::string& s)
 {
       /*  if (param == "process_model") 
         {
@@ -221,4 +247,4 @@ bool Position2Filter::setParameter(const std::string& param, const std::string& 
 
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS( Position2Filter, mhf::IStateEstimator )
+PLUGINLIB_EXPORT_CLASS( PositionAndDimensionFilter, mhf::IStateEstimator )

@@ -61,6 +61,9 @@ void KalmanFilter::init(std::shared_ptr<const pbl::Gaussian> z) {
 
         G_small_->setMean(z->getMean());;
         G_small_->setCovariance(z->getCovariance());
+        
+        // to test TEMP
+        //std::cout << "KF init test =" << arma::inv(G_small_->getCovariance) << std::endl;
 }
 
 void KalmanFilter::propagate(const double& dt) {

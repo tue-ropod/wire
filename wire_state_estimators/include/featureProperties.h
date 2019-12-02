@@ -11,18 +11,20 @@
 #include <visualization_msgs/Marker.h>
 #include "tf/transform_datatypes.h"
 
+//#define ARMA_USE_LAPACK
+
 #define TIMEOUT_TIME                     0.5             // [s]
 #define MIN_PROB_OBJECT                  0.05            // [-]
 #define MARGIN_RECTANGLE_INTERCHANGE     30*M_PI/180     // [rad]
 
-#define RECTANGLE_STATESIZE              6               // [-]
-#define RECTANGLE_MEASURED_STATE_SIZE    3               // [-]
-#define RECTANGLE_DIM_STATESIZE          2               // [-]
-#define RECTANGLE_MEASURED_DIM_STATESIZE 2               // [-]
-#define CIRCLE_STATESIZE                 4               // [-]
-#define CIRCLE_MEASURED_STATE_SIZE       2               // [-]
-#define CIRCLE_DIM_STATESIZE             1               // [-]
-#define CIRCLE_MEASURED_DIM_STATESIZE    1               // [-]
+#define RECTANGLE_STATE_SIZE              6               // [-]
+#define RECTANGLE_MEASURED_STATE_SIZE     3               // [-]
+#define RECTANGLE_DIM_STATE_SIZE          2               // [-]
+#define RECTANGLE_MEASURED_DIM_STATE_SIZE 2               // [-]
+#define CIRCLE_STATE_SIZE                  4               // [-]
+#define CIRCLE_MEASURED_STATE_SIZE        2               // [-]
+#define CIRCLE_DIM_STATE_SIZE              1               // [-]
+#define CIRCLE_MEASURED_DIM_STATE_SIZE     1               // [-]
 
 namespace tracking
 {
@@ -61,7 +63,7 @@ class Circle
   public:
     Circle();
     
-    void setCircle(  std::shared_ptr<const pbl::Gaussian> G);
+    void setCircle(  std::shared_ptr<const pbl::Gaussian> Gmeasured);
     
     void setProperties ( float x, float y, float z, float xVel, float yVel, float roll, float pitch, float yaw, float radius );
     
@@ -110,7 +112,7 @@ class Circle
     
     void predictAndUpdatePos( float dt );
     
-    pbl::Matrix getState();
+    pbl::Vector getState();
     
     pbl::Matrix getCovariance();
     
@@ -136,7 +138,7 @@ class Rectangle
   public:
     Rectangle();
     
-    void setRectangle( std::shared_ptr< const pbl::Gaussian> G);
+    void setRectangle( std::shared_ptr< const pbl::Gaussian> Gmeasured);
     
     void setValues ( float x, float y, float z, float w, float d, float h, float roll, float pitch, float yaw );
     
@@ -205,13 +207,13 @@ class Rectangle
     
     void interchangeRectangleFeatures();
     
-    void setState( float posX, float posY, float posYaw, float xVel, float yVel, float yawVel, float width, float depth );
+ //   void setState( float posX, float posY, float posYaw, float xVel, float yVel, float yawVel, float width, float depth );
     
     pbl::Gaussian rectangle2PDF();
     
     pbl::Gaussian observedRectangle2PDF();
     
-    pbl::Matrix getState();
+    pbl::Vector getState();
 
     pbl::Matrix getCovariance();
     
@@ -225,8 +227,8 @@ class FeatureProbabilities
   public:
     std::shared_ptr<pbl::PMF> pmf_;
 
-FeatureProbabilities()
-{
+    FeatureProbabilities()
+    {
         pmf_ = std::make_shared<pbl::PMF>();
 //    FeatureProbabilities ( void ) { // Initialize with 50/50 probabilities
         pmf_->setDomainSize ( 2 );
@@ -239,15 +241,15 @@ FeatureProbabilities()
         pmf_->setProbability ( "Circle", pCircle_in );
     };
 
-    float get_pRectangle() const {
+    double get_pRectangle() const {
             double out = pmf_->getProbability ( "Rectangle" );
-        return ( float ) out;
+        return out;
     } ;
 
-    float get_pCircle() const {
+    double get_pCircle() const {
 //            std::cout << "Feature prob: ptr = " << this << "\t";
             double out = pmf_->getProbability ( "Circle" );
-        return ( float ) out;
+        return out;
     } ;
 
     int getDomainSize (){
@@ -261,6 +263,10 @@ FeatureProbabilities()
     
     std::shared_ptr<pbl::PMF> getValue() { return pmf_; };
     
+    void setValue(const pbl::PMF& pmf) { pmf_ = std::make_shared<pbl::PMF>(pmf); };
+    
+    //PMF::PMF(const PMF& pmf) : PDF(1, PDF::DISCRETE), ptr_(pmf.ptr_) {
+//}
 };
 
 class FeatureProperties
@@ -271,6 +277,8 @@ class FeatureProperties
     Circle circle_;
 
     Rectangle rectangle_;
+    
+    std::shared_ptr<pbl::Hybrid> observedProperties_;
     
     int nMeasurements_;
     
@@ -283,39 +291,50 @@ class FeatureProperties
     //  delete featureProbabilities_;
    };
 
-    FeatureProperties ( const FeatureProperties* other ) {  
-//             std::cout << "other = " << other << std::endl;
-       featureProbabilities_ = other->featureProbabilities_;
-       circle_ = other->circle_;
-       rectangle_ = other->rectangle_;
-       nMeasurements_ = other->nMeasurements_;
+    FeatureProperties ( const FeatureProperties* orig ) : 
+    featureProbabilities_(orig->featureProbabilities_),
+    circle_ (orig->circle_),
+    rectangle_(orig->rectangle_),
+    nMeasurements_(orig->nMeasurements_)
+  //  observedProperties_ (orig->observedProperties_)
+    {  
+            if (orig->observedProperties_) 
+            {
+                    observedProperties_ = std::make_shared<pbl::Hybrid>(*orig->observedProperties_);
+            }
     };
     
     
      void setFeatureProperties ( std::shared_ptr<const pbl::PDF> observedProperties ) 
      {  
-        if (observedProperties->type() == pbl::PDF::MIXTURE ) 
+        if (observedProperties->type() == pbl::PDF::HYBRID ) 
         {
-            std::shared_ptr<const pbl::Mixture> observedPropertiesGauss = pbl::PDFtoMixture(observedProperties);
-                 
-            std::shared_ptr< const pbl::PDF> rectPDF = observedPropertiesGauss->getComponent(0); // TODO proper numbering for conversion
-            std::shared_ptr< const pbl::PDF> circPDF = observedPropertiesGauss->getComponent(1);
+            std::shared_ptr<const pbl::Hybrid> observedPropertiesHyb = pbl::PDFtoHybrid(observedProperties);
+
+            const std::vector<pbl::Hybrid::distributionStruct> PDFs = observedPropertiesHyb->getPDFS();
             
-             if (observedProperties->type() == pbl::PDF::MIXTURE ) 
+            std::shared_ptr< const pbl::PDF> rectPDF = PDFs[0].pdf; // TODO proper numbering for conversion
+            std::shared_ptr< const pbl::PDF> circPDF = PDFs[1].pdf;
+     //       std::shared_ptr< const pbl::PDF> probabilityPDF = PDFs[2];
+            
+            /*std::shared_ptr< const pbl::PDF> rectPDF = observedPropertiesGauss->getComponent(0); // TODO proper numbering for conversion
+            std::shared_ptr< const pbl::PDF> circPDF = observedPropertiesGauss->getComponent(1);
+            */
+             if (rectPDF->type() == pbl::PDF::GAUSSIAN && circPDF->type() == pbl::PDF::GAUSSIAN)// && probabilityPDF->type() == pbl::PDF::DISCRETE ) 
                 {
                         std::shared_ptr<const pbl::Gaussian> rectGauss = pbl::PDFtoGaussian(rectPDF);
                         std::shared_ptr<const pbl::Gaussian> circGauss = pbl::PDFtoGaussian(circPDF);
-                        
+                        //std::shared_ptr<const pbl::PMF> probPMF = pbl::PDFtoPMF(probabilityPDF);
+
                         rectangle_.setRectangle(rectGauss);
                         circle_.setCircle(circGauss);
-                        
-                        featureProbabilities_.setProbabilities ( (float) observedPropertiesGauss->getWeight(0), (float) observedPropertiesGauss->getWeight(1) );
+                        featureProbabilities_.setProbabilities ( PDFs[0].weight, PDFs[1].weight );
                 } else {
-                        std::printf("Circle and Rectangle can only be set with Gaussians.\n"); 
+                        std::printf("Circle and Rectangle can only be set with Gaussians. \n"); 
                 }
         } else {
                 
-               std::printf("ObservedProperties can only be set with Mixtures.\n"); 
+               std::printf("ObservedProperties can only be set with Hybrids.\n"); 
         }
      };
 
@@ -378,6 +397,9 @@ class FeatureProperties
     void correctPosForDimDiff(float deltaWidth, float deltaDepth, float *deltaX, float *deltaY, float thetaPred);
     
     void printProperties();
+    
+    std::shared_ptr<pbl::Hybrid> getPDF();
+    
 };
 
 }
