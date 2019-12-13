@@ -51,6 +51,8 @@ HypothesisTree::HypothesisTree(int num_max_hyps, double max_min_prob_ratio) : n_
     leafs_.push_back(empty_hyp);
     root_ = empty_hyp;
     MAP_hypothesis_ = empty_hyp;
+    
+//     std::cout << "MAP_hypothesis_ initialized at " << MAP_hypothesis_ << " and max_min_prob_ratio_ " << max_min_prob_ratio_ << std::endl;
 }
 
 HypothesisTree::~HypothesisTree() {
@@ -81,9 +83,13 @@ void HypothesisTree::addEvidence(const EvidenceSet& ev_set) {
 
     t_last_update_ = ev_set.getTimestamp();
 
+//     std::cout << "expand tree " << std::endl;
     expandTree(ev_set);
+//     std::cout << "expand tree finished " << std::endl;
 
+//     std::cout << "prunte tree" << std::endl;
     pruneTree(ev_set.getTimestamp());
+//     std::cout << "prunte tree finished" << std::endl;
 
     applyAssignments();
 
@@ -215,24 +221,38 @@ void HypothesisTree::expandTree(const EvidenceSet& ev_set) {
           
         if (ass_set->isValid()) {
             /* ************ assignment set is complete! Create hypothesis ************ */
+            
+//             std::cout << "ass_set->getProbability() = " << ass_set->getProbability() << std::endl;
+            
             Hypothesis* hyp_child = new Hypothesis(ev_set.getTimestamp(), ass_set->getProbability());
             ROS_DEBUG(" ass_set.getNumMeasurements() = %i\n", ass_set->getNumMeasurements() );
+//             std::cout << " ass_set.getNumMeasurements() = " << ass_set->getNumMeasurements() << std::endl;
             
             hyp_child->setAssignments(ass_set);
             hyp->addChildHypothesis(hyp_child);
 
+//             std::cout << "leafs_.empty() = " << leafs_.empty() << " leafs_.size() = " << leafs_.size() << std::endl;
+            
             if (leafs_.empty()) {
                 // first hypothesis found (and therefore the best one)
+//                     std::cout << "max_min_prob_ratio_ = " << max_min_prob_ratio_ << std::endl;
+//                     std::cout << "hyp_child->getProbability() = " << hyp_child->getProbability() << std::endl;
+                    
                 min_prob = hyp_child->getProbability() * max_min_prob_ratio_;
 
                 MAP_hypothesis_ = hyp_child;
+                
+//                 std::cout << "MAP_hypothesis_ set to " << MAP_hypothesis_ << " min prob = " << min_prob << std::endl;
+                
             }
 
             ROS_DEBUG(" NEW LEAF: %p\n", hyp_child);
+//             std::cout << " NEW LEAF: " << hyp_child << std::endl;
             leafs_.push_back(hyp_child);
          //   ROS_DEBUG("  #leafs = %i, #old leafs = %i\n", (int)leafs_.size(), n_old_leafs);
             
-            ROS_DEBUG("  #leafs = %i\n", (int)leafs_.size());
+            //ROS_DEBUG("  #leafs = %i\n", (int)leafs_.size());
+            //std::printf("  #leafs = %i\n", (int)leafs_.size());
 
             /* ************************************************************************* */
         }
@@ -334,13 +354,17 @@ void HypothesisTree::pruneTree(const Time& timestamp) {
                 prob_ratio = prob_ratios[hyp->getHeight()];
             }
 
+//             std::cout << "best_child->getProbability() = " << best_child->getProbability() << " best child = " << best_child << " parent of best child = " << best_child->getParent() << std::endl;
+//             std::cout << " prob_ratio = " << prob_ratio << std::endl;
+            
             double min_prob = best_child->getProbability() * prob_ratio;
 
             for (std::list<Hypothesis*>::iterator it_child = children.begin(); it_child != children.end();) {
                 bool prune_child = false;
-
+// std::cout << "it_child = " << *it_child << std::endl;
                 if (*it_child != best_child) {
                     if ((*it_child)->getProbability() == 0) {
+                      //      std::cout << "(*it_child)->getProbability() == 0" << std::endl;
                         prune_child = true;
                     } else if (hyp->getHeight() > 6) {
                         ROS_DEBUG(" - Determine hyp similarity between %p and %p\n", best_child->getBestLeaf(), (*it_child)->getBestLeaf());
@@ -348,16 +372,22 @@ void HypothesisTree::pruneTree(const Time& timestamp) {
                         ROS_DEBUG("   ... done\n");
 
                         //printf("  similarity = %f\n", similarity);
-
+                        bool test = (similarity > 0.5);
+//     std::cout << "prune_child = (similarity > 0.5) = " << test << std::endl;
                         prune_child = (similarity > 0.5);
                     } else if ((*it_child)->getProbability() < min_prob) {
+//                             std::cout << "(*it_child)->getProbability() < min_prob), (*it_child)->getProbability() = " << (*it_child)->getProbability() << " min prob = " << min_prob << std::endl;
                         prune_child = true;
                     }
                 }
 
+                
                 if (prune_child) {
+//                         std::cout << "hypothesisTree: prune child" << std::endl;
                     // prune hypothesis and all child hypothesis
                     (*it_child)->deleteChildren();
+//                     std::cout << "Hyp " << *it_child << " is going to be deleted." << std::endl;
+                    
                     delete (*it_child);
                     it_child = children.erase(it_child);
                 } else {
@@ -376,8 +406,10 @@ void HypothesisTree::pruneTree(const Time& timestamp) {
     normalizeProbabilities();
 
     ROS_DEBUG("   #leafs after pruning = %i\n", (int)leafs_.size());
+//     printf("   #leafs after pruning = %i\n", (int)leafs_.size());
 
     ROS_DEBUG("pruneTree - end\n");
+//      printf("pruneTree - end\n");
 }
 
 /* ****************************************************************************** */
@@ -393,12 +425,43 @@ int HypothesisTree::getHeight() const {
 }
 
 
-const Hypothesis& HypothesisTree::getMAPHypothesis() const {
+/*const Hypothesis& HypothesisTree::getMAPHypothesis() const {       
+        std::cout << "HypothesisTree::getMAPHypothesis(): *MAP_hypothesis_ = " << MAP_hypothesis_ << std::endl;
     return *MAP_hypothesis_;
+}*/
+
+const Hypothesis& HypothesisTree::getMAPHypothesis() const 
+{       
+   double maxProb = 0.0;
+   std::list<mhf::Hypothesis* >::const_iterator bestHyp;
+         //const std::list<mhf::Hypothesis*>& hyp_list = hypothesisTree_->getHypotheses();
+    for(std::list<mhf::Hypothesis* >::const_iterator it_hyp = leafs_.begin(); it_hyp != leafs_.end(); ++it_hyp) 
+    {
+
+      //  const std::list<mhf::SemanticObject*>* objs = (*it_hyp)->getObjects();
+
+        double hypProb = (*it_hyp)->getProbability();
+        if( hypProb > maxProb )
+        {
+                maxProb = hypProb;
+                bestHyp = it_hyp;
+        }
+        
+        
+       // sumProb += hyp_prob;
+       // std::cout << "Hyp P = " << hyp_prob << ": " << objs->size() << " object(s)" << std::endl;
+
+    }
+    
+//    std::cout << "getMAPHypothesis best hyp =  " << *bestHyp << std::endl;
+    
+    return **bestHyp;
+    //std::cout << "totalProb = " << sumProb << std::endl;
 }
 
-const std::list<SemanticObject*>& HypothesisTree::getMAPObjects() const {
+const std::list<SemanticObject*>* HypothesisTree::getMAPObjects() const {
     ROS_DEBUG("getMAPObjects - begin\n");
+//     std::cout << "getMAPObjects - begin\n " << std::endl;
     return getMAPHypothesis().getObjects();
 }
 

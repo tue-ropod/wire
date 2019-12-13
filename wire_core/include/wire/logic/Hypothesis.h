@@ -99,7 +99,7 @@ public:
     int getNumObjects() const;
 
     // returns the list of objects contained in this hypothesis
-    const std::list<SemanticObject*>& getObjects() const;
+    const std::list<SemanticObject*>* getObjects() const;
 
     //double getObjectProbability(MHTObject* obj) const;
 
@@ -162,7 +162,7 @@ protected:
 
     double timestamp_;
 
-    std::list<SemanticObject*> objects_;
+    std::list<SemanticObject*>* objects_;
 
     Hypothesis* parent_;
 

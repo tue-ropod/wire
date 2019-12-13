@@ -87,9 +87,9 @@ public:
 
     /* GETTERS */
 
-    const std::list<SemanticObject*>& getMAPObjects() const;
+    const std::list<SemanticObject*>* getMAPObjects() const;
 
-    const std::list<SemanticObject*>& getAllObjects() const;
+    const std::list<SemanticObject*>* getAllObjects() const;
 
     const std::list<Hypothesis*>& getHypotheses() const;
 

@@ -1,4 +1,5 @@
 #include "featureProperties.h"
+#include <boost/iterator/iterator_concepts.hpp>
 
 
 struct rectangleMapping {
@@ -113,7 +114,7 @@ void Circle::printProperties ( )
     std::cout << " pitch_ = " << pitch_;
     std::cout << " yaw_ = " << yaw_;
     std::cout << " radius = " << radius_ ;
-    std::cout << " P_ = " << P_PosVel_;
+    std::cout << " P_ = " << P_PosVel_ << std::endl;
 //     std::cout << "Pdim_ = " << Pdim_ << std::endl;
 }
 
@@ -355,7 +356,7 @@ void Rectangle::printProperties ( )
     std::cout << " yawVel_ = "<< yawVel_;
     std::cout << " roll_ = "  << roll_;
     std::cout << " pitch_ = " << pitch_;
-    std::cout << " yaw_ = "   << yaw_;
+    std::cout << " yaw_ = "   << yaw_ << std::endl;
 }
 
 float Rectangle::predictX( float dt )
@@ -973,16 +974,33 @@ void FeatureProperties::updateCircleFeatures ( pbl::Matrix R_k, pbl::Vector z_k 
 //         std::cout << "R_k_dim = " << R_k_dim << std::endl;
         
         //pbl::Vector x_k_k_dim = kalmanUpdate(Fdim, circle_.H_dim_, &Pdim, x_k_1_k_1_dim, z_k_dim, Q_k.block<1, 1>( 4, 4 ), R_k.block<1, 1>( 2, 2 ) );
-         pbl::Vector x_k_k_dim = kalmanUpdate(circle_.get_H_dim(), &Pdim, x_k_k_1_dim, z_k_dim, R_k_dim);
+        
+        std::cout << "Circle update: x_k_k_1_dim = " << x_k_k_1_dim << std::endl;
+        pbl::Vector x_k_k_dim = kalmanUpdate(circle_.get_H_dim(), &Pdim, x_k_k_1_dim, z_k_dim, R_k_dim);
+        std::cout << "Circle update: x_k_k_dim = " << x_k_k_dim << std::endl;
         
         // After the position update for changed dimensions, update the dimensions
         pbl::Matrix P_PosVel = circle_.get_P_PosVel();
        // pbl::Matrix x_k_1_k_1_PosVel( 4, 1 ), z_k_posVel( 2, 1 );
         pbl::Matrix x_k_k_1_PosVel = {circle_.get_x(), circle_.get_y(), circle_.get_xVel(), circle_.get_yVel() };//, circle_.get_xAccel(), circle_.get_yAccel();
+        std::cout << "Circle update: x_k_k_1_PosVel = " << x_k_k_1_dim << std::endl;
         pbl::Matrix z_k_posVel = { z_k ( CM.x_zRef ), z_k ( CM.y_zRef ) };
         //pbl::Matrix x_k_k_PosVel = kalmanUpdate(F_PosVel, circle_.H_PosVel, &P_PosVel, x_k_1_k_1_PosVel, z_k_posVel, Q_k.block<4, 4>( 0, 0 ), R_k.block<2, 2>( 0, 0 ) );
          pbl::Matrix R_k_posVel = R_k.submat(0, 0, CIRCLE_MEASURED_STATE_SIZE - 1, CIRCLE_MEASURED_STATE_SIZE - 1);
          pbl::Vector x_k_k_PosVel = kalmanUpdate(circle_.get_H_PosVel(), &P_PosVel, x_k_k_1_PosVel, z_k_posVel, R_k_posVel);
+         std::cout << "Circle update: x_k_k_PosVel = " << x_k_k_PosVel << std::endl;
+         
+          bool test = false;
+         for(int iTest = 0; iTest<x_k_k_PosVel.size(); iTest++)
+         {
+                 if(x_k_k_PosVel(iTest) != x_k_k_PosVel(iTest))
+                 {
+                         test = true;
+                         continue;
+                 }
+         }
+         // break featureProperties.cpp:998 if test > 0
+         
 //          std::cout << "R_k_posVel = " << R_k_posVel << std::endl;
          
         posVelState2Circle(x_k_k_PosVel);
@@ -1036,7 +1054,7 @@ void FeatureProperties::printProperties()
         circle_.printProperties();
         std::cout << 
         "Probability circle = "    << featureProbabilities_.get_pCircle() << 
-        "Probability rectangle = " << featureProbabilities_.get_pRectangle() << std::endl;
+        "\t Probability rectangle = " << featureProbabilities_.get_pRectangle() << std::endl;
 }
 
 }

@@ -159,7 +159,7 @@ bool WorldModelROS::hypothesisToMsg(const Hypothesis& hyp, wire_msgs::WorldState
     //std::cout << "properties_.size() = " << hyp.getObjects().size() << std::endl;
    // int counter = 0;
 
-    for(list<SemanticObject*>::const_iterator it = hyp.getObjects().begin(); it != hyp.getObjects().end(); ++it) {
+    for(list<SemanticObject*>::const_iterator it = hyp.getObjects()->begin(); it != hyp.getObjects()->end(); ++it) {
      //   counter++;
        //  std::cout << "Count = " << counter << "time = " << time  << std::endl;
         SemanticObject* obj_clone = (*it)->clone();
@@ -177,6 +177,8 @@ bool WorldModelROS::hypothesisToMsg(const Hypothesis& hyp, wire_msgs::WorldState
 
     return true;
 }
+
+
 
 bool WorldModelROS::transformPosition(std::shared_ptr<const pbl::PDF> pdf_in, const string& frame_in, std::shared_ptr<pbl::Gaussian> pdf_out) const {
     std::shared_ptr<const pbl::Gaussian> gauss = pbl::PDFtoGaussian(pdf_in);
@@ -357,14 +359,14 @@ void WorldModelROS::publish() const {
 
 }
 
-const list<SemanticObject*>& WorldModelROS::getMAPObjects() const {
+const list<SemanticObject*>* WorldModelROS::getMAPObjects() const {
     return world_model_->getMAPObjects();
 }
 
 void WorldModelROS::showStatistics() const {
     printf("***** %f *****\n", ros::Time::now().toSec());
     world_model_->showStatistics();
-    cout << "Num MAP objects:      " << world_model_->getMAPObjects().size() << endl;
+    cout << "Num MAP objects:      " << world_model_->getMAPObjects()->size() << endl;
     cout << "Last update:          " << last_update_duration << " seconds" << endl;
     cout << "Max update:           " << max_update_duration << " seconds" << endl;
     cout << "Evidence buffer size: " << evidence_buffer_.size() << endl;

@@ -55,6 +55,8 @@ public:
     void removeFromHypothesis(Hypothesis* hyp);
 
     unsigned int getNumParentHypotheses() const;
+    
+    std::string toString() const;
 
 protected:
 
@@ -62,7 +64,7 @@ protected:
 
     std::string expected_class_;
 
-    std::set<Hypothesis*> parent_hypotheses_;
+    std::set<Hypothesis*>* parent_hypotheses_;
 
 };
 

@@ -23,16 +23,32 @@ namespace mhf {
 int SemanticObject::N_SEMANTICOBJECT = 0;
 
 SemanticObject::SemanticObject(long ID) : ID_(ID), expected_class_("") {
+//         std::cout << "Constructor of semantic object" << std::endl;
     ++N_SEMANTICOBJECT;
+//     std::cout << "N_SEMANTICOBJECT = " << N_SEMANTICOBJECT << std::endl;
+    
+    parent_hypotheses_ = new std::set<Hypothesis*>();
+    
+//     std::cout << "Semantic object constructor: parent_hypotheses_ = " << parent_hypotheses_ << " semantic object = " << this << std::endl;
 }
 
 SemanticObject::SemanticObject(const SemanticObject& orig)
     : PropertySet(orig), ID_(orig.ID_), expected_class_(orig.expected_class_) {
+//             std::cout << "Copy constructor of semantic object" << std::endl;
     ++N_SEMANTICOBJECT;
+//     std::cout << "N_SEMANTICOBJECT = " << N_SEMANTICOBJECT << std::endl;
+       parent_hypotheses_ = new std::set<Hypothesis*>();
+    
+//     std::cout << "Semantic object copy constructor: parent_hypotheses_ = " << parent_hypotheses_ << " semantic object = " << this << std::endl;
 }
 
 SemanticObject::~SemanticObject() {
     --N_SEMANTICOBJECT;
+    if(parent_hypotheses_)
+    {
+//             std::cout << "semantic object destructor: delete parent_hypothesis, semantic object = " << this << std::endl;
+            delete parent_hypotheses_;
+    }
 }
 
 void SemanticObject::init(const Evidence& z) {
@@ -137,6 +153,7 @@ void SemanticObject::update(const Evidence& ev) {
 }
 
 SemanticObject* SemanticObject::clone() const {
+        //std::cout << "Semantic object: going to clone. This object = " << toString() << std::endl;
     return new SemanticObject(*this);
 }
 
@@ -157,7 +174,7 @@ const ClassModel& SemanticObject::getExpectedObjectModel() const {
 void SemanticObject::addPotentialAssignment(const Evidence& ev, double probability) {
     Assignment* assignment = new Assignment(Assignment::EXISTING, &ev, this, probability);
 
-    for(set<Hypothesis*>::iterator it_hyp = parent_hypotheses_.begin(); it_hyp != parent_hypotheses_.end(); ++it_hyp) {
+    for(set<Hypothesis*>::iterator it_hyp = parent_hypotheses_->begin(); it_hyp != parent_hypotheses_->end(); ++it_hyp) {
         Hypothesis& hyp = **it_hyp;
         hyp.addPotentialAssignment(assignment);
     }
@@ -170,15 +187,38 @@ ObjectID SemanticObject::getID() const {
 }
 
 void SemanticObject::addToHypothesis(Hypothesis* hyp) {
-    parent_hypotheses_.insert(hyp);
+    parent_hypotheses_->insert(hyp);
 }
 
 void SemanticObject::removeFromHypothesis(Hypothesis* hyp) {
-    parent_hypotheses_.erase(hyp);
+//         std::cout << "parent_hypotheses_ = " << parent_hypotheses_ << " semantic object = " << this << std::endl;
+//         std::cout << "Remove from Hypothesis: parent_hypotheses_.size() = " << parent_hypotheses_->size() << std::endl;
+//         std::cout << "remove from hypothesis: hyp = " << hyp << std::endl;
+//         std::cout << "parent hypothesis = " << std::endl;
+//         for(std::set<Hypothesis*>::iterator it = parent_hypotheses_->begin(); it != parent_hypotheses_->end(); it++)
+//         {
+//                 Hypothesis* hypTest = *it;
+//                 std::cout << hypTest << "\t";
+//         }
+//         std::cout << "\n";
+    parent_hypotheses_->erase(hyp);
 }
 
 unsigned int SemanticObject::getNumParentHypotheses() const {
-    return parent_hypotheses_.size();
+    return parent_hypotheses_->size();
+}
+
+std::string SemanticObject::toString() const
+{
+    std::stringstream s;
+    
+    s << "Semantic object: id = " << ID_ ;
+    s << " expected class = " << expected_class_ << std::endl;//<< " parent_hypotheses_ = " << std::endl;
+      
+  //  for(std::set<Hypothesis*>::const_iterator it = parent_hypotheses_.begin(); it != parent_hypotheses_.end(); ++it) {
+   //     s << " - " << *it << endl;
+   // }
+    return s.str();
 }
 
 }

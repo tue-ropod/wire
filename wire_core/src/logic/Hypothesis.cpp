@@ -24,11 +24,21 @@ namespace mhf {
 
 Hypothesis::Hypothesis(const double& timestamp, double probability) : probability_(probability), timestamp_(timestamp),
     parent_(0), assignment_set_(0), assignment_matrix_(0), height_(0), is_active_leaf_(true) {
+            
+//             std::cout << "Hypothesis constructor called: this hypothesis = " << this << std::endl;
+            
+          //  std::list<SemanticObject*>* initObjects;
+            objects_ = new std::list<SemanticObject*>();
+//             std::cout << "hypothesis constructor: p objects = " << objects_ << std::endl;
 }
 
 Hypothesis::~Hypothesis() {
+        
+//         std::cout << "Hypothesis destructor called: this hypothesis = " << this << std::endl;
+        
     clear();
     delete assignment_matrix_;
+    delete objects_;
 }
 
 /* ****************************************************************************** */
@@ -54,10 +64,21 @@ int Hypothesis::getHeight() const {
 }
 
 int Hypothesis::getNumObjects() const {
-    return objects_.size();
+    return objects_->size();
 }
 
-const list<SemanticObject*>& Hypothesis::getObjects() const {
+const list<SemanticObject*>* Hypothesis::getObjects() const {
+        
+     //   std::cout << "Hypothesis = " << this << " objects_ = " ;//<< std::endl;
+//         std::cout << objects_ << std::endl;
+        
+     //   std::cout << "Hypothesis inside Objects functionality, size = " ;
+//         std::cout << objects_->size();
+    //    std::cout << "Hypothesis numObjects = " << getNumObjects() ;//<< " numeric limit = " << std::numeric_limits<int>::max() << std::endl;
+//          bool check = objects_->begin() == objects_->end();
+//          int dist = std::distance(objects_->begin(), objects_->end() );
+     //   std::cout << "Hypothesis::getObjects() : tests, size " <<  objects_->size() << " dist = " << dist  << " check = " << check << " prob = " << this->getProbability() << std::endl;       
+        
     return objects_;
 }
 
@@ -112,8 +133,18 @@ void Hypothesis::addChildHypothesis(Hypothesis* h) {
 }
 
 void Hypothesis::addObject(SemanticObject* obj) {
-    objects_.push_back(obj);
+//     int numObjectsPrev = getNumObjects();
+    objects_->push_back(obj);
+//     std::cout << "going to add object to hypothesis, obj = " << obj->toString() << " current #objects = " << numObjectsPrev << " hypothesis = " << this << std::endl;
     obj->addToHypothesis(this);
+//     int numObjectsAfter = getNumObjects();
+//     std::cout << "object added to hypothesis, #objects = " << numObjectsAfter << std::endl;
+    
+//     if(numObjectsPrev - numObjectsAfter > 1) // TODO TEMP
+//     {
+//             std::cout << "Hypothesis::addObject PROBLEMSSSSS!!!" << std::endl;
+//                 exit;
+//     }
 }
 
 
@@ -153,8 +184,8 @@ void Hypothesis::applyAssignments() {
     }
 
     // apply cases with target
-    const list<SemanticObject*>& hyp_parent_objs = parent_->getObjects();
-    for (list<SemanticObject*>::const_iterator it_obj = hyp_parent_objs.begin(); it_obj != hyp_parent_objs.end(); ++it_obj) {
+    const list<SemanticObject*>* hyp_parent_objs = parent_->getObjects();
+    for (list<SemanticObject*>::const_iterator it_obj = hyp_parent_objs->begin(); it_obj != hyp_parent_objs->end(); ++it_obj) {
              
         SemanticObject* obj = *it_obj;
         
@@ -245,16 +276,30 @@ void Hypothesis::findActiveLeafs(list<Hypothesis*>& active_leafs) {
 
 void Hypothesis::clear() {
     // remove this hypothesis from the hypothesis list of all objects contained in this hypothesis
-    for (list<SemanticObject*>::iterator it_obj = objects_.begin(); it_obj != objects_.end(); ++it_obj) {
+       // std::cout << "Remove hypothesis: " << std::endl;
+        
+//         std::cout << "Hypothesis clear: objects_ = " << objects_ << std::endl;
+//         std::cout << "Hypothsis clear: objects_size = " << objects_->size() << std::endl;
+//         bool check = objects_->begin() ==  objects_->end();
+//         std::cout << "Hypothesis clear: check = " << check << std::endl;
+        
+    for (list<SemanticObject*>::iterator it_obj = objects_->begin(); it_obj != objects_->end(); ++it_obj) {
         SemanticObject* obj = *it_obj;
         obj->removeFromHypothesis(this);
+        
+//         std::cout << "Hypothesis clear(): obj->getNumParentHypotheses() = " << obj->getNumParentHypotheses() << std::endl;
+        
         if (obj->getNumParentHypotheses() == 0) {
             ObjectStorage::getInstance().removeObject(*obj);
+         //   std::cout << "Going to delete object " << obj->toString() << std::endl;
             delete obj;
         }
     }
 
-    objects_.clear();
+    //std::cout << "Going to clear objects in hypothesis, #objects = " << getNumObjects() << std::endl;
+//     std::cout << "Going to clear objects in hypothesis " << std::endl;
+    objects_->clear();
+    //std::cout << "objects cleared, #objects = " << getNumObjects() << std::endl;
 
     is_active_leaf_ = false;
 
@@ -262,10 +307,20 @@ void Hypothesis::clear() {
     if (assignment_set_) {
         delete assignment_set_;
     }
+    
+   /* if(objects_){
+            std::cout << "objects_ " << objects_ << " of hypothesis " << this << " is going to be deleted" << std::endl;
+            
+        delete objects_;
+        objects_ = 0;
+    }
+    */
 }
 
 
 void Hypothesis::clearInactive() {
+//         std::cout << "clear inactive" << std::endl;
+        
     if (!is_active_leaf_) {
         clear();
         for (list<Hypothesis*>::const_iterator it = children_.begin(); it != children_.end(); ++it) {
@@ -279,6 +334,9 @@ void Hypothesis::deleteChildren() {
     // delete all child hypotheses
     for (list<Hypothesis*>::iterator it = children_.begin(); it != children_.end(); ++it) {
         (*it)->deleteChildren();
+        
+//         std::cout << "delete children: hyp " << *it << " is going to be deleted" << std::endl;
+        
         delete (*it);
     }
 }
@@ -298,6 +356,9 @@ Hypothesis* Hypothesis::deleteSinglePaths() {
     if (children_.size() == 1) {
         Hypothesis* hyp = *children_.begin();
         hyp->parent_ = this->parent_;
+        
+//         std::cout << "delete deleteSinglePaths: hyp " << this << " is going to be deleted" << std::endl;
+        
         delete this;
         return hyp;
     }
