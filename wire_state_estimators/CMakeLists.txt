@@ -48,4 +48,4 @@ target_link_libraries(discrete_estimator ${catkin_LIBRARIES})
 target_link_libraries(fixed_estimator ${catkin_LIBRARIES})
 target_link_libraries(positionanddimension_estimator wire_state_estimators problib  ${catkin_LIBRARIES} )
 
-add_dependencies(wire_state_estimators ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
+add_dependencies(wire_state_estimators ${catkin_EXPORTED_TARGETS})
