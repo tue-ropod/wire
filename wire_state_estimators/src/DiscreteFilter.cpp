@@ -34,7 +34,7 @@
  *  implied, of TU/e.                                                   *
  ************************************************************************/
 
-#include "DiscreteFilter.h"
+#include "wire_state_estimators/DiscreteFilter.h"
 
 int DiscreteFilter::N_DISCRETEKALMAN_FILTER = 0; // TODO remove
 

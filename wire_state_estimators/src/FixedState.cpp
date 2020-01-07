@@ -34,7 +34,7 @@
  *  implied, of TU/e.                                                   *
  ************************************************************************/
 
-#include "FixedState.h"
+#include "wire_state_estimators/FixedState.h"
 
 FixedState::FixedState() {
 

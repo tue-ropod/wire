@@ -34,10 +34,10 @@
  *  implied, of TU/e.                                                   *
  ************************************************************************/
 
-#include "MultiModelFilter.h"
-#include "KalmanFilter.h"
+#include "wire_state_estimators/MultiModelFilter.h"
+#include "wire_state_estimators/KalmanFilter.h"
 
-#include "PositionFilter.h"
+#include "wire_state_estimators/PositionFilter.h"
 
 MultiModelFilter::MultiModelFilter() : initialized_(false) {
     PositionFilter* e1 = new PositionFilter();

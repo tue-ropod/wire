@@ -34,7 +34,7 @@
  *  implied, of TU/e.                                                   *
  ************************************************************************/
 
-#include "PositionAndDimensionFilter.h"
+#include "wire_state_estimators/PositionAndDimensionFilter.h"
 //#include "KalmanFilter.h"
 
 PositionAndDimensionFilter::PositionAndDimensionFilter() : 

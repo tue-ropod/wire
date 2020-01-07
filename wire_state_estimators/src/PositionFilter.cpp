@@ -34,8 +34,8 @@
  *  implied, of TU/e.                                                   *
  ************************************************************************/
 
-#include "PositionFilter.h"
-#include "KalmanFilter.h"
+#include "wire_state_estimators/PositionFilter.h"
+#include "wire_state_estimators/KalmanFilter.h"
 
 PositionFilter::PositionFilter() : t_last_update_(0), t_last_propagation_(0), kalman_filter_(0),
     fixed_pdf_(0), max_acceleration_(0), fixed_pdf_cov_(0), kalman_timeout_(0), ProcessModel_(ProcessModel::NONE) {

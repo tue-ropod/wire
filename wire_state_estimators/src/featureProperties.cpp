@@ -1,4 +1,4 @@
-#include "featureProperties.h"
+#include "wire_state_estimators/featureProperties.h"
 #include <boost/iterator/iterator_concepts.hpp>
 
 
