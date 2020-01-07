@@ -315,6 +315,11 @@ class FeatureProperties
             
             std::shared_ptr< const pbl::PDF> rectPDF = PDFs[0].pdf; // TODO proper numbering for conversion
             std::shared_ptr< const pbl::PDF> circPDF = PDFs[1].pdf;
+            
+//             std::cout << "featureProperties.h, setFeatureProperties: rectPDF = " << rectPDF << std::endl;
+//             std::cout << "featureProperties.h, setFeatureProperties: circPDF = " << circPDF << std::endl;
+            
+            
      //       std::shared_ptr< const pbl::PDF> probabilityPDF = PDFs[2];
             
             /*std::shared_ptr< const pbl::PDF> rectPDF = observedPropertiesGauss->getComponent(0); // TODO proper numbering for conversion
@@ -329,6 +334,14 @@ class FeatureProperties
                         rectangle_.setRectangle(rectGauss);
                         circle_.setCircle(circGauss);
                         featureProbabilities_.setProbabilities ( PDFs[0].weight, PDFs[1].weight );
+                        
+//                         std::cout << "FeatureProperties set: rectangle = ";
+                        rectangle_.printProperties();
+                        
+//                         std::cout << " circle = ";
+                        circle_.printProperties();
+                        
+                        
                 } else {
                         std::printf("Circle and Rectangle can only be set with Gaussians. \n"); 
                 }

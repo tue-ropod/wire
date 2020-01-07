@@ -141,8 +141,8 @@ void PositionAndDimensionFilter::update(std::shared_ptr<const pbl::PDF> z, const
             tracking::FeatureProperties measuredProperties; 
             measuredProperties.setFeatureProperties(H);
             
-            std::cout << "Hybrid: measuredProperties = " << std::endl;
-            measuredProperties.printProperties();
+//             std::cout << "Hybrid: measuredProperties = " << std::endl;
+//             measuredProperties.printProperties();
                
             // properties_->updateProbabilities ( measuredProb ); andere filter!!?!
          /*   int rectangle_total_statesize = RECTANGLE_MEASURED_STATE_SIZE + RECTANGLE_MEASURED_DIM_STATE_SIZE;
@@ -154,16 +154,23 @@ void PositionAndDimensionFilter::update(std::shared_ptr<const pbl::PDF> z, const
             pbl::Vector zmCircle = G->getMean().subvec(rectangle_total_statesize, rectangle_total_statesize + circle_total_statesize - 1);
         */
 //             std::cout << "PositionAndDimensionFilter::update rectangle"<< std::endl;
-            properties_->updateRectangleFeatures( measuredProperties.rectangle_.getCovariance(), measuredProperties.rectangle_.getState() );
-             std::cout << "PositionAndDimensionFilter::update circle" << std::endl;
-            properties_->updateCircleFeatures( measuredProperties.circle_.getCovariance(), measuredProperties.circle_.getState() );
+
+// std::cout << "measuredProperties.rectangle_.getState() = " << measuredProperties.rectangle_.getState() << std::endl;
+// std::cout << "measuredProperties.rectangle_.getCovariance() = " << measuredProperties.rectangle_.getCovariance() << std::endl;
+pbl::Vector z_kRectangle = measuredProperties.rectangle_.get_H()*measuredProperties.rectangle_.getState();
+pbl::Vector z_kCircle = measuredProperties.circle_.get_H()*measuredProperties.circle_.getState();
+// std::cout << "measuredProperties: z_kRectangle = " << z_kRectangle << std::endl;
+
+            properties_->updateRectangleFeatures( measuredProperties.rectangle_.getCovariance(), z_kRectangle );
+//              std::cout << "PositionAndDimensionFilter::update circle" << std::endl;
+            properties_->updateCircleFeatures( measuredProperties.circle_.getCovariance(), z_kCircle );
 //             std::cout << "PositionAndDimensionFilter::update updateProbabilities." << std::endl;
             properties_->updateProbabilities(measuredProperties.featureProbabilities_);
 //             std::cout << "PositionAndDimensionFilter::update finished. Updated properties = " << std::endl;
 //             properties_->printProperties();
             
-            std::cout << "Hybrid: updatedProperties = " << std::endl;
-            properties_->printProperties();
+//             std::cout << "Hybrid: updatedProperties = " << std::endl;
+//             properties_->printProperties();
         }
         
     } else {

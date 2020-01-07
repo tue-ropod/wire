@@ -3,7 +3,7 @@
 
 
 struct rectangleMapping {
-   unsigned int x_PosVelRef = 0, y_PosVelRef = 1, yaw_PosVelRef = 2, xVel_PosVelRef = 3, yVel_PosVelRef = 4, yawVel_PosVelRef = 5;
+   unsigned int x_PosVelRef = 0, y_PosVelRef = 1, yaw_PosVelRef = 2, xVel_PosVelRef = 3, yVel_PosVelRef = 4, yawVel_PosVelRef = 5;//, width_PosVelRef, depth_PosVelRef;
    unsigned int width_dimRef = 0, depth_dimRef = 1;
    unsigned int x_zRef = 0, y_zRef = 1, yaw_zRef = 2, width_zRef = 3, depth_zRef = 4;
 } RM;
@@ -311,7 +311,7 @@ void Rectangle::setRectangle( std::shared_ptr<const pbl::Gaussian> Gmeasured)
             P_PosVel_(RM.x_PosVelRef, RM.x_PosVelRef) = Gmeasured->getCovariance()(RM.x_PosVelRef, RM.x_PosVelRef);
             P_PosVel_(RM.y_PosVelRef, RM.y_PosVelRef) = Gmeasured->getCovariance()(RM.y_PosVelRef, RM.y_PosVelRef);
             P_PosVel_(RM.yaw_PosVelRef, RM.yaw_PosVelRef) = Gmeasured->getCovariance()(RM.yaw_PosVelRef, RM.yaw_PosVelRef);
-            Pdim_(RM.width_dimRef, RM.width_dimRef) = Gmeasured->getCovariance()(RECTANGLE_MEASURED_STATE_SIZE - 1 + RM.width_dimRef, RECTANGLE_MEASURED_STATE_SIZE - 1 +RM.width_dimRef);
+            Pdim_(RM.width_dimRef, RM.width_dimRef) = Gmeasured->getCovariance()(RECTANGLE_MEASURED_STATE_SIZE - 1 + RM.width_dimRef, RECTANGLE_MEASURED_STATE_SIZE - 1 + RM.width_dimRef);
             Pdim_(RM.depth_dimRef, RM.depth_dimRef) = Gmeasured->getCovariance()(RECTANGLE_MEASURED_STATE_SIZE - 1 + RM.depth_dimRef, RECTANGLE_MEASURED_STATE_SIZE - 1 + RM.depth_dimRef);
            
         /*    xVel_   = G->getMean().at(RM.xVel_PosVelRef);
@@ -344,6 +344,7 @@ void Rectangle::setValues ( float x, float y, float z, float w, float d, float h
 
 void Rectangle::printProperties ( )
 {
+    std::cout.precision(4);
     std::cout << "Rect prop = " ;
     std::cout << "x_ = "      << x_;
     std::cout << " y_ = "     << y_;
@@ -791,53 +792,69 @@ void FeatureProperties::updateRectangleFeatures ( pbl::Matrix R_k, pbl::Vector z
         pbl::Matrix Hdim = arma::eye( 2, 2 );
         */
         //Hdim.setIdentity( Hdim.rows(), Hdim.cols() ); 
-                
+
+//         std::cout << "updateRectangleFeatures: z_k = " << z_k << std::endl;
+        
         unwrap( &z_k( RM.yaw_zRef ), (double) rectangle_.get_yaw(), (double) M_PI );
 
         if( rectangle_.switchDimensions( z_k( RM.yaw_zRef ) ) )
         {
                 rectangle_.interchangeRectangleFeatures( );
                 unwrap( &z_k( RM.yaw_zRef ), (double) rectangle_.get_yaw(), (double) M_PI ); 
-                
                 //ROS_WARN("Interchanged rectangular features");
         }
-        
+
         pbl::Matrix Pdim = rectangle_.get_Pdim();
-       // pbl::Matrix x_k_1_k_1_dim( 2, 1 ), z_k_dim( 2, 1 );
+//         pbl::Matrix x_k_1_k_1_dim( 2, 1 ), z_k_dim( 2, 1 );
         pbl::Vector x_k_k_1_dim = { rectangle_.get_w(), rectangle_.get_d()};
         pbl::Vector z_k_dim = { z_k( RM.width_zRef ), z_k( RM.depth_zRef ) };
-        // pbl::Vector x_k_k_dim = kalmanUpdate(Fdim, rectangle_.H_dim, &Pdim, x_k_1_k_1_dim, z_k_dim, Q_k.block<2, 2>( 6, 6 ), R_k.block<2, 2>( 3, 3 ) );
+//          pbl::Vector x_k_k_dim = kalmanUpdate(Fdim, rectangle_.H_dim, &Pdim, x_k_1_k_1_dim, z_k_dim, Q_k.block<2, 2>( 6, 6 ), R_k.block<2, 2>( 3, 3 ) );
        pbl::Matrix R_k_dim = R_k.submat(RECTANGLE_MEASURED_STATE_SIZE, RECTANGLE_MEASURED_STATE_SIZE, RECTANGLE_MEASURED_STATE_SIZE + RECTANGLE_MEASURED_DIM_STATE_SIZE - 1, RECTANGLE_MEASURED_STATE_SIZE + RECTANGLE_MEASURED_DIM_STATE_SIZE - 1);        
-        
-//        std::cout << "R_k_dim = " << R_k_dim << std::endl;
-       
+
+//         std::cout << "R_k_dim = " << R_k_dim << std::endl;
+
        // dim update
 //        std::cout << "Rectangle: dim update of Kalman" << std::endl;
        pbl::Vector x_k_k_dim = kalmanUpdate(rectangle_.get_H_dim(), &Pdim, x_k_k_1_dim, z_k_dim, R_k_dim);
-        
+
        float deltaWidth = x_k_k_1_dim ( RM.width_dimRef ) - x_k_k_dim( RM.width_dimRef );
        float deltaDepth = x_k_k_1_dim ( RM.depth_dimRef ) - x_k_k_dim( RM.depth_dimRef );
-        
+
+//        std::cout << "deltawidth, deltadepth = " << deltaWidth << ", " << deltaDepth << std::endl;
+
+//        std::cout << "x_k_k_1_dim = " << x_k_k_1_dim << std::endl;
+//        std::cout << "x_k_k_dim = " << x_k_k_dim << std::endl;
+
        float deltaX = 0.0, deltaY = 0.0;
        float thetaPred = rectangle_.get_yaw();
        correctForDimensions( deltaWidth, deltaDepth, &deltaX, &deltaY, z_k( RM.x_zRef ), z_k( RM.y_zRef ), rectangle_.get_x(), rectangle_.get_y(), thetaPred );
-        
+
        // Correct position due to updated dimensions
        rectangle_.set_x ( rectangle_.get_x() + deltaX );
        rectangle_.set_y ( rectangle_.get_y() + deltaY );
-        
+
        rectangle_.set_w ( x_k_k_dim ( RM.width_dimRef ) );
        rectangle_.set_d ( x_k_k_dim ( RM.depth_dimRef ) );
+       
+//        std::cout << "z_k = " << z_k << std::endl;
+       
+//        std::cout << "z_k ( RM.width_zRef ) = " <<  z_k ( RM.width_zRef ) << " rectangle_.get_w() = " << rectangle_.get_w() << std::endl;
+//        std::cout << "z_k ( RM.depth_zRef ) = " <<  z_k ( RM.depth_zRef ) << " rectangle_.get_d() = " << rectangle_.get_d() << std::endl;
         
         // Correct measured position caused by differences in modelled and measured dimensions
         deltaWidth = z_k ( RM.width_zRef ) - rectangle_.get_w();
         deltaDepth = z_k ( RM.depth_zRef ) - rectangle_.get_d();
         
+//          std::cout << "deltawidth, deltadepth  caused by differences in modelled and measured dimensions = " << deltaWidth << ", " << deltaDepth << std::endl;
+         
         deltaX = 0.0; deltaY = 0.0;
         correctForDimensions( deltaWidth, deltaDepth, &deltaX, &deltaY, z_k( RM.x_zRef ), z_k( RM.y_zRef ), rectangle_.get_x(), rectangle_.get_y(), thetaPred );
         
+//         std::cout << "Old measurement = " << z_k( RM.x_zRef ) << ", " << z_k( RM.y_zRef ) << std::endl;
         z_k( RM.x_zRef ) = z_k( RM.x_zRef ) - deltaX;
         z_k( RM.y_zRef ) = z_k( RM.y_zRef ) - deltaY;
+        
+//         std::cout<< "Updated measurement = " << z_k( RM.x_zRef ) << ", " << z_k( RM.y_zRef ) << std::endl;
         
         pbl::Matrix P_PosVel = rectangle_.get_P_PosVel();
         //pbl::Vector x_k_1_k_1_PosVel( 6, 1 ), z_k_posVel( 3, 1 );
@@ -845,11 +862,11 @@ void FeatureProperties::updateRectangleFeatures ( pbl::Matrix R_k, pbl::Vector z
         pbl::Vector z_k_posVel = {z_k ( RM.x_zRef ),     z_k ( RM.y_zRef ),     z_k ( RM.yaw_zRef )};
         pbl::Matrix R_k_posVel = R_k.submat(0, 0, RECTANGLE_MEASURED_STATE_SIZE - 1, RECTANGLE_MEASURED_STATE_SIZE - 1);
         
-//         std::cout << "R_k_posVel = " << R_k_posVel << std::endl;
+//          std::cout << "R_k_posVel = " << R_k_posVel << std::endl;
         
-//         std::cout << "Rectangle: pos vel update of Kalman" << std::endl;
+//          std::cout << "Rectangle: pos vel update of Kalman. x_k_k_1_PosVel = " << x_k_k_1_PosVel << std::endl;
         pbl::Vector x_k_k_PosVel = kalmanUpdate(rectangle_.get_H_PosVel(), &P_PosVel, x_k_k_1_PosVel, z_k_posVel, R_k_posVel);
- 
+//  std::cout << "x_k_k_PosVel = " << x_k_k_PosVel << std::endl;
         posVelState2Rectangle( x_k_k_PosVel );
 
         rectangle_.set_P_PosVel ( P_PosVel );
@@ -975,20 +992,20 @@ void FeatureProperties::updateCircleFeatures ( pbl::Matrix R_k, pbl::Vector z_k 
         
         //pbl::Vector x_k_k_dim = kalmanUpdate(Fdim, circle_.H_dim_, &Pdim, x_k_1_k_1_dim, z_k_dim, Q_k.block<1, 1>( 4, 4 ), R_k.block<1, 1>( 2, 2 ) );
         
-        std::cout << "Circle update: x_k_k_1_dim = " << x_k_k_1_dim << std::endl;
+//         std::cout << "Circle update: x_k_k_1_dim = " << x_k_k_1_dim << std::endl;
         pbl::Vector x_k_k_dim = kalmanUpdate(circle_.get_H_dim(), &Pdim, x_k_k_1_dim, z_k_dim, R_k_dim);
-        std::cout << "Circle update: x_k_k_dim = " << x_k_k_dim << std::endl;
+//         std::cout << "Circle update: x_k_k_dim = " << x_k_k_dim << std::endl;
         
         // After the position update for changed dimensions, update the dimensions
         pbl::Matrix P_PosVel = circle_.get_P_PosVel();
        // pbl::Matrix x_k_1_k_1_PosVel( 4, 1 ), z_k_posVel( 2, 1 );
         pbl::Matrix x_k_k_1_PosVel = {circle_.get_x(), circle_.get_y(), circle_.get_xVel(), circle_.get_yVel() };//, circle_.get_xAccel(), circle_.get_yAccel();
-        std::cout << "Circle update: x_k_k_1_PosVel = " << x_k_k_1_dim << std::endl;
+//         std::cout << "Circle update: x_k_k_1_PosVel = " << x_k_k_1_dim << std::endl;
         pbl::Matrix z_k_posVel = { z_k ( CM.x_zRef ), z_k ( CM.y_zRef ) };
         //pbl::Matrix x_k_k_PosVel = kalmanUpdate(F_PosVel, circle_.H_PosVel, &P_PosVel, x_k_1_k_1_PosVel, z_k_posVel, Q_k.block<4, 4>( 0, 0 ), R_k.block<2, 2>( 0, 0 ) );
          pbl::Matrix R_k_posVel = R_k.submat(0, 0, CIRCLE_MEASURED_STATE_SIZE - 1, CIRCLE_MEASURED_STATE_SIZE - 1);
          pbl::Vector x_k_k_PosVel = kalmanUpdate(circle_.get_H_PosVel(), &P_PosVel, x_k_k_1_PosVel, z_k_posVel, R_k_posVel);
-         std::cout << "Circle update: x_k_k_PosVel = " << x_k_k_PosVel << std::endl;
+//          std::cout << "Circle update: x_k_k_PosVel = " << x_k_k_PosVel << std::endl;
          
           bool test = false;
          for(int iTest = 0; iTest<x_k_k_PosVel.size(); iTest++)
