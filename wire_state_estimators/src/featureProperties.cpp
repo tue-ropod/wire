@@ -53,41 +53,82 @@ Circle::Circle():   H_PosVel_( arma::eye(CIRCLE_MEASURED_STATE_SIZE, CIRCLE_STAT
  //   std::cout << "Cirlce construced: H_ = " << H_ << std::endl;
 }
 
-void Circle::setCircle( std::shared_ptr<const pbl::Gaussian> Gmeasured)
-{       
-     //   if (P->type() == pbl::PDF::GAUSSIAN) 
-    //    {
-         //       std::shared_ptr<const pbl::Gaussian> G = pbl::PDFtoGaussian(G);
-
-//         std::cout << "setCircle: G = " << Gmeasured->toString() << std::endl;
-        
-        
-           //     P_PosVel_ = G->getCovariance().submat(0, 0, CIRCLE_STATE_SIZE - 1, CIRCLE_STATE_SIZE - 1);
-           //     Pdim_ = G->getCovariance().submat(CIRCLE_STATE_SIZE, CIRCLE_STATE_SIZE, CIRCLE_STATE_SIZE + CIRCLE_DIM_STATE_SIZE - 1, CIRCLE_STATE_SIZE + CIRCLE_DIM_STATE_SIZE - 1);
-
-                this->setProperties( Gmeasured->getMean().at(CM.x_zRef),  // x
-                                Gmeasured->getMean().at(CM.y_zRef), // y
-                                0.3, // z TODO TEMP
-                                0.0, //G->getMean().at(CM.xVel_PosVelRef), // xvel
-                                0.0, //G->getMean().at(CM.yVel_PosVelRef), // yvel
-                                0.0, // roll
-                                0.0, // pitch
-                                0.0, // yaw
-                                Gmeasured->getMean().at(CM.radius_zRef)  ); // radius
+void Circle::setMeasuredCircle( std::shared_ptr<const pbl::Gaussian> Gmeasured)
+{
+        this->setProperties( Gmeasured->getMean().at(CM.x_zRef),  // x
+                             Gmeasured->getMean().at(CM.y_zRef), // y
+                             0.3, // z TODO TEMP
+                             0.0, //G->getMean().at(CM.xVel_PosVelRef), // xvel
+                             0.0, //G->getMean().at(CM.yVel_PosVelRef), // yvel
+                             0.0, // roll
+                             0.0, // pitch
+                             0.0, // yaw
+                             Gmeasured->getMean().at(CM.radius_zRef)  ); // radius
            
+        // TODO covariances
+           /* P_PosVel_(CM.x_PosVelRef, CM.x_PosVelRef) = Gmeasured->getCovariance()(CM.x_PosVelRef, CM.x_PosVelRef);
+            P_PosVel_(CM.y_PosVelRef, CM.y_PosVelRef) = Gmeasured->getCovariance()(CM.y_PosVelRef, CM.y_PosVelRef);
+            Pdim_(CM.r_dimRef, CM.r_dimRef) = Gmeasured->getCovariance()(CIRCLE_MEASURED_STATE_SIZE - 1 + CM.r_dimRef, CIRCLE_MEASURED_STATE_SIZE - 1 + CM.r_dimRef);
+            */
+
+         P_PosVel_ = Gmeasured->getCovariance().submat(0, 0, CIRCLE_MEASURED_STATE_SIZE - 1, CIRCLE_MEASURED_STATE_SIZE - 1);
+         Pdim_     = Gmeasured->getCovariance().submat(CIRCLE_MEASURED_STATE_SIZE,
+                                                       CIRCLE_MEASURED_STATE_SIZE,
+                                                       CIRCLE_MEASURED_STATE_SIZE + CIRCLE_MEASURED_DIM_STATE_SIZE - 1,
+                                                       CIRCLE_MEASURED_STATE_SIZE + CIRCLE_MEASURED_DIM_STATE_SIZE - 1);
+         
+        P_PosVel_ = arma::eye( CIRCLE_STATE_SIZE, CIRCLE_STATE_SIZE ); 
+        Pdim_ = arma::eye( CIRCLE_DIM_STATE_SIZE, CIRCLE_DIM_STATE_SIZE ); 
+        
+        P_PosVel_.submat(0, 0, CIRCLE_MEASURED_STATE_SIZE - 1, CIRCLE_MEASURED_STATE_SIZE - 1) = 
+                Gmeasured->getCovariance().submat(0, 0, CIRCLE_MEASURED_STATE_SIZE - 1, CIRCLE_MEASURED_STATE_SIZE - 1);
+        
+        Pdim_.submat(0, 0, CIRCLE_MEASURED_DIM_STATE_SIZE - 1, CIRCLE_MEASURED_DIM_STATE_SIZE - 1) =
+                 Gmeasured->getCovariance().submat(CIRCLE_MEASURED_STATE_SIZE, 
+                                                   CIRCLE_MEASURED_STATE_SIZE,
+                                                   CIRCLE_MEASURED_STATE_SIZE + CIRCLE_MEASURED_DIM_STATE_SIZE - 1,
+                                                   CIRCLE_MEASURED_STATE_SIZE + CIRCLE_MEASURED_DIM_STATE_SIZE - 1);
+         
+       /*  std::cout << "SetMeasuredCircle: Gmeasured, mean =  " << Gmeasured->getMean() << std::endl;
+         printProperties();
+         
+         std::cout << "SetMeasuredCircle: Gmeasured, cov =  " << Gmeasured->getCovariance() << std::endl;
+         std::cout << "SetMeasuredCircle: P_PosVel_ =  " << P_PosVel_ << std::endl;
+         std::cout << "SetMeasuredCircle: Pdim_ =  " << Pdim_ << std::endl;
+         */
+}
+
+void Circle::setObservedCircle( std::shared_ptr<const pbl::Gaussian> Gobserved)
+{
+        set_x      ( Gobserved->getMean().at(CM.x_PosVelRef) );
+        set_y      ( Gobserved->getMean().at(CM.y_PosVelRef) );
+        set_z      ( 0.3 );// z TODO TEMP
+        
+        set_roll   ( 0.0 );
+        set_pitch  ( 0.0 );
+        set_yaw    ( 0.0 );
+        
+        set_xVel   ( Gobserved->getMean().at(CM.xVel_PosVelRef) );
+        set_yVel   ( Gobserved->getMean().at(CM.yVel_PosVelRef) );
+        
+        set_radius ( Gobserved->getMean().at(CM.radius_zRef) );
+        
+        P_PosVel_ = Gobserved->getCovariance().submat(0, 0, CIRCLE_STATE_SIZE - 1, CIRCLE_STATE_SIZE - 1);
+        Pdim_     = Gobserved->getCovariance().submat(CIRCLE_STATE_SIZE,
+                                                      CIRCLE_STATE_SIZE,
+                                                      CIRCLE_STATE_SIZE + CIRCLE_DIM_STATE_SIZE - 1,
+                                                      CIRCLE_STATE_SIZE + CIRCLE_DIM_STATE_SIZE - 1);
+      /*     
             P_PosVel_(CM.x_PosVelRef, CM.x_PosVelRef) = Gmeasured->getCovariance()(CM.x_PosVelRef, CM.x_PosVelRef);
             P_PosVel_(CM.y_PosVelRef, CM.y_PosVelRef) = Gmeasured->getCovariance()(CM.y_PosVelRef, CM.y_PosVelRef);
             Pdim_(CM.r_dimRef, CM.r_dimRef) = Gmeasured->getCovariance()(CIRCLE_MEASURED_STATE_SIZE - 1 + CM.r_dimRef, CIRCLE_MEASURED_STATE_SIZE - 1 + CM.r_dimRef);
-           
-                
-//                 std::cout << "setCircle P_PosVel_ = " << P_PosVel_ << std::endl;
-//                 std::cout << "setCircle Pdim_ = " << Pdim_ << std::endl;
-                
-//                 std::cout << "setCircle, state = " << this->getState() << std::endl;
-    //   }
-    //    else {
-     //            std::printf("Circle can only be set with Gaussians.\n");
-     //   }
+            */
+//       std::cout << "setObservedCircle: Gobserved, mean =  " << Gobserved->getMean() << std::endl;
+//          printProperties();
+//          
+//          std::cout << "setObservedCircle: Gobserved, cov =  " << Gobserved->getCovariance() << std::endl;
+//          std::cout << "setObservedCircle: P_PosVel_ =  " << P_PosVel_ << std::endl;
+//          std::cout << "setObservedCircle: Pdim_ =  " << Pdim_ << std::endl;
 }
 
 void Circle::setProperties ( float x, float y, float z, float xVel, float yVel, float roll, float pitch, float yaw, float radius )
@@ -115,7 +156,7 @@ void Circle::printProperties ( )
     std::cout << " yaw_ = " << yaw_;
     std::cout << " radius = " << radius_ ;
     std::cout << " P_ = " << P_PosVel_ << std::endl;
-//     std::cout << "Pdim_ = " << Pdim_ << std::endl;
+    std::cout << "Pdim_ = " << Pdim_ << std::endl;
 }
 
 void Circle::setMarker ( visualization_msgs::Marker& marker , unsigned int ID )
@@ -147,7 +188,7 @@ void Circle::setMarker ( visualization_msgs::Marker& marker, unsigned int ID, st
     
     marker.color = color;
 
-    marker.lifetime = ros::Duration ( TIMEOUT_TIME );
+    marker.lifetime = ros::Duration ( MARKER_TIMEOUT_TIME );
 }
 
 void Circle::setTranslationalVelocityMarker( visualization_msgs::Marker& marker, unsigned int ID )
@@ -178,7 +219,7 @@ void Circle::setTranslationalVelocityMarker( visualization_msgs::Marker& marker,
     marker.color.b = 0.0;
     marker.color.a = 1.0;
     
-    marker.lifetime = ros::Duration ( TIMEOUT_TIME );
+    marker.lifetime = ros::Duration ( MARKER_TIMEOUT_TIME );
 }
 
 std::vector< geo::Vec2f > Circle::convexHullPoints(unsigned int nPoints)
@@ -280,53 +321,61 @@ Rectangle::Rectangle(): H_dim_ ( arma::eye(RECTANGLE_MEASURED_DIM_STATE_SIZE, RE
     */
 }
 
-
-void Rectangle::setRectangle( std::shared_ptr<const pbl::Gaussian> Gmeasured)
+void Rectangle::setObservedRectangle( std::shared_ptr<const pbl::Gaussian> Gobserved)
 {
-  // if (P->type() == pbl::PDF::GAUSSIAN) 
- //  {
-    //       std::shared_ptr<const pbl::Gaussian> G = pbl::PDFtoGaussian(G);
+        set_x      ( Gobserved->getMean().at(RM.x_PosVelRef) );
+        set_y      ( Gobserved->getMean().at(RM.y_PosVelRef) );
+        set_z      ( 0.3 );// z TODO TEMP
+        set_h      ( 0.1 );// h TODO TEMP
+
+        set_roll   ( 0.0 );
+        set_pitch  ( 0.0);
+        set_yaw    ( Gobserved->getMean().at(RM.yaw_PosVelRef) );
+
+        set_xVel   ( Gobserved->getMean().at(RM.xVel_PosVelRef) );
+        set_yVel   ( Gobserved->getMean().at(RM.yVel_PosVelRef) );
+        set_yawVel ( Gobserved->getMean().at(RM.yawVel_PosVelRef) );
+
+        set_w      ( Gobserved->getMean().at(RECTANGLE_STATE_SIZE + RM.width_dimRef));
+        set_d      ( Gobserved->getMean().at(RECTANGLE_STATE_SIZE + RM.depth_dimRef));
         
-//         std::cout << "setRectangle G = " << Gmeasured->toString() << std::endl;
-//         std::cout << "G->getCovariance = " << Gmeasured->getCovariance() << std::endl;
-//         std::cout << "G->getMean().size() = " << Gmeasured->getMean().size() << std::endl;
+        P_PosVel_ = Gobserved->getCovariance().submat(0, 0, RECTANGLE_STATE_SIZE - 1, RECTANGLE_STATE_SIZE - 1);
+        Pdim_     = Gobserved->getCovariance().submat(RECTANGLE_STATE_SIZE,
+                                                      RECTANGLE_STATE_SIZE,
+                                                      RECTANGLE_STATE_SIZE + RECTANGLE_DIM_STATE_SIZE - 1,
+                                                      RECTANGLE_STATE_SIZE + RECTANGLE_DIM_STATE_SIZE - 1);
+}
+
+void Rectangle::setMeasuredRectangle( std::shared_ptr<const pbl::Gaussian> Gmeasured)
+{
+        this->setValues( Gmeasured->getMean().at(RM.x_zRef),  // x
+                         Gmeasured->getMean().at(RM.y_zRef), // y
+                         0.3, // z TODO TEMP
+                         Gmeasured->getMean().at(RM.width_zRef), // w
+                         Gmeasured->getMean().at(RM.depth_zRef), // d
+                         0.1, // h TODO TEMP
+                         0.0, // roll
+                         0.0, // pitch
+                         Gmeasured->getMean().at(RM.yaw_zRef) ); // yaw
+  
         
-          /* P_PosVel_ = G->getCovariance().submat(0, 0, RECTANGLE_MEASURED_STATE_SIZE - 1, RECTANGLE_MEASURED_STATE_SIZE - 1);
-           Pdim_ = G->getCovariance().submat(RECTANGLE_MEASURED_STATE_SIZE, 
-                                             RECTANGLE_MEASURED_STATE_SIZE, 
-                                             RECTANGLE_MEASURED_STATE_SIZE + RECTANGLE_MEASURED_DIM_STATE_SIZE - 1, 
-                                             RECTANGLE_MEASURED_STATE_SIZE + RECTANGLE_MEASURED_DIM_STATE_SIZE - 1);
-            */    
-          
-           this->setValues( Gmeasured->getMean().at(RM.x_zRef),  // x
-                            Gmeasured->getMean().at(RM.y_zRef), // y
-                            0.3, // z TODO TEMP
-                            Gmeasured->getMean().at(RM.width_zRef), // w
-                            Gmeasured->getMean().at(RM.depth_zRef), // d
-                            0.1, // h TODO TEMP
-                            0.0, // roll
-                            0.0, // pitch
-                            Gmeasured->getMean().at(RM.yaw_zRef) ); // yaw
-           
-            P_PosVel_(RM.x_PosVelRef, RM.x_PosVelRef) = Gmeasured->getCovariance()(RM.x_PosVelRef, RM.x_PosVelRef);
-            P_PosVel_(RM.y_PosVelRef, RM.y_PosVelRef) = Gmeasured->getCovariance()(RM.y_PosVelRef, RM.y_PosVelRef);
-            P_PosVel_(RM.yaw_PosVelRef, RM.yaw_PosVelRef) = Gmeasured->getCovariance()(RM.yaw_PosVelRef, RM.yaw_PosVelRef);
-            Pdim_(RM.width_dimRef, RM.width_dimRef) = Gmeasured->getCovariance()(RECTANGLE_MEASURED_STATE_SIZE - 1 + RM.width_dimRef, RECTANGLE_MEASURED_STATE_SIZE - 1 + RM.width_dimRef);
-            Pdim_(RM.depth_dimRef, RM.depth_dimRef) = Gmeasured->getCovariance()(RECTANGLE_MEASURED_STATE_SIZE - 1 + RM.depth_dimRef, RECTANGLE_MEASURED_STATE_SIZE - 1 + RM.depth_dimRef);
-           
-        /*    xVel_   = G->getMean().at(RM.xVel_PosVelRef);
-            yVel_   = G->getMean().at(RM.yVel_PosVelRef);
-            yawVel_ = G->getMean().at(RM.yawVel_PosVelRef); 
-          */  
-            
-//                 std::cout << "setRectangle P_PosVel_ = " << P_PosVel_ << std::endl;
-//                 std::cout << "setRectangle Pdim_ = " << Pdim_ << std::endl;
-                
-//                 std::cout << "setRectangle, state = " << this->getState() << std::endl;
-  //   }
-  //   else {
-  //               std::printf("Rectangle can only be set with Gaussians.\n");
-  //   }
+        P_PosVel_ = arma::eye( RECTANGLE_STATE_SIZE, RECTANGLE_STATE_SIZE ); 
+        Pdim_ = arma::eye( RECTANGLE_DIM_STATE_SIZE, RECTANGLE_DIM_STATE_SIZE ); 
+        
+        P_PosVel_.submat(0, 0, RECTANGLE_MEASURED_STATE_SIZE - 1, RECTANGLE_MEASURED_STATE_SIZE - 1) = 
+                Gmeasured->getCovariance().submat(0, 0, RECTANGLE_MEASURED_STATE_SIZE - 1, RECTANGLE_MEASURED_STATE_SIZE - 1);
+        
+        Pdim_.submat(0, 0, RECTANGLE_MEASURED_DIM_STATE_SIZE - 1, RECTANGLE_MEASURED_DIM_STATE_SIZE - 1) =
+                 Gmeasured->getCovariance().submat(RECTANGLE_MEASURED_STATE_SIZE, 
+                                                   RECTANGLE_MEASURED_STATE_SIZE,
+                                                   RECTANGLE_MEASURED_STATE_SIZE + RECTANGLE_MEASURED_DIM_STATE_SIZE - 1,
+                                                   RECTANGLE_MEASURED_STATE_SIZE + RECTANGLE_MEASURED_DIM_STATE_SIZE - 1);
+//                   std::cout << "setMeasuredRectangle: Gmeasured, mean =  " << Gmeasured->getMean() << std::endl;
+//          printProperties();
+         
+//          std::cout << "setMeasuredRectangle: Gmeasured, cov =  " << Gmeasured->getCovariance() << std::endl;
+//          std::cout << "setMeasuredRectangle: P_PosVel_ =  " << P_PosVel_ << std::endl;
+//          std::cout << "setMeasuredRectangle: Pdim_ =  " << Pdim_ << std::endl;
 }
 
 void Rectangle::setValues ( float x, float y, float z, float w, float d, float h, float roll, float pitch, float yaw )
@@ -405,7 +454,7 @@ void Rectangle::setMarker ( visualization_msgs::Marker& marker, unsigned int ID,
     marker.scale.y = d_;
     marker.scale.z = 0.1;
     marker.color = color;
-    marker.lifetime = ros::Duration ( TIMEOUT_TIME );
+    marker.lifetime = ros::Duration ( MARKER_TIMEOUT_TIME );
 }
 
 void Rectangle::setMarker ( visualization_msgs::Marker& marker , unsigned int ID )
@@ -452,7 +501,7 @@ void Rectangle::setTranslationalVelocityMarker( visualization_msgs::Marker& mark
     marker.color.b = 0.0;
     marker.color.a = 1.0;
     
-    marker.lifetime = ros::Duration ( TIMEOUT_TIME );
+    marker.lifetime = ros::Duration ( MARKER_TIMEOUT_TIME );
 }
 
 void Rectangle::setRotationalVelocityMarker( visualization_msgs::Marker& marker, unsigned int ID )
@@ -486,7 +535,7 @@ void Rectangle::setRotationalVelocityMarker( visualization_msgs::Marker& marker,
     marker.color.b = 1.0;
     marker.color.a = 1.0;  
     
-    marker.lifetime = ros::Duration ( TIMEOUT_TIME );
+    marker.lifetime = ros::Duration ( MARKER_TIMEOUT_TIME );
 }
 
 std::vector<geo::Vec2f> Rectangle::determineCorners ( float associationDistance )
@@ -692,12 +741,102 @@ void FeatureProperties::correctPosForDimDiff(float deltaWidth, float deltaDepth,
         *deltaX = 0.5*rotatedX;
         *deltaY =  0.5*rotatedY;
 }
+void FeatureProperties::setObservedFeatureProperties ( std::shared_ptr<const pbl::PDF> observedProperties )      
+{  
+        if (observedProperties->type() == pbl::PDF::HYBRID ) 
+        {
+            std::shared_ptr<const pbl::Hybrid> observedPropertiesHyb = pbl::PDFtoHybrid(observedProperties);
+
+            const std::vector<pbl::Hybrid::distributionStruct> PDFs = observedPropertiesHyb->getPDFS();
+            
+            std::shared_ptr< const pbl::PDF> rectPDF = PDFs[0].pdf; // TODO proper numbering for conversion
+            std::shared_ptr< const pbl::PDF> circPDF = PDFs[1].pdf;
+            
+//             std::cout << "featureProperties.h, setFeatureProperties: rectPDF = " << rectPDF << std::endl;
+//             std::cout << "featureProperties.h, setFeatureProperties: circPDF = " << circPDF << std::endl;
+            
+             if (rectPDF->type() == pbl::PDF::GAUSSIAN && circPDF->type() == pbl::PDF::GAUSSIAN)// && probabilityPDF->type() == pbl::PDF::DISCRETE ) 
+                {
+                        std::shared_ptr<const pbl::Gaussian> rectGauss = pbl::PDFtoGaussian(rectPDF);
+                        std::shared_ptr<const pbl::Gaussian> circGauss = pbl::PDFtoGaussian(circPDF);
+                        //std::shared_ptr<const pbl::PMF> probPMF = pbl::PDFtoPMF(probabilityPDF);
+
+                        rectangle_.setObservedRectangle(rectGauss);
+                        circle_.setObservedCircle(circGauss); // TODO
+                        featureProbabilities_.setProbabilities ( PDFs[0].weight, PDFs[1].weight );
+                        
+//                         std::cout << "FeatureProperties set: rectangle = ";
+//                         rectangle_.printProperties();
+                        
+//                         std::cout << " circle = ";
+//                         circle_.printProperties();
+                        
+                        
+                } else {
+                        std::printf("Circle and Rectangle can only be set with Gaussians. \n"); 
+                }
+        } else {
+                
+               std::printf("ObservedProperties can only be set with Hybrids.\n"); 
+        }
+};
+     
+void FeatureProperties::setMeasuredFeatureProperties ( std::shared_ptr<const pbl::PDF>measuredProperties )
+{
+        if (measuredProperties->type() == pbl::PDF::HYBRID ) 
+        {
+            std::shared_ptr<const pbl::Hybrid> measuredPropertiesHyb = pbl::PDFtoHybrid(measuredProperties);
+
+            const std::vector<pbl::Hybrid::distributionStruct> PDFs = measuredPropertiesHyb->getPDFS();
+            
+            std::shared_ptr< const pbl::PDF> rectPDF = PDFs[0].pdf; // TODO proper numbering for conversion
+            std::shared_ptr< const pbl::PDF> circPDF = PDFs[1].pdf;
+            
+//             std::cout << "featureProperties.h, setFeatureProperties: rectPDF = " << rectPDF << std::endl;
+//             std::cout << "featureProperties.h, setFeatureProperties: circPDF = " << circPDF << std::endl;
+            
+            
+     //       std::shared_ptr< const pbl::PDF> probabilityPDF = PDFs[2];
+            
+            /*std::shared_ptr< const pbl::PDF> rectPDF = observedPropertiesGauss->getComponent(0); // TODO proper numbering for conversion
+            std::shared_ptr< const pbl::PDF> circPDF = observedPropertiesGauss->getComponent(1);
+            */
+             if (rectPDF->type() == pbl::PDF::GAUSSIAN && circPDF->type() == pbl::PDF::GAUSSIAN)// && probabilityPDF->type() == pbl::PDF::DISCRETE ) 
+                {
+                        std::shared_ptr<const pbl::Gaussian> rectGauss = pbl::PDFtoGaussian(rectPDF);
+                        std::shared_ptr<const pbl::Gaussian> circGauss = pbl::PDFtoGaussian(circPDF);
+                        //std::shared_ptr<const pbl::PMF> probPMF = pbl::PDFtoPMF(probabilityPDF);
+
+                        rectangle_.setMeasuredRectangle(rectGauss);
+                        circle_.setMeasuredCircle(circGauss);
+                        featureProbabilities_.setProbabilities ( PDFs[0].weight, PDFs[1].weight );
+                        
+//                         std::cout << "FeatureProperties set: rectangle = ";
+//                         rectangle_.printProperties();
+                        
+//                         std::cout << " circle = ";
+//                         circle_.printProperties();
+                        
+                        
+                } else {
+                        std::printf("Circle and Rectangle can only be set with Gaussians. \n"); 
+                }
+        } else {
+                
+               std::printf("ObservedProperties can only be set with Hybrids.\n"); 
+        }
+};
 
 pbl::Vector kalmanPropagate(pbl::Matrix F, pbl::Matrix *P, pbl::Vector x_k_1_k_1, pbl::Matrix Q)
 {   
+//     std::cout << "kalmanPropagate, before: x_k_1_k_1 = " << x_k_1_k_1 << std::endl;
+//     std::cout << "kalmanPropagate, before: *P = " << *P << std::endl;
     pbl::Vector x_k_k_1 = F*x_k_1_k_1;
-    pbl::Matrix P_k_k_1 = F* (*P) * F.t() + Q;
+    //pbl::Matrix P_k_k_1 = F* (*P) * F.t() + Q;
+    *P = F* (*P) * F.t() + Q;
     
+//     std::cout << "kalmanPropagate, after: x_k_k_1 = " << x_k_k_1 << std::endl;
+//     std::cout << "kalmanPropagate, after: *P = " << *P << std::endl;
     return x_k_k_1;
 }
     
@@ -707,14 +846,14 @@ pbl::Vector kalmanUpdate(pbl::Matrix H, pbl::Matrix *P, pbl::Vector x_k_k_1, pbl
     pbl::Vector y_k = z_k - H*x_k_k_1;
     pbl::Matrix S_k = H* *P*H.t() + R;
     
-    
-   /* std::cout << "kalmanUpdate: S_k = " << S_k << std::endl;
-    std::cout << "kalmanUpdate: H = " << H << std::endl;
-    std::cout << "kalmanUpdate: H.t() = " << H.t() << std::endl;
-    std::cout << "kalmanUpdate: *P = " << *P << std::endl;*/
+//     std::cout << "kalmanUpdate: I = " << I << std::endl;
+//     std::cout << "kalmanUpdate: y_k = " << y_k << std::endl;
+//     std::cout << "kalmanUpdate: S_k = " << S_k << std::endl;
+//     std::cout << "kalmanUpdate: H = " << H << std::endl;
+//     std::cout << "kalmanUpdate: H.t() = " << H.t() << std::endl;
+//     std::cout << "kalmanUpdate: *P = " << *P << std::endl;
 //     std::cout << "kalmanUpdate: R = " << R << std::endl;
-    
-    //std::cout << "kalmanUpdate: H* *P*H.t() = " << H* *P*H.t() << std::endl;
+//     std::cout << "kalmanUpdate: H* *P*H.t() = " << H* *P*H.t() << std::endl;
 
     pbl::Vector K_k = *P*H.t() * inv(S_k);
     pbl::Vector x_k_k = x_k_k_1 + K_k*y_k;
@@ -727,6 +866,7 @@ pbl::Vector kalmanUpdate(pbl::Matrix H, pbl::Matrix *P, pbl::Vector x_k_k_1, pbl
 
 void FeatureProperties::propagateRectangleFeatures (pbl::Matrix Q_k, float dt)
 { 
+//          std::cout << "propagateRectangleFeatures start" << std::endl;
 
          pbl::Matrix F_PosVel;
          F_PosVel << 1.0 << 0.0 << 0.0 << dt  << 0.0 << 0.0 << arma::endr // x 
@@ -735,6 +875,8 @@ void FeatureProperties::propagateRectangleFeatures (pbl::Matrix Q_k, float dt)
                   << 0.0 << 0.0 << 0.0 << 1.0 << 0.0 << 0.0 << arma::endr // x vel 
                   << 0.0 << 0.0 << 0.0 << 0.0 << 1.0 << 0.0 << arma::endr // y vel 
                   << 0.0 << 0.0 << 0.0 << 0.0 << 0.0 << 1.0 << arma::endr;// rotational vel
+                  
+//          std::cout << "F_PosVel = " << F_PosVel << std::endl;
                                 
          pbl::Matrix Fdim;
          Fdim << 1.0 << 0.0 << arma::endr               // width
@@ -752,13 +894,18 @@ void FeatureProperties::propagateRectangleFeatures (pbl::Matrix Q_k, float dt)
          
          // Pos propagation
          pbl::Matrix P_PosVel = rectangle_.get_P_PosVel();
+//          std::cout << "P_PosVel initial = " << P_PosVel << std::endl;
          pbl::Matrix Q_k_posVel = Q_k.submat(0, 0, RECTANGLE_STATE_SIZE - 1, RECTANGLE_STATE_SIZE - 1);
+         
+//          std::cout << "Q_k_posVel = " << Q_k_posVel << std::endl;
+         
         //pbl::Vector x_k_1_k_1_PosVel( 6, 1 ), z_k_posVel( 3, 1 );
         pbl::Vector x_k_1_k_1_PosVel = {rectangle_.get_x(), rectangle_.get_y(), rectangle_.get_yaw(), rectangle_.get_xVel(), rectangle_.get_yVel(), rectangle_.get_yawVel() };
         pbl::Vector x_k_k_1_PosVel =  kalmanPropagate(F_PosVel, &P_PosVel, x_k_1_k_1_PosVel, Q_k_posVel);
-        
+//         std::cout << "Rectangle propagated, x_k_k_1_PosVel transpose = " << x_k_k_1_PosVel.t() << std::endl;
         posVelState2Rectangle( x_k_k_1_PosVel );
         rectangle_.set_P_PosVel ( P_PosVel );
+//         std::cout << "propagateRectangleFeatures end" << std::endl;
 }
 
 //void FeatureProperties::updateRectangleFeatures (pbl::Matrix Q_k, pbl::Matrix R_k, pbl::Vector z_k, float dt)
@@ -864,26 +1011,37 @@ void FeatureProperties::updateRectangleFeatures ( pbl::Matrix R_k, pbl::Vector z
         
 //          std::cout << "R_k_posVel = " << R_k_posVel << std::endl;
         
-//          std::cout << "Rectangle: pos vel update of Kalman. x_k_k_1_PosVel = " << x_k_k_1_PosVel << std::endl;
+//           std::cout << "Rectangle: pos vel update of Kalman. x_k_k_1_PosVel = " << x_k_k_1_PosVel << std::endl;
+//           std::cout << "rectangle_.get_H_PosVel() = " << rectangle_.get_H_PosVel() << std::endl;
+//           std::cout << "rectangle P_PosVel = " << P_PosVel << std::endl;
+//           std::cout << "R_k_posVel = " << R_k_posVel << std::endl;
+//           std::cout << "z_k posVel = " << z_k_posVel << std::endl;
         pbl::Vector x_k_k_PosVel = kalmanUpdate(rectangle_.get_H_PosVel(), &P_PosVel, x_k_k_1_PosVel, z_k_posVel, R_k_posVel);
 //  std::cout << "x_k_k_PosVel = " << x_k_k_PosVel << std::endl;
         posVelState2Rectangle( x_k_k_PosVel );
+        
+//         std::cout << "updateRectangleFeatures: P_PosVel = " << P_PosVel << std::endl;
+//         std::cout << "updateRectangleFeatures: Pdim = " << Pdim << std::endl;
 
         rectangle_.set_P_PosVel ( P_PosVel );
         rectangle_.set_Pdim( Pdim );
         
-//         std::cout << "End of Kalman update: values = " << std::endl;
-//         rectangle_.printProperties();
+//          std::cout << "End of Kalman update: values = " << std::endl;
+//          rectangle_.printProperties();
 }
 
 void FeatureProperties::posVelState2Rectangle( pbl::Vector x_k_k_PosVel )
 {
+        
+//         std::cout << "posVelState2Rectangle: x_k_k_PosVel = " << x_k_k_PosVel << std::endl;
+        
         rectangle_.set_x ( x_k_k_PosVel ( RM.x_PosVelRef ) );
         rectangle_.set_y ( x_k_k_PosVel ( RM.y_PosVelRef ) );
         rectangle_.set_yaw ( x_k_k_PosVel ( RM.yaw_PosVelRef ) );
         rectangle_.set_xVel ( x_k_k_PosVel ( RM.xVel_PosVelRef ) );
         rectangle_.set_yVel ( x_k_k_PosVel ( RM.yVel_PosVelRef ) );
         rectangle_.set_yawVel ( x_k_k_PosVel ( RM.yawVel_PosVelRef ) );
+//         std::cout << "posVelState2Rectangle: rectangle_ = " ; rectangle_.printProperties();
 }
 
 pbl::Gaussian Rectangle::rectangle2PDF(  )
@@ -896,9 +1054,8 @@ pbl::Gaussian Rectangle::rectangle2PDF(  )
 }
 
 pbl::Gaussian Rectangle::observedRectangle2PDF(  )
-{
-        pbl::Gaussian G_observed(RECTANGLE_STATE_SIZE + RECTANGLE_DIM_STATE_SIZE);
-//         std::cout << "observedRectangle2PDF: state = " << getState() << std::endl;
+{        
+        pbl::Gaussian G_observed(RECTANGLE_MEASURED_STATE_SIZE + RECTANGLE_MEASURED_DIM_STATE_SIZE);
         G_observed.setMean( H_*getState() );
         G_observed.setCovariance( H_*getCovariance()*H_.t() );
         
@@ -916,7 +1073,7 @@ pbl::Gaussian Circle::circle2PDF()
 
 pbl::Gaussian Circle::observedCircle2PDF()
 {
-        pbl::Gaussian G_observed(CIRCLE_STATE_SIZE + CIRCLE_DIM_STATE_SIZE);
+        pbl::Gaussian G_observed(CIRCLE_MEASURED_STATE_SIZE + CIRCLE_MEASURED_DIM_STATE_SIZE);
         G_observed.setMean( H_*getState() );
         G_observed.setCovariance( H_*getCovariance()*H_.t() );
         
@@ -1041,8 +1198,8 @@ std::shared_ptr<pbl::Hybrid> FeatureProperties::getPDF()
 //         rectangle_.printProperties();
 //         circle_.printProperties();
         
-           std::shared_ptr<pbl::Gaussian> rectPDF = std::make_shared<pbl::Gaussian>( rectangle_.observedRectangle2PDF() );
-           std::shared_ptr<pbl::Gaussian> circPDF = std::make_shared<pbl::Gaussian>( circle_.observedCircle2PDF() );
+           std::shared_ptr<pbl::Gaussian> rectPDF = std::make_shared<pbl::Gaussian>( rectangle_.rectangle2PDF() );
+           std::shared_ptr<pbl::Gaussian> circPDF = std::make_shared<pbl::Gaussian>( circle_.circle2PDF() );
         //   std::shared_ptr<pbl::PMF> probPDF = std::make_shared<pbl::PMF>(*featureProbabilities_.pmf_);
            
 //            std::cout << "rectPDF = " << rectPDF->toString() << std::endl;
@@ -1050,6 +1207,26 @@ std::shared_ptr<pbl::Hybrid> FeatureProperties::getPDF()
       //     std::cout << "probPDF = " << probPDF->toString() << std::endl;
             
            // TODO initialize
+           if(!observedProperties_)
+           {
+                   observedProperties_ = std::make_shared<pbl::Hybrid>();
+           } else {
+                   observedProperties_->clear();
+           }
+           
+           observedProperties_->addPDF(*rectPDF, featureProbabilities_.get_pRectangle());
+           observedProperties_->addPDF(*circPDF, featureProbabilities_.get_pCircle());
+          // observedProperties_->addPDF(*probPDF, 1.0);
+           
+           return observedProperties_;
+}
+
+std::shared_ptr<pbl::Hybrid> FeatureProperties::getPDFSmall()
+{        
+           std::shared_ptr<pbl::Gaussian> rectPDF = std::make_shared<pbl::Gaussian>( rectangle_.observedRectangle2PDF() );
+           std::shared_ptr<pbl::Gaussian> circPDF = std::make_shared<pbl::Gaussian>( circle_.observedCircle2PDF() );
+        //   std::shared_ptr<pbl::PMF> probPDF = std::make_shared<pbl::PMF>(*featureProbabilities_.pmf_);
+           
            if(!observedProperties_)
            {
                    observedProperties_ = std::make_shared<pbl::Hybrid>();

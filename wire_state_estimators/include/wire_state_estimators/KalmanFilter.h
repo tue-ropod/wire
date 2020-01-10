@@ -94,7 +94,7 @@ public:
      * velocity) system model.
      * @param dt The time increment with which to propagate
      */
-    virtual void propagate(const double& dt);
+    virtual bool propagate(const double& dt);
 
     /**
      * @brief Calculates the likelihood that the given measurement originates from the

@@ -57,7 +57,8 @@ DiscreteFilter* DiscreteFilter::clone() const {
 	return new DiscreteFilter(*this);
 }
 
-void DiscreteFilter::propagate(const mhf::Time& time) {
+bool DiscreteFilter::propagate(const mhf::Time& time) {
+        return true;
 }
 
 void DiscreteFilter::update(std::shared_ptr<const pbl::PDF> z, const mhf::Time& time) {
@@ -73,6 +74,10 @@ void DiscreteFilter::reset() {
 
 std::shared_ptr<const pbl::PDF> DiscreteFilter::getValue() const {
 	return pmf_;
+}
+
+std::shared_ptr<const pbl::PDF> DiscreteFilter::getFullValue() const {
+        return this->getValue();
 }
 
 #include <pluginlib/class_list_macros.h>

@@ -95,11 +95,11 @@ PositionAndDimensionFilter* PositionAndDimensionFilter::clone() const {
     return new PositionAndDimensionFilter(*this);
 }
 
-void PositionAndDimensionFilter::propagate(const mhf::Time& time) {
+bool PositionAndDimensionFilter::propagate(const mhf::Time& time) {
 
     if (t_last_propagation_ == 0) {
         t_last_propagation_ = time;
-        return;
+        return true;
     }
 
     mhf::Duration dt = time - t_last_propagation_;
@@ -108,7 +108,7 @@ void PositionAndDimensionFilter::propagate(const mhf::Time& time) {
     assert(dt >= 0);
 
     if (!properties_) {
-        return;
+        return true;
     }
 
     float Q = 0.4;
@@ -120,6 +120,8 @@ void PositionAndDimensionFilter::propagate(const mhf::Time& time) {
    
     properties_->propagateRectangleFeatures( QmRectangle, dt );
     properties_->propagateCircleFeatures( QmCircle, dt);
+    
+    return true;
 }
 
 void PositionAndDimensionFilter::update(std::shared_ptr<const pbl::PDF> z, const mhf::Time& time) {
@@ -132,14 +134,14 @@ void PositionAndDimensionFilter::update(std::shared_ptr<const pbl::PDF> z, const
         if (!properties_) 
         {
             properties_ = new tracking::FeatureProperties();
-            properties_->setFeatureProperties(H);
+            properties_->setMeasuredFeatureProperties(H);
 //             std::cout << "PositionAndDimensionFilter::update values initialized. properties = " << std::endl;
 //              properties_->printProperties();
         }
        else 
        {     
             tracking::FeatureProperties measuredProperties; 
-            measuredProperties.setFeatureProperties(H);
+            measuredProperties.setMeasuredFeatureProperties(H);
             
 //             std::cout << "Hybrid: measuredProperties = " << std::endl;
 //             measuredProperties.printProperties();
@@ -196,7 +198,7 @@ std::shared_ptr<const pbl::PDF> PositionAndDimensionFilter::getValue() const {
 //          std::cout << "PositionAndDimensionFilter::getValue(): ";
 //          properties_->printProperties();
          
-           return properties_->getPDF();
+           return properties_->getPDFSmall();
            
 /*           
            pbl::Matrix zeroMatrix(rectPDF.getMean().n_rows,circPDF.getMean().n_cols);
@@ -209,6 +211,15 @@ std::shared_ptr<const pbl::PDF> PositionAndDimensionFilter::getValue() const {
            observedProperties_->setCovariance(fusedMean);
            */
           // return observedProperties_;
+   }
+   
+    std::cout << "PositionAndDimensionFilter::getValue(): SOMETHINGS WRONG" << std::endl;
+}
+
+std::shared_ptr<const pbl::PDF> PositionAndDimensionFilter::getFullValue() const {  
+   if(properties_)
+   {
+           return properties_->getPDF();
    }
    
     std::cout << "PositionAndDimensionFilter::getValue(): SOMETHINGS WRONG" << std::endl;

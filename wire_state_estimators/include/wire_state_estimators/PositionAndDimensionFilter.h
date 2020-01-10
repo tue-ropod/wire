@@ -86,7 +86,7 @@ public:
      * @brief Propagates the internal state to Time time
      * @param time The time to which the internal state is propagated
      */
-    virtual void propagate(const mhf::Time& time);
+    virtual bool propagate(const mhf::Time& time);
 
     /**
      * @brief Updates the internal state based on measurement z
@@ -105,6 +105,8 @@ public:
      * @return The current state, i.e., the current attribute value represented as probability density function
      */
     std::shared_ptr<const pbl::PDF> getValue() const;
+    
+    std::shared_ptr<const pbl::PDF> getFullValue() const;
 
     void setValue(const pbl::PDF& pdf);
 

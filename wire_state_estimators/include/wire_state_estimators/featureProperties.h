@@ -13,7 +13,7 @@
 
 //#define ARMA_USE_LAPACK
 
-#define TIMEOUT_TIME                     0.5             // [s]
+#define MARKER_TIMEOUT_TIME              0.5             // [s]
 #define MIN_PROB_OBJECT                  0.05            // [-]
 #define MARGIN_RECTANGLE_INTERCHANGE     30*M_PI/180     // [rad]
 
@@ -63,7 +63,9 @@ class Circle
   public:
     Circle();
     
-    void setCircle(  std::shared_ptr<const pbl::Gaussian> Gmeasured);
+    void setMeasuredCircle(  std::shared_ptr<const pbl::Gaussian> Gmeasured);
+    
+    void setObservedCircle( std::shared_ptr< const pbl::Gaussian> Gobserved);
     
     void setProperties ( float x, float y, float z, float xVel, float yVel, float roll, float pitch, float yaw, float radius );
     
@@ -138,7 +140,9 @@ class Rectangle
   public:
     Rectangle();
     
-    void setRectangle( std::shared_ptr< const pbl::Gaussian> Gmeasured);
+    void setMeasuredRectangle( std::shared_ptr< const pbl::Gaussian> Gmeasured);
+    
+    void setObservedRectangle( std::shared_ptr< const pbl::Gaussian> Gobserved);
     
     void setValues ( float x, float y, float z, float w, float d, float h, float roll, float pitch, float yaw );
     
@@ -211,7 +215,7 @@ class Rectangle
     
     pbl::Gaussian rectangle2PDF();
     
-    pbl::Gaussian observedRectangle2PDF();
+    pbl::Gaussian observedRectangle2PDF(); // TODO proper naming -> rectangle2PDFSmall
     
     pbl::Vector getState();
 
@@ -305,51 +309,9 @@ class FeatureProperties
     };
     
     
-     void setFeatureProperties ( std::shared_ptr<const pbl::PDF> observedProperties ) 
-     {  
-        if (observedProperties->type() == pbl::PDF::HYBRID ) 
-        {
-            std::shared_ptr<const pbl::Hybrid> observedPropertiesHyb = pbl::PDFtoHybrid(observedProperties);
-
-            const std::vector<pbl::Hybrid::distributionStruct> PDFs = observedPropertiesHyb->getPDFS();
-            
-            std::shared_ptr< const pbl::PDF> rectPDF = PDFs[0].pdf; // TODO proper numbering for conversion
-            std::shared_ptr< const pbl::PDF> circPDF = PDFs[1].pdf;
-            
-//             std::cout << "featureProperties.h, setFeatureProperties: rectPDF = " << rectPDF << std::endl;
-//             std::cout << "featureProperties.h, setFeatureProperties: circPDF = " << circPDF << std::endl;
-            
-            
-     //       std::shared_ptr< const pbl::PDF> probabilityPDF = PDFs[2];
-            
-            /*std::shared_ptr< const pbl::PDF> rectPDF = observedPropertiesGauss->getComponent(0); // TODO proper numbering for conversion
-            std::shared_ptr< const pbl::PDF> circPDF = observedPropertiesGauss->getComponent(1);
-            */
-             if (rectPDF->type() == pbl::PDF::GAUSSIAN && circPDF->type() == pbl::PDF::GAUSSIAN)// && probabilityPDF->type() == pbl::PDF::DISCRETE ) 
-                {
-                        std::shared_ptr<const pbl::Gaussian> rectGauss = pbl::PDFtoGaussian(rectPDF);
-                        std::shared_ptr<const pbl::Gaussian> circGauss = pbl::PDFtoGaussian(circPDF);
-                        //std::shared_ptr<const pbl::PMF> probPMF = pbl::PDFtoPMF(probabilityPDF);
-
-                        rectangle_.setRectangle(rectGauss);
-                        circle_.setCircle(circGauss);
-                        featureProbabilities_.setProbabilities ( PDFs[0].weight, PDFs[1].weight );
-                        
-//                         std::cout << "FeatureProperties set: rectangle = ";
-                        rectangle_.printProperties();
-                        
-//                         std::cout << " circle = ";
-                        circle_.printProperties();
-                        
-                        
-                } else {
-                        std::printf("Circle and Rectangle can only be set with Gaussians. \n"); 
-                }
-        } else {
-                
-               std::printf("ObservedProperties can only be set with Hybrids.\n"); 
-        }
-     };
+    void setObservedFeatureProperties ( std::shared_ptr<const pbl::PDF> observedProperties ); 
+     
+    void setMeasuredFeatureProperties ( std::shared_ptr<const pbl::PDF>measuredProperties );
 
     FeatureProbabilities getFeatureProbabilities() const {
         return featureProbabilities_;
@@ -412,6 +374,8 @@ class FeatureProperties
     void printProperties();
     
     std::shared_ptr<pbl::Hybrid> getPDF();
+    
+    std::shared_ptr<pbl::Hybrid> getPDFSmall();
     
 };
 

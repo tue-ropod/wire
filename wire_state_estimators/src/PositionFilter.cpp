@@ -63,11 +63,11 @@ PositionFilter* PositionFilter::clone() const {
     return new PositionFilter(*this);
 }
 
-void PositionFilter::propagate(const mhf::Time& time) {
+bool PositionFilter::propagate(const mhf::Time& time) {
 
     if (t_last_propagation_ == 0) {
         t_last_propagation_ = time;
-        return;
+        return true;
     }
 
     mhf::Duration dt = time - t_last_propagation_;
@@ -76,7 +76,7 @@ void PositionFilter::propagate(const mhf::Time& time) {
     assert(dt >= 0);
 
     if (!kalman_filter_) {
-        return;
+        return true;
     }
 
     if ((time - t_last_update_) > kalman_timeout_ && kalman_timeout_ > 0) {
@@ -90,7 +90,7 @@ void PositionFilter::propagate(const mhf::Time& time) {
 
         delete kalman_filter_;
         kalman_filter_ = 0;
-        return;
+        return true;
     }
 
     // TODO: fix the kalman filter update (we shouldn't need a loop here...)
@@ -107,6 +107,8 @@ void PositionFilter::propagate(const mhf::Time& time) {
             kalman_filter_->propagate(dt - total_dt);
         }
     }
+    
+    return true;
 }
 
 void PositionFilter::update(std::shared_ptr<const pbl::PDF> z, const mhf::Time& time) {
@@ -144,6 +146,10 @@ std::shared_ptr<const pbl::PDF> PositionFilter::getValue() const {
 
     std::cout << "SOMETHINGS WRONG" << std::endl;
     //return std::shared_ptr<const pbl::PDF>(nullptr); // Temp to print out the properties
+}
+
+std::shared_ptr<const pbl::PDF> PositionFilter::getFullValue() const {
+    return this->getValue();
 }
 
 bool PositionFilter::setParameter(const std::string& param, bool b) {

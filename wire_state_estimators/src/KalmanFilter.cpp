@@ -66,7 +66,7 @@ void KalmanFilter::init(std::shared_ptr<const pbl::Gaussian> z) {
         //std::cout << "KF init test =" << arma::inv(G_small_->getCovariance) << std::endl;
 }
 
-void KalmanFilter::propagate(const double& dt) {
+bool KalmanFilter::propagate(const double& dt) {
 	if (a_max_ > 0) 
         {
                 pbl::Matrix F;
@@ -119,6 +119,8 @@ void KalmanFilter::propagate(const double& dt) {
 		G_small_->setMean(H_ * G_.getMean());
 		G_small_->setCovariance(H_ * G_.getCovariance() * H_.t());
 	}
+	
+	return true;
 }
 
 void KalmanFilter::update(std::shared_ptr<const pbl::Gaussian> z) {
