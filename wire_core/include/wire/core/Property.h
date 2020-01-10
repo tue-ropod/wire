@@ -66,6 +66,8 @@ public:
     const IStateEstimator& getEstimator() const;
 
     std::shared_ptr<const pbl::PDF> getValue() const;
+    
+    std::shared_ptr<const pbl::PDF> getFullValue() const;
 
     //void setObjectID(const ObjectID& id);
 
@@ -80,10 +82,14 @@ public:
     virtual double getLikelihood(std::shared_ptr<const pbl::PDF> pdf) const;
 
     std::string toString(const std::string& prefix = "") const;
+    
+    Time getLatestUpdateTime () { return latestUpdateTime_; } ;
 
 protected:
 
     Time time_;
+    
+    Time latestUpdateTime_;
 
     //ObjectID object_id_;
 

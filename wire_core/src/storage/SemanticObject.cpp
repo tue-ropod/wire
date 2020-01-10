@@ -91,7 +91,7 @@ double SemanticObject::getLikelihood(const PropertySet& ev) const {
 }
 
 void SemanticObject::update(const Evidence& ev) {
-
+std::cout << "SemanticObject::update: going to propagate." << std::endl;
     propagate(ev.getTimestamp());
 
     // first update class property

@@ -30,7 +30,8 @@ FixedState* FixedState::clone() const {
 void FixedState::update(std::shared_ptr<const pbl::PDF> z, const mhf::Time& time) {
 }
 
-void FixedState::propagate(const mhf::Time& time) {
+bool FixedState::propagate(const mhf::Time& time) {
+        return true;
 }
 
 void FixedState::reset() {
@@ -38,6 +39,10 @@ void FixedState::reset() {
 
 std::shared_ptr<const pbl::PDF> FixedState::getValue() const {
     return pdf_;
+}
+
+std::shared_ptr<const pbl::PDF> FixedState::getFullValue() const {
+    return this->getValue();
 }
 
 }

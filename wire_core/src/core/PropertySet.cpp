@@ -93,17 +93,30 @@ const Property* PropertySet::getProperty(const std::string& attribute) const {
     return getProperty(AttributeConv::attribute(attribute));
 }
 
-void PropertySet::propagate(const Time& time) {
+bool PropertySet::propagate(const Time& time) {
     if (fabs(time - timestamp_) < 0.001) {
-        return;
+        return false;
     }
+    
+    std::cout << " PropertySet::propagate called.";
 
+    bool removeObject = true;
     for(map<Attribute, Property*>::iterator it = properties_.begin(); it != properties_.end(); ++it) 
     {
         it->second->propagate(time);
+        
+        double timeSinceLastestUpdate = time - it->second->getLatestUpdateTime();
+        if( timeSinceLastestUpdate < OBJECT_TIMEOUT_TIME && removeObject )
+        {
+                removeObject = false;
+        }
     }
 
     timestamp_ = time;
+    
+    std::cout << " removeObject = "  << removeObject << std::endl;
+    
+    return removeObject;
 }
 
 void PropertySet::update(std::shared_ptr<const pbl::PDF> z, const Time& time) {
@@ -118,6 +131,10 @@ void PropertySet::reset() {
 
 std::shared_ptr<const pbl::PDF> PropertySet::getValue() const {
     assert(false);
+}
+
+std::shared_ptr<const pbl::PDF> PropertySet::getFullValue() const {
+    return this->getValue();
 }
 
 double PropertySet::getLikelihood(const PropertySet& P) const {

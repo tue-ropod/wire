@@ -71,7 +71,7 @@ public:
      * @brief Propagates the internal state to Time time
      * @param time The time to which the internal state is propagated
      */
-    virtual void propagate(const Time& time) = 0;
+    virtual bool propagate(const Time& time) = 0;
 
     /**
      * @brief Updates the internal state based on measurement z
@@ -86,10 +86,16 @@ public:
     virtual void reset() = 0;
 
     /**
-     * @brief Returns the current estimated state value
+     * @brief Returns the current estimated state value (measured state)
      * @return The current state, i.e., the current attribute value represented as probability density function
      */
     virtual std::shared_ptr<const pbl::PDF> getValue() const = 0;
+    
+    /**
+     * @brief Returns the current estimated entire state value
+     * @return The current state, i.e., the current attribute value represented as probability density function
+     */
+    virtual std::shared_ptr<const pbl::PDF> getFullValue() const = 0;
 
     /**
      * @brief Resets the internal state of the estimator to the given PDF

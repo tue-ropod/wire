@@ -6,6 +6,8 @@
 
 #include "problib/pdfs/PDF.h"
 
+#define OBJECT_TIMEOUT_TIME 3 // TODO make configurable
+
 namespace mhf {
 
 class Property;
@@ -33,13 +35,15 @@ public:
 
     const Property* getProperty(const std::string& attribute) const;
 
-    void propagate(const Time& time);
+    bool propagate(const Time& time);
 
     void update(std::shared_ptr<const pbl::PDF> z, const Time& time);
 
     void reset();
 
     std::shared_ptr<const pbl::PDF> getValue() const;
+    
+    std::shared_ptr<const pbl::PDF> getFullValue() const;
 
     virtual double getLikelihood(const PropertySet& P) const;
 

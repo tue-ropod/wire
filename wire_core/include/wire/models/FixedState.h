@@ -40,7 +40,7 @@ public:
      * @brief Propagates the state, but since the state is fixed, propagate will do nothing.
      */
 
-    virtual void propagate(const mhf::Time& time);
+    virtual bool propagate(const mhf::Time& time);
 
     /**
      * @brief Resets the state, but since the state is fixed, reset will do nothing.
@@ -48,6 +48,8 @@ public:
     virtual void reset();
 
     std::shared_ptr<const pbl::PDF> getValue() const;
+    
+    std::shared_ptr<const pbl::PDF> getFullValue() const;
 
 protected:
 

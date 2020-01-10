@@ -44,12 +44,27 @@ long ObjectStorage::getUniqueID() {
 
 void ObjectStorage::match(const Evidence& ev) {
 
+        std::list<SemanticObject> objects2Remove;
+        
     for(list<SemanticObject*>::iterator it_obj = objects_.begin(); it_obj != objects_.end(); ++it_obj) {
         SemanticObject& obj = **it_obj;
         //cout.precision(dbl::max_digits10);
         
-        obj.propagate(ev.getTimestamp()); // propagated to current timestamp, which is being set in process evidence of WorldModelROS.cpp
+        std::cout << "Going to propagate object " << obj.toString() << std::endl;
+        bool removeObject = obj.propagate(ev.getTimestamp()); // propagated to current timestamp, which is being set in process evidence of WorldModelROS.cpp
+        
+        if( removeObject )
+        {
+                objects2Remove.push_back(obj);
+        }
     }
+    
+//     for(list<SemanticObject>::iterator it_obj = objects2Remove.begin(); it_obj != objects2Remove.end(); ++it_obj) {
+//             SemanticObject& obj = *it_obj;
+//              std::cout << "Going to remove object " << obj.toString() << std::endl;
+//              this->removeObject(obj);
+//              std::cout << "Object removed."  << std::endl;
+//     }
 
     for(list<SemanticObject*>::iterator it_obj = objects_.begin(); it_obj != objects_.end(); ++it_obj) {
         SemanticObject& obj = **it_obj;

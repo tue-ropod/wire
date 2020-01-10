@@ -49,6 +49,10 @@ std::shared_ptr<const pbl::PDF> Property::getValue() const {
     return estimator_->getValue();
 }
 
+std::shared_ptr<const pbl::PDF> Property::getFullValue() const {
+    return estimator_->getFullValue();
+}
+
 void Property::update(std::shared_ptr<const pbl::PDF> z, const Time& time) {
      if (time < time_)
     {
@@ -57,10 +61,14 @@ void Property::update(std::shared_ptr<const pbl::PDF> z, const Time& time) {
     }
     estimator_->update(z, time);
     time_ = time;
+    latestUpdateTime_ = time;
 }
 
 void Property::propagate(const Time& time) {
+
     if (time < time_) return;
+    
+    std::cout << "Property::propagate. going to propagate estimator " << std::endl;
     estimator_->propagate(time);
     time_ = time;
 }
