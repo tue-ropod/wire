@@ -98,24 +98,23 @@ bool PropertySet::propagate(const Time& time) {
         return false;
     }
     
-    std::cout << " PropertySet::propagate called.";
+//     std::cout << " PropertySet::propagate called.";
 
     bool removeObject = true;
     for(map<Attribute, Property*>::iterator it = properties_.begin(); it != properties_.end(); ++it) 
     {
         it->second->propagate(time);
         
-        double timeSinceLastestUpdate = time - it->second->getLatestUpdateTime();
-        if( timeSinceLastestUpdate < OBJECT_TIMEOUT_TIME && removeObject )
-        {
-                removeObject = false;
-        }
+//         double timeSinceLastestUpdate = time - it->second->getLatestUpdateTime();
+//         if( timeSinceLastestUpdate < OBJECT_TIMEOUT_TIME && removeObject )
+//         {
+//                 removeObject = false;
+//                 std::cout << " removeObject = "  << removeObject << " timeSinceLastestUpdate = "  << timeSinceLastestUpdate << std::endl;
+//         }
     }
 
     timestamp_ = time;
-    
-    std::cout << " removeObject = "  << removeObject << std::endl;
-    
+
     return removeObject;
 }
 
@@ -177,6 +176,20 @@ const std::map<Attribute, Property*>& PropertySet::getPropertyMap() const {
 Time PropertySet::getTimestamp() const {
     return timestamp_;
 }
+
+Time PropertySet::getLatestUpdateTime() {
+        Time latestUpdateTime;
+        
+        for(map<Attribute, Property*>::const_iterator it = properties_.begin(); it != properties_.end(); ++it) {
+                Time lastestPropertyUpdateTime = it->second->getLatestUpdateTime();
+                if(it == properties_.begin() || latestUpdateTime > lastestPropertyUpdateTime )
+                {
+                        latestUpdateTime = lastestPropertyUpdateTime;
+                }
+        }
+    return latestUpdateTime;
+}
+
 
 string PropertySet::toString() const {
     stringstream s;

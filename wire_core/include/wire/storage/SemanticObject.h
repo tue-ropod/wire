@@ -38,9 +38,9 @@ public:
 
     SemanticObject* clone() const;
     
-    double getLastUpdateTime() const;
+    //double getLastUpdateTime() const { return };
 
-    double getTimestamp() const;
+    //double getTimestamp() const;
 
     const ClassModel& getExpectedObjectModel() const;
 
@@ -55,6 +55,8 @@ public:
     void removeFromHypothesis(Hypothesis* hyp);
 
     unsigned int getNumParentHypotheses() const;
+    
+    std::set<Hypothesis*>* getParentHypotheses();
     
     std::string toString() const;
 

@@ -147,6 +147,10 @@ void Hypothesis::addObject(SemanticObject* obj) {
 //     }
 }
 
+void Hypothesis::removeObject(SemanticObject* obj) {
+    objects_->remove(obj);
+    obj->removeFromHypothesis(this);
+}
 
 void Hypothesis::clearAssignmentSet() {
     delete assignment_set_;

@@ -87,7 +87,7 @@ void HypothesisTree::addEvidence(const EvidenceSet& ev_set) {
     expandTree(ev_set);
 //     std::cout << "expand tree finished " << std::endl;
 
-//     std::cout << "prunte tree" << std::endl;
+//     std::cout << "prune tree" << std::endl;
     pruneTree(ev_set.getTimestamp());
 //     std::cout << "prunte tree finished" << std::endl;
 
@@ -100,7 +100,7 @@ void HypothesisTree::addEvidence(const EvidenceSet& ev_set) {
     root_ = root_->deleteSinglePaths();
 
     tree_height_ = root_->calculateHeigth();
-
+    
     ROS_DEBUG("*** Free memory: assignment matrices ***\n");
 
     ++n_updates_;
@@ -111,6 +111,115 @@ void HypothesisTree::addEvidence(const EvidenceSet& ev_set) {
 #endif
 
     ROS_DEBUG("HypothesesTree::processMeasurements - end\n");
+}
+
+void HypothesisTree::removeOldObjects(Time timeConstraint) {
+
+        // check all objects which haven't been updated for a long period 
+    std::shared_ptr<std::list<SemanticObject*>> allObjects = ObjectStorage::getInstance().getObjects(); 
+    
+//     std::cout << "allObjects size () = "  << allObjects->size() << " all iterators = " << std::endl;
+    
+//      for (std::list<SemanticObject*>::iterator it_obj = allObjects->begin(); it_obj != allObjects->end(); ++it_obj) {
+//              std::cout << "it_obj = " << *it_obj << " \t" ;
+//      }
+//      std::cout << " allObjects->end() = " << *allObjects->end() << std::endl;
+    
+    for (std::list<SemanticObject*>::iterator it_obj = allObjects->begin(); it_obj != allObjects->end(); ++it_obj) {
+            
+//             std::cout << "at start of iterator: allObjects->size() = " << allObjects->size() << std::endl;
+            
+            SemanticObject* obj = *it_obj;
+//            Time latestUpdate = obj->getLatestUpdateTime();
+//             std::cout << "removeOldObjects: latestUpdate for object " << obj->getID() << " = " << latestUpdate << std::endl;
+//             bool check = obj->getLatestUpdateTime() < timeConstraint ;
+//             std::cout << "removeOldObjects: latestUpdate, timeconstraint, check = " << obj->getLatestUpdateTime() << ", "
+//             << timeConstraint << ", "
+//             << check << std::endl;
+            
+            if(obj->getLatestUpdateTime() < timeConstraint)
+            {
+                    // object too old: remove from all hypothesis
+                  //   std::set<Hypothesis*>* hypotheses = obj->getParentHypotheses();
+                     
+//                     std::cout << "Hypothesis are : ";
+//                     for(std::list<Hypothesis*>::iterator it_hyp = leafs_.begin(); it_hyp !=  leafs_.end(); it_hyp++)
+//                     {
+//                              std::cout << *it_hyp << "\t";
+//                     }
+//                     std::cout << "\n";
+                    
+                     for(std::list<Hypothesis*>::iterator it_hyp = leafs_.begin(); it_hyp !=  leafs_.end(); it_hyp++)
+                     {
+//                              std::cout << "Before removal of hypothesis " << *it_hyp << ": obj->getNumParentHypotheses() = " << obj->getNumParentHypotheses() << std::endl;
+//                              std::cout << "Before removal of hypothesis #obj in hypothesis = " << (*it_hyp)->getNumObjects() << std::endl;
+                             
+                             //obj->removeFromHypothesis(*it_hyp);
+                             Hypothesis* hyp = *it_hyp;
+                             hyp->removeObject(obj);
+                             
+//                              std::cout << "obj->getNumParentHypotheses() = " << obj->getNumParentHypotheses() << std::endl;
+//                              std::cout << "After removal of hypothesis #obj in hypothesis = " << (*it_hyp)->getNumObjects() << std::endl; // TODO test
+                             
+                             if (obj->getNumParentHypotheses() == 0) 
+                             {
+                                std::list<SemanticObject*>::iterator next_it = ObjectStorage::getInstance().removeObject(*obj);     
+                                
+//                                 std::cout << "removed object with ID = " << obj->getID() << " next_it = " << *next_it << std::endl;
+//                                 std::cout << "allObjects size () after removal = "  << allObjects->size() << std::endl;
+                                
+                                delete obj;
+                                 
+                                it_obj = next_it;
+                                continue;
+                             }
+                     }
+            }
+            
+//             std::cout << "allObjects size () at end of removeOldObjects-funtionality = "  << allObjects->size() << " all iterators = " << std::endl;
+            
+        /*    const std::list<SemanticObject*>* MAPObjects = getMAPObjects();
+    
+    
+    for(std::list<mhf::SemanticObject*>::const_iterator it = MAPObjects->begin(); it != MAPObjects->end(); ++it) 
+    {
+        mhf::SemanticObject* semObj = *it;
+            
+        mhf::SemanticObject* obj_clone = (*it)->clone();
+
+        ros::Time time = ros::Time::now();
+        std::shared_ptr<const pbl::PDF> pdf = obj_clone->getProperty("positionAndDimension")->getFullValue();
+
+         if( pdf )
+         {
+//                  std::cout << "PDF-check passed" << std::endl;
+//                  tracking::FeatureProperties featureProperties;
+                 
+                 std::cout << "object2Entity: pdf = " << pdf->toString() << std::endl;
+                 
+//                  featureProperties.setObservedFeatureProperties(pdf);
+//                   std::cout << " object2Entity: featureProperties = "; featureProperties.printProperties();
+
+        delete obj_clone;
+         }
+    }
+    */
+            
+            
+            /*
+            
+        
+        obj->removeFromHypothesis(this);
+        
+//         std::cout << "Hypothesis clear(): obj->getNumParentHypotheses() = " << obj->getNumParentHypotheses() << std::endl;
+        
+        if (obj->getNumParentHypotheses() == 0) {
+            ObjectStorage::getInstance().removeObject(*obj);
+         //   std::cout << "Going to delete object " << obj->toString() << std::endl;
+            delete obj;
+        }
+        */
+    }
 }
 
 /* ****************************************************************************** */

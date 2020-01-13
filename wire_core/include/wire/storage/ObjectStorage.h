@@ -2,6 +2,7 @@
 #define MHT_OBJECT_STORAGE_H_
 
 #include <list>
+#include <memory>
 
 namespace mhf {
 
@@ -19,11 +20,13 @@ public:
 
     void addObject(SemanticObject* obj);
 
-    void removeObject(SemanticObject& obj);
+    std::list<SemanticObject*>::iterator removeObject(SemanticObject& obj);
 
     long getUniqueID();
 
     void match(const Evidence& ev);
+    
+   std::shared_ptr< std::list<SemanticObject*> > getObjects() const;
 
 protected:
 
@@ -34,7 +37,7 @@ protected:
 
     long ID_;
 
-    std::list<SemanticObject*> objects_;
+    std::shared_ptr<std::list<SemanticObject*>> objects_;
 
     const KnowledgeDatabase& knowledge_db_;   
 

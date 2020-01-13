@@ -128,6 +128,8 @@ public:
 
     // Add object to the object list
     void addObject(SemanticObject* obj);
+    
+    void removeObject(SemanticObject* obj);
 
     void clearAssignmentSet();
 

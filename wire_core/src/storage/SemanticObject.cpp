@@ -91,7 +91,7 @@ double SemanticObject::getLikelihood(const PropertySet& ev) const {
 }
 
 void SemanticObject::update(const Evidence& ev) {
-std::cout << "SemanticObject::update: going to propagate." << std::endl;
+// std::cout << "SemanticObject::update: going to propagate." << std::endl;
     propagate(ev.getTimestamp());
 
     // first update class property
@@ -201,11 +201,18 @@ void SemanticObject::removeFromHypothesis(Hypothesis* hyp) {
 //                 std::cout << hypTest << "\t";
 //         }
 //         std::cout << "\n";
+        
+//         std::cout << "removeFromHypothesis: # parent_hypotheses_ = "  << parent_hypotheses_->size() << std::endl;
     parent_hypotheses_->erase(hyp);
+//     std::cout << "removeFromHypothesis, after removal: # parent_hypotheses_ = "  << parent_hypotheses_->size() << std::endl;
 }
 
 unsigned int SemanticObject::getNumParentHypotheses() const {
     return parent_hypotheses_->size();
+}
+
+std::set<Hypothesis*>* SemanticObject::getParentHypotheses(){
+        return parent_hypotheses_;
 }
 
 std::string SemanticObject::toString() const

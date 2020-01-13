@@ -68,7 +68,7 @@ void Property::propagate(const Time& time) {
 
     if (time < time_) return;
     
-    std::cout << "Property::propagate. going to propagate estimator " << std::endl;
+//     std::cout << "Property::propagate. going to propagate estimator " << std::endl;
     estimator_->propagate(time);
     time_ = time;
 }

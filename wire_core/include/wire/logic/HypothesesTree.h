@@ -101,17 +101,20 @@ public:
     /* SETTERS */
 
     void addEvidence(const EvidenceSet& ev_set);
-
+    
+    void removeOldObjects(Time timeConstraint);
 
     /* PRINT METHODS */
 
     void showStatistics();
+    
+    std::list<Hypothesis*> leafs_; // TEMP, should be protected
 
 protected:
 
     Hypothesis* root_;
 
-    std::list<Hypothesis*> leafs_;
+    //std::list<Hypothesis*> leafs_;
 
     Hypothesis* MAP_hypothesis_;
 

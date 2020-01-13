@@ -5,6 +5,7 @@
 #include "wire/core/Evidence.h"
 #include <limits> // TEMP
 #include "ros/ros.h"// TEMP
+
 typedef std::numeric_limits< double > dbl;
 
 using namespace std;
@@ -22,7 +23,8 @@ ObjectStorage& ObjectStorage::getInstance() {
 }
 
 ObjectStorage::ObjectStorage() : ID_(0), knowledge_db_(KnowledgeDatabase::getInstance()) {
-
+        
+         objects_ = std::make_shared<std::list<SemanticObject*>>();
 }
 
 ObjectStorage::~ObjectStorage() {
@@ -30,12 +32,13 @@ ObjectStorage::~ObjectStorage() {
 }
 
 void ObjectStorage::addObject(SemanticObject* obj) {
-    objects_.push_back(obj);
-    obj->it_obj_storage_ = --objects_.end();
+    objects_->push_back(obj);
+    obj->it_obj_storage_ = --objects_->end();
 }
 
-void ObjectStorage::removeObject(SemanticObject& obj) {
-    objects_.erase(obj.it_obj_storage_);
+std::list<SemanticObject*>::iterator ObjectStorage::removeObject(SemanticObject& obj) {
+    std::list<SemanticObject*>::iterator next_it = objects_->erase(obj.it_obj_storage_);
+    return next_it;
 }
 
 long ObjectStorage::getUniqueID() {
@@ -44,19 +47,23 @@ long ObjectStorage::getUniqueID() {
 
 void ObjectStorage::match(const Evidence& ev) {
 
-        std::list<SemanticObject> objects2Remove;
+//     std::list<SemanticObject> objects2Remove;
         
-    for(list<SemanticObject*>::iterator it_obj = objects_.begin(); it_obj != objects_.end(); ++it_obj) {
+    for(list<SemanticObject*>::iterator it_obj = objects_->begin(); it_obj != objects_->end(); ++it_obj) {
         SemanticObject& obj = **it_obj;
         //cout.precision(dbl::max_digits10);
         
-        std::cout << "Going to propagate object " << obj.toString() << std::endl;
+//         std::cout << "Going to propagate object " << obj.toString() << std::endl;
         bool removeObject = obj.propagate(ev.getTimestamp()); // propagated to current timestamp, which is being set in process evidence of WorldModelROS.cpp
         
-        if( removeObject )
-        {
-                objects2Remove.push_back(obj);
-        }
+        
+//         std::cout << "objectStorage, match: removeObject = " << removeObject << std::endl;
+//         
+//         if( removeObject )
+//         {
+//                 objects2Remove.push_back(obj);
+//                 std::cout << "Removal of object desired. ID = " << obj.getID() << "obj.getNumParentHypotheses() = " << obj.getNumParentHypotheses() << std::endl;
+//         }
     }
     
 //     for(list<SemanticObject>::iterator it_obj = objects2Remove.begin(); it_obj != objects2Remove.end(); ++it_obj) {
@@ -66,7 +73,7 @@ void ObjectStorage::match(const Evidence& ev) {
 //              std::cout << "Object removed."  << std::endl;
 //     }
 
-    for(list<SemanticObject*>::iterator it_obj = objects_.begin(); it_obj != objects_.end(); ++it_obj) {
+    for(list<SemanticObject*>::iterator it_obj = objects_->begin(); it_obj != objects_->end(); ++it_obj) {
         SemanticObject& obj = **it_obj;
 
         double prob_existing = KnowledgeDatabase::getInstance().getProbabilityExisting(ev, obj);
@@ -74,6 +81,11 @@ void ObjectStorage::match(const Evidence& ev) {
             obj.addPotentialAssignment(ev, prob_existing);
         }
     }
+}
+
+std::shared_ptr<std::list<SemanticObject*>> ObjectStorage::getObjects() const
+{
+        return objects_;        
 }
 
 }

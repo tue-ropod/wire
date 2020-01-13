@@ -50,6 +50,8 @@ public:
     const std::map<Attribute, Property*>& getPropertyMap() const;
 
     Time getTimestamp() const;
+    
+    Time getLatestUpdateTime () ;
 
     std::string toString() const;
 
