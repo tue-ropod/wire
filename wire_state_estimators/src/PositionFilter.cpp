@@ -63,11 +63,11 @@ PositionFilter* PositionFilter::clone() const {
     return new PositionFilter(*this);
 }
 
-bool PositionFilter::propagate(const mhf::Time& time) {
+void PositionFilter::propagate(const mhf::Time& time) {
 
     if (t_last_propagation_ == 0) {
         t_last_propagation_ = time;
-        return true;
+        return;
     }
 
     mhf::Duration dt = time - t_last_propagation_;
@@ -76,7 +76,7 @@ bool PositionFilter::propagate(const mhf::Time& time) {
     assert(dt >= 0);
 
     if (!kalman_filter_) {
-        return true;
+        return;
     }
 
     if ((time - t_last_update_) > kalman_timeout_ && kalman_timeout_ > 0) {
@@ -90,7 +90,7 @@ bool PositionFilter::propagate(const mhf::Time& time) {
 
         delete kalman_filter_;
         kalman_filter_ = 0;
-        return true;
+        return;
     }
 
     // TODO: fix the kalman filter update (we shouldn't need a loop here...)
@@ -107,8 +107,6 @@ bool PositionFilter::propagate(const mhf::Time& time) {
             kalman_filter_->propagate(dt - total_dt);
         }
     }
-    
-    return true;
 }
 
 void PositionFilter::update(std::shared_ptr<const pbl::PDF> z, const mhf::Time& time) {

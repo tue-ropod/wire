@@ -95,11 +95,11 @@ PositionAndDimensionFilter* PositionAndDimensionFilter::clone() const {
     return new PositionAndDimensionFilter(*this);
 }
 
-bool PositionAndDimensionFilter::propagate(const mhf::Time& time) {
+void PositionAndDimensionFilter::propagate(const mhf::Time& time) {
 
     if (t_last_propagation_ == 0) {
         t_last_propagation_ = time;
-        return true;
+        return;
     }
 
     mhf::Duration dt = time - t_last_propagation_;
@@ -108,7 +108,7 @@ bool PositionAndDimensionFilter::propagate(const mhf::Time& time) {
     assert(dt >= 0);
 
     if (!properties_) {
-        return true;
+        return;
     }
 
     float Q = 0.4;
@@ -120,8 +120,6 @@ bool PositionAndDimensionFilter::propagate(const mhf::Time& time) {
    
     properties_->propagateRectangleFeatures( QmRectangle, dt );
     properties_->propagateCircleFeatures( QmCircle, dt);
-    
-    return true;
 }
 
 void PositionAndDimensionFilter::update(std::shared_ptr<const pbl::PDF> z, const mhf::Time& time) {

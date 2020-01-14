@@ -93,14 +93,13 @@ const Property* PropertySet::getProperty(const std::string& attribute) const {
     return getProperty(AttributeConv::attribute(attribute));
 }
 
-bool PropertySet::propagate(const Time& time) {
+void PropertySet::propagate(const Time& time) {
     if (fabs(time - timestamp_) < 0.001) {
-        return false;
+        return;
     }
     
 //     std::cout << " PropertySet::propagate called.";
 
-    bool removeObject = true;
     for(map<Attribute, Property*>::iterator it = properties_.begin(); it != properties_.end(); ++it) 
     {
         it->second->propagate(time);
@@ -114,8 +113,6 @@ bool PropertySet::propagate(const Time& time) {
     }
 
     timestamp_ = time;
-
-    return removeObject;
 }
 
 void PropertySet::update(std::shared_ptr<const pbl::PDF> z, const Time& time) {

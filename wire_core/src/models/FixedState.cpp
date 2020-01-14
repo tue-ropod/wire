@@ -30,8 +30,7 @@ FixedState* FixedState::clone() const {
 void FixedState::update(std::shared_ptr<const pbl::PDF> z, const mhf::Time& time) {
 }
 
-bool FixedState::propagate(const mhf::Time& time) {
-        return true;
+void FixedState::propagate(const mhf::Time& time) {
 }
 
 void FixedState::reset() {

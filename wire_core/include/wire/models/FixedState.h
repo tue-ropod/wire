@@ -40,7 +40,7 @@ public:
      * @brief Propagates the state, but since the state is fixed, propagate will do nothing.
      */
 
-    virtual bool propagate(const mhf::Time& time);
+    virtual void propagate(const mhf::Time& time);
 
     /**
      * @brief Resets the state, but since the state is fixed, reset will do nothing.

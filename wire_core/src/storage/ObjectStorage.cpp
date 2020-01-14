@@ -54,7 +54,7 @@ void ObjectStorage::match(const Evidence& ev) {
         //cout.precision(dbl::max_digits10);
         
 //         std::cout << "Going to propagate object " << obj.toString() << std::endl;
-        bool removeObject = obj.propagate(ev.getTimestamp()); // propagated to current timestamp, which is being set in process evidence of WorldModelROS.cpp
+           obj.propagate(ev.getTimestamp()); // propagated to current timestamp, which is being set in process evidence of WorldModelROS.cpp
         
         
 //         std::cout << "objectStorage, match: removeObject = " << removeObject << std::endl;

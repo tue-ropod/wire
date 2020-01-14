@@ -35,7 +35,7 @@ public:
 
     const Property* getProperty(const std::string& attribute) const;
 
-    bool propagate(const Time& time);
+    void propagate(const Time& time);
 
     void update(std::shared_ptr<const pbl::PDF> z, const Time& time);
 

@@ -77,7 +77,7 @@ void MultiModelFilter::addEstimator(mhf::IStateEstimator* estimator) {
     }
 }
 
-bool MultiModelFilter::propagate(const mhf::Time& time) {
+void MultiModelFilter::propagate(const mhf::Time& time) {
     for(unsigned int i = 0; i < estimators_.size(); ++i) {
         estimators_[i]->propagate(time);
     }
@@ -88,8 +88,6 @@ bool MultiModelFilter::propagate(const mhf::Time& time) {
 
     weights_[0] = w0;
     weights_[1] = w1;
-    
-    return true;
 }
 
 void MultiModelFilter::update(std::shared_ptr<const pbl::PDF> z, const mhf::Time& time) {

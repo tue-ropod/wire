@@ -71,7 +71,7 @@ public:
      * @brief Propagates the internal state to Time time
      * @param time The time to which the internal state is propagated
      */
-    virtual bool propagate(const mhf::Time& time);
+    virtual void propagate(const mhf::Time& time);
 
     /**
      * @brief Updates the internal state based on measurement z

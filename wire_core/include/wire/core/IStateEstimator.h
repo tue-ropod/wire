@@ -71,7 +71,7 @@ public:
      * @brief Propagates the internal state to Time time
      * @param time The time to which the internal state is propagated
      */
-    virtual bool propagate(const Time& time) = 0;
+    virtual void propagate(const Time& time) = 0;
 
     /**
      * @brief Updates the internal state based on measurement z
