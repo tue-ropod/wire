@@ -21,10 +21,11 @@
 #define RECTANGLE_MEASURED_STATE_SIZE     3               // [-]
 #define RECTANGLE_DIM_STATE_SIZE          2               // [-]
 #define RECTANGLE_MEASURED_DIM_STATE_SIZE 2               // [-]
-#define CIRCLE_STATE_SIZE                  4               // [-]
+
+#define CIRCLE_STATE_SIZE                 4               // [-]
 #define CIRCLE_MEASURED_STATE_SIZE        2               // [-]
-#define CIRCLE_DIM_STATE_SIZE              1               // [-]
-#define CIRCLE_MEASURED_DIM_STATE_SIZE     1               // [-]
+#define CIRCLE_DIM_STATE_SIZE             1               // [-]
+#define CIRCLE_MEASURED_DIM_STATE_SIZE    1               // [-]
 
 namespace tracking
 {

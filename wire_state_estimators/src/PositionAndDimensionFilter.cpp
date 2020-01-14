@@ -124,6 +124,8 @@ void PositionAndDimensionFilter::propagate(const mhf::Time& time) {
 
 void PositionAndDimensionFilter::update(std::shared_ptr<const pbl::PDF> z, const mhf::Time& time) {
 
+        
+//         std::cout << "PositionAndDimensionFilter::update start "  << std::endl;
     if (z->type() == pbl::PDF::HYBRID) {
         std::shared_ptr<const pbl::Hybrid> H = pbl::PDFtoHybrid(z);
      
@@ -134,7 +136,7 @@ void PositionAndDimensionFilter::update(std::shared_ptr<const pbl::PDF> z, const
             properties_ = new tracking::FeatureProperties();
             properties_->setMeasuredFeatureProperties(H);
 //             std::cout << "PositionAndDimensionFilter::update values initialized. properties = " << std::endl;
-//              properties_->printProperties();
+             properties_->printProperties();
         }
        else 
        {     
@@ -159,7 +161,8 @@ void PositionAndDimensionFilter::update(std::shared_ptr<const pbl::PDF> z, const
 // std::cout << "measuredProperties.rectangle_.getCovariance() = " << measuredProperties.rectangle_.getCovariance() << std::endl;
 pbl::Vector z_kRectangle = measuredProperties.rectangle_.get_H()*measuredProperties.rectangle_.getState();
 pbl::Vector z_kCircle = measuredProperties.circle_.get_H()*measuredProperties.circle_.getState();
-// std::cout << "measuredProperties: z_kRectangle = " << z_kRectangle << std::endl;
+// std::cout << "PositionAndDimensionFilter, measuredProperties: z_kRectangle.t() = " << z_kRectangle.t() << std::endl;
+// std::cout << "PositionAndDimensionFilter, measuredProperties: z_kCircle.t() = " << z_kCircle.t() << std::endl;
 
             properties_->updateRectangleFeatures( measuredProperties.rectangle_.getCovariance(), z_kRectangle );
 //              std::cout << "PositionAndDimensionFilter::update circle" << std::endl;
@@ -176,6 +179,8 @@ pbl::Vector z_kCircle = measuredProperties.circle_.get_H()*measuredProperties.ci
     } else {
         printf("PositionAndDimensionFilter can only be updated with Hybrids.\n");
     }
+    
+//     std::cout << "PositionAndDimensionFilter::update end "  << std::endl;
 }
 
 void PositionAndDimensionFilter::reset() {
