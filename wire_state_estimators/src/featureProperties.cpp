@@ -774,7 +774,6 @@ void FeatureProperties::propagateRectangleFeatures (pbl::Matrix Q_k, float dt)
         rectangle_.set_P_PosVel ( P_PosVel );
 }
 
-//void FeatureProperties::updateRectangleFeatures (pbl::Matrix Q_k, pbl::Matrix R_k, pbl::Vector z_k, float dt)
 void FeatureProperties::updateRectangleFeatures ( pbl::Matrix R_k, pbl::Vector z_k)
 {       
         unwrap( &z_k( RM.yaw_zRef ), (double) rectangle_.get_yaw(), (double) M_PI );
@@ -789,14 +788,14 @@ void FeatureProperties::updateRectangleFeatures ( pbl::Matrix R_k, pbl::Vector z
         pbl::Matrix Pdim = rectangle_.get_Pdim();
         pbl::Vector x_k_k_1_dim = { rectangle_.get_w(), rectangle_.get_d()};
         pbl::Vector z_k_dim = { z_k( RM.width_zRef ), z_k( RM.depth_zRef ) };
-        pbl::Matrix R_k_dim = R_k.submat(RECTANGLE_MEASURED_STATE_SIZE,
-                                         RECTANGLE_MEASURED_STATE_SIZE, 
-                                         RECTANGLE_MEASURED_STATE_SIZE + RECTANGLE_MEASURED_DIM_STATE_SIZE - 1, 
-                                         RECTANGLE_MEASURED_STATE_SIZE + RECTANGLE_MEASURED_DIM_STATE_SIZE - 1);        
-
+        pbl::Matrix R_k_dim = R_k.submat(RECTANGLE_STATE_SIZE,
+                                         RECTANGLE_STATE_SIZE, 
+                                         RECTANGLE_STATE_SIZE + RECTANGLE_MEASURED_DIM_STATE_SIZE - 1, 
+                                         RECTANGLE_STATE_SIZE + RECTANGLE_MEASURED_DIM_STATE_SIZE - 1);        
+        
        // dim update
        pbl::Vector x_k_k_dim = kalmanUpdate(rectangle_.get_H_dim(), &Pdim, x_k_k_1_dim, z_k_dim, R_k_dim);
-
+      
        float deltaWidth = x_k_k_1_dim ( RM.width_dimRef ) - x_k_k_dim( RM.width_dimRef );
        float deltaDepth = x_k_k_1_dim ( RM.depth_dimRef ) - x_k_k_dim( RM.depth_dimRef );
 
@@ -914,11 +913,11 @@ void FeatureProperties::updateCircleFeatures ( pbl::Matrix R_k, pbl::Vector z_k 
         pbl::Vector x_k_k_1_dim = { circle_.get_radius() };
         pbl::Vector z_k_dim = { z_k( CM.radius_zRef )};
         pbl::Matrix Pdim = circle_.get_Pdim();
-        pbl::Matrix R_k_dim = R_k.submat(CIRCLE_MEASURED_STATE_SIZE,
-                                         CIRCLE_MEASURED_STATE_SIZE,
-                                         CIRCLE_MEASURED_STATE_SIZE + CIRCLE_MEASURED_DIM_STATE_SIZE - 1,
-                                         CIRCLE_MEASURED_STATE_SIZE + CIRCLE_MEASURED_DIM_STATE_SIZE - 1);        
-        
+        pbl::Matrix R_k_dim = R_k.submat(CIRCLE_STATE_SIZE,
+                                         CIRCLE_STATE_SIZE,
+                                         CIRCLE_STATE_SIZE + CIRCLE_MEASURED_DIM_STATE_SIZE - 1,
+                                         CIRCLE_STATE_SIZE + CIRCLE_MEASURED_DIM_STATE_SIZE - 1);        
+
         pbl::Vector x_k_k_dim = kalmanUpdate(circle_.get_H_dim(), &Pdim, x_k_k_1_dim, z_k_dim, R_k_dim);
         
         // After the position update for changed dimensions, update the dimensions
