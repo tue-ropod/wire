@@ -93,13 +93,13 @@ void Circle::setMeasuredCircle( std::shared_ptr<const pbl::Gaussian> Gmeasured)
 //           std::cout << "Gmeasured set at: " << std::endl;
 //           printProperties();
          
-       /*  std::cout << "SetMeasuredCircle: Gmeasured, mean =  " << Gmeasured->getMean() << std::endl;
-         printProperties();
+//          std::cout << "SetMeasuredCircle: Gmeasured, mean =  " << Gmeasured->getMean() << std::endl;
+//          printProperties();
+//          
+//          std::cout << "SetMeasuredCircle: Gmeasured, cov =  " << Gmeasured->getCovariance() << std::endl;
+//          std::cout << "SetMeasuredCircle: P_PosVel_ =  " << P_PosVel_ << std::endl;
+//          std::cout << "SetMeasuredCircle: Pdim_ =  " << Pdim_ << std::endl;
          
-         std::cout << "SetMeasuredCircle: Gmeasured, cov =  " << Gmeasured->getCovariance() << std::endl;
-         std::cout << "SetMeasuredCircle: P_PosVel_ =  " << P_PosVel_ << std::endl;
-         std::cout << "SetMeasuredCircle: Pdim_ =  " << Pdim_ << std::endl;
-         */
 }
 
 void Circle::setObservedCircle( std::shared_ptr<const pbl::Gaussian> Gobserved)
@@ -646,7 +646,8 @@ pbl::Matrix Rectangle::getCovariance( )
 
 bool FeatureProbabilities::setMeasurementProbabilities ( float errorRectangleSquared, float errorCircleSquared, float circleDiameter, float typicalCorridorWidth )
 {
-        // TODO improve
+    std::cout << "FeatureProbabilities::setMeasurementProbabilities: error Rectangle squared, error circle squared = " << errorRectangleSquared << ", " << errorCircleSquared << std::endl;
+        
     if ( !std::isinf ( errorRectangleSquared ) || !std::isinf ( errorCircleSquared ) )
     {
         float probabilityScaling = 1.0;
@@ -659,7 +660,7 @@ bool FeatureProbabilities::setMeasurementProbabilities ( float errorRectangleSqu
 
         float sum = errorRectangleSquared + errorCircleSquared;
         float pCircle = probabilityScaling * errorRectangleSquared/sum;
-        if(pCircle < MIN_PROB_OBJECT) // smooth out prob such that recovery is easier
+        if(pCircle < MIN_PROB_OBJECT || pCircle != pCircle) // smooth out prob such that recovery is easier
         {
                 pCircle = MIN_PROB_OBJECT;
         }
@@ -668,11 +669,12 @@ bool FeatureProbabilities::setMeasurementProbabilities ( float errorRectangleSqu
                 pCircle = 1.0 - MIN_PROB_OBJECT;
         }
 
-
         float pRectangle =  1.0 - pCircle;  // Only 2 objects now, so the sum of it equals 1
 
         pmf_->setProbability ( "Rectangle", pRectangle );
         pmf_->setProbability ( "Circle", pCircle );
+        
+        std::cout << "FeatureProbabilities::setMeasurementProbabilities: return true. Probabilities rect circle = " << pRectangle << ", " << pCircle << std::endl;
         return true;
     }
     else
@@ -683,6 +685,8 @@ bool FeatureProbabilities::setMeasurementProbabilities ( float errorRectangleSqu
     
             // TODO if there are enough points for a single fit (probably circle only), is this fit realistic?
             // Acatually, it should be measured if the object which is modelled is realistic by comparing the laser scan with the expected scan based on that object
+        
+         std::cout << "FeatureProbabilities::setMeasurementProbabilities: return false. Probabilities rect circle = " << pmf_->toString() << std::endl;
             
             return false;
     }
@@ -690,16 +694,12 @@ bool FeatureProbabilities::setMeasurementProbabilities ( float errorRectangleSqu
 
 void FeatureProbabilities::update ( float pRectangle_measured, float pCircle_measured )
 {
+        std::cout << "FeatureProbabilities::update start" << std::endl;
     std::shared_ptr<pbl::PMF> pmf_measured = pmf_;
 
-    pmf_measured->setProbability ( "Rectangle", pRectangle_measured );
-    pmf_measured->setProbability ( "Circle", pCircle_measured );
-
-    pmf_->update ( pmf_measured );
-    
     float pCircle = pmf_->getProbability ( "Circle" );            
     
-    if(pCircle < MIN_PROB_OBJECT) // smooth out prob such that recovery is easier
+    if(pCircle < MIN_PROB_OBJECT || pCircle != pCircle ) // smooth out prob such that recovery is easier
     {
             pCircle = MIN_PROB_OBJECT;
     }
@@ -708,10 +708,13 @@ void FeatureProbabilities::update ( float pRectangle_measured, float pCircle_mea
             pCircle = 1.0 - MIN_PROB_OBJECT;
     }
 
-     float pRectangle =  1.0 - pCircle;  // Only 2 objects now, so the sum of it equals 1
+    float pRectangle =  1.0 - pCircle;  // Only 2 objects now, so the sum of it equals 1
 
-     pmf_->setProbability ( "Rectangle", pRectangle );
-     pmf_->setProbability ( "Circle", pCircle );
+    pmf_measured->setProbability ( "Rectangle", pRectangle_measured );
+    pmf_measured->setProbability ( "Circle", pCircle_measured );
+
+    pmf_->update ( pmf_measured );
+    std::cout << "FeatureProbabilities::update end" << std::endl;
 }
 
 void FeatureProbabilities::update ( FeatureProbabilities& featureProbabilities_in )

@@ -136,7 +136,7 @@ void PositionAndDimensionFilter::update(std::shared_ptr<const pbl::PDF> z, const
             properties_ = new tracking::FeatureProperties();
             properties_->setMeasuredFeatureProperties(H);
 //             std::cout << "PositionAndDimensionFilter::update values initialized. properties = " << std::endl;
-             properties_->printProperties();
+//              properties_->printProperties();
         }
        else 
        {     
