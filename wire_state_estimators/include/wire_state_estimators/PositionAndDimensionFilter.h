@@ -47,16 +47,9 @@
 #include "ros/ros.h"
 
 #include <armadillo>
-
 #include <iostream>
-
 #include <time.h>
 
-//#include <armadillo>
-
-
-//#define TIMEOUT_TIME                    0.5             // [s]
-//class KalmanFilter;
 
 /**
  * @brief Estimator specialized in estimating the position of a target. The estimator
@@ -128,36 +121,13 @@ public:
     
     bool setParameter(const std::string& param, const std::string& s);
     
-    //void updateRectangleFeatures ( Eigen::MatrixXf Q_k, Eigen::MatrixXf R_k, Eigen::VectorXf z_k, float dt);
-
-    //void updateCircleFeatures ( Eigen::MatrixXf Q_k, Eigen::MatrixXf R_k, Eigen::MatrixXf z_k, float dt );
-    
-    //Eigen::MatrixXf kalmanUpdate(Eigen::MatrixXf F, Eigen::MatrixXf H, Eigen::MatrixXf *P, Eigen::MatrixXf x_k_1_k_1, Eigen::MatrixXf z_k, Eigen::MatrixXf Q, Eigen::MatrixXf R);
-    
 protected:
 
     mhf::Time t_last_update_;
 
     mhf::Time t_last_propagation_;
 
-//    KalmanFilter* kalman_filter_;
-    
-//    ProcessModel ProcessModel_;
-
-     tracking::FeatureProperties* properties_;
-     
- //    std::shared_ptr<pbl::Mixture> observedProperties_;
-    
-//    std::shared_ptr<pbl::Gaussian> fixed_pdf_;
-
-    // ********* filter parameters *********
-
-//    double max_acceleration_;
-
-//    double fixed_pdf_cov_;
-
-//    double kalman_timeout_;
-
+    tracking::FeatureProperties* properties_;
 };
 
 #endif

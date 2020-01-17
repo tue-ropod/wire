@@ -1,17 +1,12 @@
 #ifndef WIRE_FEATURE_PROPERTIES_H_
 #define WIRE_FEATURE_PROPERTIES_H_
 
-//#include <Eigen/Dense>
-//#include <eigen3/Eigen/Dense>
-
 #include "problib/conversions.h"
 #include "problib/datatypes.h"
 #include "geolib/datatypes.h"
 
 #include <visualization_msgs/Marker.h>
 #include "tf/transform_datatypes.h"
-
-//#define ARMA_USE_LAPACK
 
 #define MARKER_TIMEOUT_TIME              0.5             // [s]
 #define MIN_PROB_OBJECT                  0.05            // [-]
@@ -132,11 +127,7 @@ class Rectangle
     pbl::Matrix P_PosVel_, Pdim_;
         
     /* observation model*/
-    pbl::Matrix H_PosVel_, H_dim_, H_;
-        
-    
-    //pbl::Matrix zeroMatrix(H_PosVel_.n_rows,H_dim_.n_cols);
-    //pbl::Matrix H_ = arma::join_cols(arma::join_rows(H_PosVel_,zeroMatrix),arma::join_rows(zeroMatrix.t(), H_dim_));     
+    pbl::Matrix H_PosVel_, H_dim_, H_;   
     
   public:
     Rectangle();
@@ -196,8 +187,6 @@ class Rectangle
     
     std::vector<geo::Vec2f> determineCenterpointsOfEdges ( );
     
-//     std::vector<geo::Vec2f> determinePointsOfSquare ( float associationDistance, float rotation );
-    
     float predictX( float dt );
     
     float predictY( float dt );
@@ -211,8 +200,6 @@ class Rectangle
     bool switchDimensions( float measuredYaw);
     
     void interchangeRectangleFeatures();
-    
- //   void setState( float posX, float posY, float posYaw, float xVel, float yVel, float yawVel, float width, float depth );
     
     pbl::Gaussian rectangle2PDF();
     
@@ -234,8 +221,8 @@ class FeatureProbabilities
 
     FeatureProbabilities()
     {
+        // Initialize with 50/50 probabilities
         pmf_ = std::make_shared<pbl::PMF>();
-//    FeatureProbabilities ( void ) { // Initialize with 50/50 probabilities
         pmf_->setDomainSize ( 2 );
         pmf_->setProbability ( "Rectangle", 0.5 );
         pmf_->setProbability ( "Circle", 0.5 );
@@ -246,20 +233,20 @@ class FeatureProbabilities
         pmf_->setProbability ( "Circle", pCircle_in );
     };
 
-    double get_pRectangle() const {
-            double out = pmf_->getProbability ( "Rectangle" );
+    double get_pRectangle() const 
+    {
+        double out = pmf_->getProbability ( "Rectangle" );
         return out;
-    } ;
+    };
 
-    double get_pCircle() const {
-//            std::cout << "Feature prob: ptr = " << this << "\t";
-            double out = pmf_->getProbability ( "Circle" );
+    double get_pCircle() const 
+    {
+        double out = pmf_->getProbability ( "Circle" );
         return out;
-    } ;
+    };
 
-    int getDomainSize (){
-            return pmf_->getDomainSize();
-            }
+    int getDomainSize (){ return pmf_->getDomainSize(); }
+    
     bool setMeasurementProbabilities ( float errorRectangleSquared, float errorCircleSquared, float circleDiameter, float typicalCorridorWidth );
 
     void update ( float pRectangle_measured, float pCircle_measured );
@@ -269,9 +256,6 @@ class FeatureProbabilities
     std::shared_ptr<pbl::PMF> getValue() { return pmf_; };
     
     void setValue(const pbl::PMF& pmf) { pmf_ = std::make_shared<pbl::PMF>(pmf); };
-    
-    //PMF::PMF(const PMF& pmf) : PDF(1, PDF::DISCRETE), ptr_(pmf.ptr_) {
-//}
 };
 
 class FeatureProperties
@@ -292,16 +276,13 @@ class FeatureProperties
       nMeasurements_ = 0;
    };
    
-   ~FeatureProperties ( ) { // Initialize with 50/50 probabilities unless otherwise indicated
-    //  delete featureProbabilities_;
-   };
+   ~FeatureProperties ( ) {   };
 
     FeatureProperties ( const FeatureProperties* orig ) : 
     featureProbabilities_(orig->featureProbabilities_),
     circle_ (orig->circle_),
     rectangle_(orig->rectangle_),
     nMeasurements_(orig->nMeasurements_)
-  //  observedProperties_ (orig->observedProperties_)
     {  
             if (orig->observedProperties_) 
             {
