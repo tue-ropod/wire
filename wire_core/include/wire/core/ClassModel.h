@@ -80,7 +80,7 @@ public:
 
     const IStateEstimator* getEstimator(const Attribute& attribute) const;
     
-    std::string toString();
+    std::string toString() const;
 
     //void setProbDetectedGivenVisible(double prob);
 

@@ -19,6 +19,38 @@
 using namespace std;
 
 namespace mhf {
+        
+         // TODO single file for these standard functions
+template <typename T> 
+int sgn(T val) 
+{
+    return (T(0) < val) - (val < T(0));
+}
+
+template <typename T> 
+bool unwrap (T *angleMeasured, T angleReference, T increment)
+{
+        bool updated = false;
+        // Rectangle is symmetric over pi-radians, so unwrap to pi
+        T diff = angleReference - *angleMeasured;
+        
+        int d = diff / (increment);
+        *angleMeasured += d*increment;
+        
+        if( d!= 0)
+        {
+                updated = true;
+        }
+        
+        T r = angleReference - *angleMeasured;
+        
+        if( fabs(r) > (0.5*increment) )
+        {
+                *angleMeasured += sgn(r)*increment;
+                updated = true;
+        }
+        return updated;
+}
 
 int SemanticObject::N_SEMANTICOBJECT = 0;
 
@@ -71,7 +103,38 @@ double SemanticObject::getLikelihood(const PropertySet& ev) const {
         const Property* this_prop = getProperty(attribute);
 
         if (this_prop) {
-             likelihood *= this_prop->getLikelihood(ev_prop->getValue());
+                
+                std::shared_ptr<pbl::PDF> z = ev_prop->getValue()->clone();
+                Attribute positionAndDimension = mhf::AttributeConv::attribute("positionAndDimension");
+
+                if(attribute == positionAndDimension)
+                {
+                        std::shared_ptr<const pbl::Hybrid> modelledValueHyb = pbl::PDFtoHybrid( this_prop->getValue() );
+                        std::vector<pbl::Hybrid::distributionStruct> modelledPDFs = modelledValueHyb->getPDFS();
+                        std::shared_ptr<const pbl::Gaussian> modelledRectGauss = pbl::PDFtoGaussian( modelledPDFs[0].pdf );// TODO proper numbering for conversion
+                        
+                        std::shared_ptr<const pbl::Hybrid> measuredValueHyb = pbl::PDFtoHybrid(z);
+                        std::vector<pbl::Hybrid::distributionStruct> measuredPDFs = measuredValueHyb->getPDFS();
+                        std::shared_ptr< const pbl::PDF> measuredRectPDF = measuredPDFs[0].pdf; // TODO proper numbering for conversion
+                        std::shared_ptr<const pbl::Gaussian> measuredRectGauss = pbl::PDFtoGaussian(measuredRectPDF);
+                        
+                        unsigned int yaw_zRef = 2; // TODO proper numbering for conversion
+                        unsigned int yaw_PosVelRef = 2; // TODO proper numbering for conversion
+                        arma::vec muMeasured = measuredRectGauss->getMean();
+                         
+                        if( unwrap( &(muMeasured.at(yaw_zRef)), (double)  modelledRectGauss->getMean().at(yaw_PosVelRef), (double) M_PI ) )      
+                        {
+                                std::shared_ptr<pbl::Gaussian> updatedRectGauss = std::make_shared<pbl::Gaussian>(muMeasured, measuredRectGauss->getCovariance());
+                                std::shared_ptr< pbl::Hybrid> measuredValueHybUpdated = std::make_shared<pbl::Hybrid>();
+                        
+                                measuredValueHybUpdated->addPDF(*updatedRectGauss,modelledPDFs[0].weight);// Here is a segfault!
+                                measuredValueHybUpdated->addPDF(*modelledPDFs[1].pdf,modelledPDFs[1].weight);
+                                
+                                z = measuredValueHybUpdated;
+                        }
+                }
+                
+             likelihood *= this_prop->getLikelihood(z);
         } else {
             need_to_deduce.push_back(attribute);
         }

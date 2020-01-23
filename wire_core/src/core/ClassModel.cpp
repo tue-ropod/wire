@@ -61,7 +61,7 @@ const PropertySet& ClassModel::getClutterPDFs() const {
     return clutter_pdfs_;
 }
 
-std::string ClassModel::toString()
+std::string ClassModel::toString() const 
 {
       std::stringstream s;
        
