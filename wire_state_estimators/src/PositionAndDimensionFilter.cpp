@@ -83,7 +83,7 @@ void PositionAndDimensionFilter::propagate(const mhf::Time& time) {
 
     float Q = 0.4;
     pbl::Vector diagQRect, diagQCircle;
-    diagQRect << Q << Q << Q << 20*Q << 20*Q << 20*Q << Q << Q << arma::endr; // TODO why this difference in Q?
+    diagQRect << Q << Q << Q << 2*Q << 2*Q << 2*Q << 0.5*Q << 0.5*Q << arma::endr; // TODO why this difference in Q?
     diagQCircle << Q << Q << Q << Q << Q << arma::endr;
     pbl::Matrix QmRectangle = arma::diagmat( diagQRect );
     pbl::Matrix QmCircle = arma::diagmat( diagQCircle );

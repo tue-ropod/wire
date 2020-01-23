@@ -250,7 +250,7 @@ Rectangle::Rectangle(): H_dim_ ( arma::eye(RECTANGLE_MEASURED_DIM_STATE_SIZE, RE
     zeroMatrix.zeros();
     zeroMatrix2.zeros();
 
-    H_ = arma::join_cols(arma::join_rows(H_PosVel_,zeroMatrix),arma::join_rows(zeroMatrix2, H_dim_));    
+    H_ = arma::join_cols(arma::join_rows(H_PosVel_,zeroMatrix),arma::join_rows(zeroMatrix2, H_dim_));
 }
 
 void Rectangle::setObservedRectangle( std::shared_ptr<const pbl::Gaussian> Gobserved)
@@ -663,21 +663,16 @@ void FeatureProperties::setObservedFeatureProperties ( std::shared_ptr<const pbl
         if (observedProperties->type() == pbl::PDF::HYBRID ) 
         {
             std::shared_ptr<const pbl::Hybrid> observedPropertiesHyb = pbl::PDFtoHybrid(observedProperties);
-//             std::cout << "Observed FeatureProperties observedProperties = : " << observedProperties->toString();
 
             const std::vector<pbl::Hybrid::distributionStruct> PDFs = observedPropertiesHyb->getPDFS();
             
             std::shared_ptr< const pbl::PDF> rectPDF = PDFs[0].pdf; // TODO proper numbering for conversion
             std::shared_ptr< const pbl::PDF> circPDF = PDFs[1].pdf;
             
-//             std::cout << "featureProperties.h, setObservedFeatureProperties: rectPDF = " << rectPDF << std::endl;
-//             std::cout << "featureProperties.h, setObservedFeatureProperties: circPDF = " << circPDF << std::endl;
-            
              if (rectPDF->type() == pbl::PDF::GAUSSIAN && circPDF->type() == pbl::PDF::GAUSSIAN)// && probabilityPDF->type() == pbl::PDF::DISCRETE ) 
                 {
                         std::shared_ptr<const pbl::Gaussian> rectGauss = pbl::PDFtoGaussian(rectPDF);
                         std::shared_ptr<const pbl::Gaussian> circGauss = pbl::PDFtoGaussian(circPDF);
-                        //std::shared_ptr<const pbl::PMF> probPMF = pbl::PDFtoPMF(probabilityPDF);
 
                         rectangle_.setObservedRectangle(rectGauss);
                         circle_.setObservedCircle(circGauss);
@@ -706,7 +701,6 @@ void FeatureProperties::setMeasuredFeatureProperties ( std::shared_ptr<const pbl
                 {
                         std::shared_ptr<const pbl::Gaussian> rectGauss = pbl::PDFtoGaussian(rectPDF);
                         std::shared_ptr<const pbl::Gaussian> circGauss = pbl::PDFtoGaussian(circPDF);
-                        //std::shared_ptr<const pbl::PMF> probPMF = pbl::PDFtoPMF(probabilityPDF);
 
                         rectangle_.setMeasuredRectangle(rectGauss);
                         circle_.setMeasuredCircle(circGauss);
@@ -729,7 +723,7 @@ pbl::Vector kalmanPropagate(pbl::Matrix F, pbl::Matrix *P, pbl::Vector x_k_1_k_1
 }
     
 pbl::Vector kalmanUpdate(pbl::Matrix H, pbl::Matrix *P, pbl::Vector x_k_k_1, pbl::Vector z_k, pbl::Matrix R)
-{   
+{           
     pbl::Matrix I = arma::eye(P->n_rows, P->n_cols);
     pbl::Vector y_k = z_k - H*x_k_k_1;
     pbl::Matrix S_k = H* *P*H.t() + R;
@@ -782,20 +776,36 @@ void FeatureProperties::updateRectangleFeatures ( pbl::Matrix R_k, pbl::Vector z
         {
                 rectangle_.interchangeRectangleFeatures( );
                 unwrap( &z_k( RM.yaw_zRef ), (double) rectangle_.get_yaw(), (double) M_PI ); 
-                //ROS_WARN("Interchanged rectangular features");
         }
-
-        pbl::Matrix Pdim = rectangle_.get_Pdim();
-        pbl::Vector x_k_k_1_dim = { rectangle_.get_w(), rectangle_.get_d()};
-        pbl::Vector z_k_dim = { z_k( RM.width_zRef ), z_k( RM.depth_zRef ) };
-        pbl::Matrix R_k_dim = R_k.submat(RECTANGLE_STATE_SIZE,
-                                         RECTANGLE_STATE_SIZE, 
-                                         RECTANGLE_STATE_SIZE + RECTANGLE_MEASURED_DIM_STATE_SIZE - 1, 
-                                         RECTANGLE_STATE_SIZE + RECTANGLE_MEASURED_DIM_STATE_SIZE - 1);        
+                         
+       pbl::Matrix Pdim = rectangle_.get_Pdim();
         
+       pbl::Vector x_k_k_1_dim = { rectangle_.get_w(), rectangle_.get_d()};
+       pbl::Vector z_k_dim = { z_k( RM.width_zRef ), z_k( RM.depth_zRef ) };
+
+       pbl::Matrix R_k_dim = R_k.submat(RECTANGLE_STATE_SIZE,
+                                        RECTANGLE_STATE_SIZE, 
+                                        RECTANGLE_STATE_SIZE + RECTANGLE_MEASURED_DIM_STATE_SIZE - 1, 
+                                        RECTANGLE_STATE_SIZE + RECTANGLE_MEASURED_DIM_STATE_SIZE - 1);           
+               
+       bool arbitraryWidthObserved = (R_k_dim(RM.width_dimRef, RM.width_dimRef) > 5.0 ); // TODO better way of communicating this info 
+       bool arbitraryDepthObserved = (R_k_dim(RM.depth_dimRef, RM.depth_dimRef) > 5.0 ); // TODO better way of communicating this info 
+        
+       pbl::Matrix H_dimensions = rectangle_.get_H_dim();
+
+       if(arbitraryWidthObserved)
+       {
+               H_dimensions.at(RM.width_dimRef, RM.width_dimRef) = 0;
+       }
+       
+       if(arbitraryDepthObserved)
+       {
+               H_dimensions.at(RM.depth_dimRef, RM.depth_dimRef) = 0;
+       }
+       
        // dim update
-       pbl::Vector x_k_k_dim = kalmanUpdate(rectangle_.get_H_dim(), &Pdim, x_k_k_1_dim, z_k_dim, R_k_dim);
-      
+       pbl::Vector x_k_k_dim = kalmanUpdate(H_dimensions, &Pdim, x_k_k_1_dim, z_k_dim, R_k_dim);
+       
        float deltaWidth = x_k_k_1_dim ( RM.width_dimRef ) - x_k_k_dim( RM.width_dimRef );
        float deltaDepth = x_k_k_1_dim ( RM.depth_dimRef ) - x_k_k_dim( RM.depth_dimRef );
 
@@ -813,10 +823,10 @@ void FeatureProperties::updateRectangleFeatures ( pbl::Matrix R_k, pbl::Vector z
         // Correct measured position caused by differences in modelled and measured dimensions
         deltaWidth = z_k ( RM.width_zRef ) - rectangle_.get_w();
         deltaDepth = z_k ( RM.depth_zRef ) - rectangle_.get_d();
-         
+        
         deltaX = 0.0; deltaY = 0.0;
         correctForDimensions( deltaWidth, deltaDepth, &deltaX, &deltaY, z_k( RM.x_zRef ), z_k( RM.y_zRef ), rectangle_.get_x(), rectangle_.get_y(), thetaPred );
-        
+
         z_k( RM.x_zRef ) = z_k( RM.x_zRef ) - deltaX;
         z_k( RM.y_zRef ) = z_k( RM.y_zRef ) - deltaY;
         
