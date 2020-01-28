@@ -164,7 +164,7 @@ bool ObjectModelParser::parseStateEstimator(ClassModel* obj_model, const TiXmlEl
         }
     }
 
-    IStateEstimator* estimator;
+    std::shared_ptr<IStateEstimator> estimator;
 
     if (object_model_loader_->isClassAvailable(model_type)) {
         estimator = object_model_loader_->createClassInstance(model_type)->clone();
@@ -488,7 +488,7 @@ bool ObjectModelParser::parseYAML(KnowledgeDatabase& knowledge_db)
                                                 }
                                         }
                                                                 
-                                        IStateEstimator* estimator;
+                                        std::shared_ptr<IStateEstimator> estimator;
                                         
                                         if (object_model_loader_->isClassAvailable(model_type)) 
                                         {

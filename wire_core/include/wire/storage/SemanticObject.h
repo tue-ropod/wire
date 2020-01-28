@@ -18,13 +18,13 @@ class Evidence;
 class Assignment;
 class Hypothesis;
 
-class SemanticObject : public PropertySet {
+class SemanticObject : public PropertySet, public std::enable_shared_from_this<SemanticObject>  {
 
 public:
 
     static int N_SEMANTICOBJECT;
 
-    std::list<SemanticObject*>::iterator it_obj_storage_;
+    std::list<std::shared_ptr<SemanticObject>>::iterator it_obj_storage_;
 
     SemanticObject(long ID);
 
@@ -36,7 +36,14 @@ public:
 
     void update(const Evidence& z);
 
-    SemanticObject* clone() const;
+//     std::shared_ptr<SemanticObject> clone() const;
+    
+    virtual std::shared_ptr<IStateEstimator> clone() const { return cloneThis(); };
+  
+    std::shared_ptr<SemanticObject> cloneThis() const 
+    {             
+            return std::make_shared< SemanticObject>(*this);
+    }
     
     //double getLastUpdateTime() const { return };
 

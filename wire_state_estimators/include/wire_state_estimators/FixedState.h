@@ -56,7 +56,14 @@ public:
     
     virtual ~FixedState();
 
-    FixedState* clone() const;
+//     std::shared_ptr<FixedState> clone() const;
+    
+    virtual std::shared_ptr<IStateEstimator> clone() const { return cloneThis(); };
+  
+    std::shared_ptr<FixedState> cloneThis() const 
+    {             
+            return std::make_shared< FixedState>(*this);
+    }
     
     /**
      * @brief Performs an update, but since the state is fixed, update will do nothing.

@@ -18,15 +18,15 @@ public:
 
     virtual ~ObjectStorage();
 
-    void addObject(SemanticObject* obj);
+    void addObject(std::shared_ptr<SemanticObject> obj);
 
-    std::list<SemanticObject*>::iterator removeObject(SemanticObject& obj);
+    std::list<std::shared_ptr<SemanticObject>>::iterator removeObject(SemanticObject& obj);
 
     long getUniqueID();
 
     void match(const Evidence& ev);
     
-   std::shared_ptr< std::list<SemanticObject*> > getObjects() const;
+   std::shared_ptr< std::list<std::shared_ptr<SemanticObject>> > getObjects() const;
 
 protected:
 
@@ -37,7 +37,7 @@ protected:
 
     long ID_;
 
-    std::shared_ptr<std::list<SemanticObject*>> objects_;
+    std::shared_ptr<std::list<std::shared_ptr<SemanticObject>>> objects_;
 
     const KnowledgeDatabase& knowledge_db_;   
 

@@ -56,14 +56,14 @@ public:
 
     virtual ~Property();
 
-    Property* clone() const;
+    std::shared_ptr<Property> clone() const;
 //    std::shared_ptr<Property> clone() const{ return std::make_shared< Property>(*this); };
 
     Property& operator=(const Property& other);
 
     const Attribute& getAttribute() const;
 
-    const IStateEstimator& getEstimator() const;
+    std::shared_ptr<const IStateEstimator> getEstimator() const;
 
     std::shared_ptr<const pbl::PDF> getValue() const;
     
@@ -95,7 +95,7 @@ protected:
 
     Attribute attribute_;
 
-    IStateEstimator* estimator_;
+    std::shared_ptr<IStateEstimator> estimator_;
 
 };
 

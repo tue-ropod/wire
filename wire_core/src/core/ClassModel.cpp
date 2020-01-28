@@ -45,10 +45,12 @@ const std::string& ClassModel::getModelName() const {
     return model_name_;
 }
 
-const IStateEstimator* ClassModel::getEstimator(const Attribute& attribute) const {
-    const Property* prop = estimators_.getProperty(attribute);
+std::shared_ptr<const IStateEstimator> ClassModel::getEstimator(const Attribute& attribute) const {
+    std::shared_ptr<const Property> prop = estimators_.getProperty(attribute);
     if (prop) {
-        return &prop->getEstimator();
+       
+//         std::shared_ptr<const IStateEstimator> toReturn = ;
+        return prop->getEstimator();
     }
     return 0;
 }

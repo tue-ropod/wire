@@ -24,20 +24,39 @@ ObjectStorage& ObjectStorage::getInstance() {
 
 ObjectStorage::ObjectStorage() : ID_(0), knowledge_db_(KnowledgeDatabase::getInstance()) {
         
-         objects_ = std::make_shared<std::list<SemanticObject*>>();
+         objects_ = std::make_shared<std::list<std::shared_ptr<SemanticObject>>>();
 }
 
 ObjectStorage::~ObjectStorage() {
 
 }
 
-void ObjectStorage::addObject(SemanticObject* obj) {
+void ObjectStorage::addObject(std::shared_ptr<SemanticObject> obj) {
     objects_->push_back(obj);
     obj->it_obj_storage_ = --objects_->end();
 }
 
-std::list<SemanticObject*>::iterator ObjectStorage::removeObject(SemanticObject& obj) {
-    std::list<SemanticObject*>::iterator next_it = objects_->erase(obj.it_obj_storage_);
+std::list<std::shared_ptr<SemanticObject>>::iterator ObjectStorage::removeObject(SemanticObject& obj) {
+//          std::shared_ptr<std::list<std::shared_ptr<SemanticObject>>>
+        
+        
+        std::list<std::shared_ptr<SemanticObject>>::iterator itObjects;
+        std::list<std::shared_ptr<SemanticObject>>::iterator itStart = objects_->begin();
+        std::list<std::shared_ptr<SemanticObject>>::iterator itEnd = objects_->end();
+        
+        std::cout << "ObjectStorage::removeObject: obj list = ";
+        for(itObjects = itStart; itObjects != itEnd; itObjects++)
+        {
+               std::shared_ptr<SemanticObject> object = *itObjects;
+                std::cout << "\t for object pointer " << object << " " << object->toString() << std::endl;
+        }
+        std::cout << "\n";
+        
+        std::cout << "ObjectStorage::removeObject: obj = " << *(obj.it_obj_storage_) << " " << obj.toString() << std::endl;
+//         std::cout << "ObjectStorage::removeObject: obj.it_obj_storage_ = " << obj.it_obj_storage_ << std::endl;
+        std::cout << "ObjectStorage::removeObject:objects_.size() = " << objects_->size() << std::endl;
+        
+    std::list<std::shared_ptr<SemanticObject>>::iterator next_it = objects_->erase(obj.it_obj_storage_);
     return next_it;
 }
 
@@ -49,7 +68,7 @@ void ObjectStorage::match(const Evidence& ev) {
 
 //     std::list<SemanticObject> objects2Remove;
         
-    for(list<SemanticObject*>::iterator it_obj = objects_->begin(); it_obj != objects_->end(); ++it_obj) {
+    for(list<std::shared_ptr<SemanticObject>>::iterator it_obj = objects_->begin(); it_obj != objects_->end(); ++it_obj) {
         SemanticObject& obj = **it_obj;
         //cout.precision(dbl::max_digits10);
         
@@ -73,7 +92,7 @@ void ObjectStorage::match(const Evidence& ev) {
 //              std::cout << "Object removed."  << std::endl;
 //     }
 
-    for(list<SemanticObject*>::iterator it_obj = objects_->begin(); it_obj != objects_->end(); ++it_obj) {
+    for(list<std::shared_ptr<SemanticObject>>::iterator it_obj = objects_->begin(); it_obj != objects_->end(); ++it_obj) {
         SemanticObject& obj = **it_obj;
 
         double prob_existing = KnowledgeDatabase::getInstance().getProbabilityExisting(ev, obj);
@@ -83,7 +102,7 @@ void ObjectStorage::match(const Evidence& ev) {
     }
 }
 
-std::shared_ptr<std::list<SemanticObject*>> ObjectStorage::getObjects() const
+std::shared_ptr<std::list<std::shared_ptr<SemanticObject>>> ObjectStorage::getObjects() const
 {
         return objects_;        
 }

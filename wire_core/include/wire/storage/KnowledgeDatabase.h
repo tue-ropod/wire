@@ -32,7 +32,7 @@ public:
 
     const PropertySet& getClutterPDFs(const std::string& class_name) const;
 
-    const IStateEstimator* getEstimator(const std::string& class_name, const Attribute& attribute) const;
+    std::shared_ptr<const IStateEstimator> getEstimator(const std::string& class_name, const Attribute& attribute) const;
 
     const pbl::PMF& getClassDistribution() const;
 

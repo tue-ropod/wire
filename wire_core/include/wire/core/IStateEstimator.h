@@ -64,7 +64,7 @@ public:
 
     virtual ~IStateEstimator() {}
 
-    virtual IStateEstimator* clone() const = 0;
+    virtual std::shared_ptr<IStateEstimator> clone() const = 0;
     // virtual std::shared_ptr<IStateEstimator> clone() const = 0;
 
     /**

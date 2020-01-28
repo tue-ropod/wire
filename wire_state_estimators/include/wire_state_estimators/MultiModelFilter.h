@@ -50,11 +50,18 @@ public:
 
     MultiModelFilter(const MultiModelFilter& orig);
 
-    virtual MultiModelFilter* clone() const; 
+//     virtual MultiModelFilter* clone() const; 
+    
+    virtual std::shared_ptr<IStateEstimator> clone() const { return cloneThis(); };
+  
+    std::shared_ptr<MultiModelFilter> cloneThis() const 
+    {             
+            return std::make_shared< MultiModelFilter>(*this);
+    }
 
     virtual ~MultiModelFilter();
 
-    void addEstimator(mhf::IStateEstimator* estimator);
+    void addEstimator(std::shared_ptr<mhf::IStateEstimator> estimator);
 
     /**
      * @brief Propagates the internal state to Time time
@@ -104,7 +111,7 @@ protected:
 
     bool initialized_;
 
-    std::vector<mhf::IStateEstimator*> estimators_;
+    std::vector<std::shared_ptr<mhf::IStateEstimator>> estimators_;
 
     std::vector<double> weights_;
 

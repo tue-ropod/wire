@@ -62,6 +62,7 @@
 
 #include <string>
 #include <list>
+#include <memory>
 
 namespace mhf {
 
@@ -99,7 +100,7 @@ public:
     int getNumObjects() const;
 
     // returns the list of objects contained in this hypothesis
-    const std::list<SemanticObject*>* getObjects() const;
+    const std::list<std::shared_ptr<SemanticObject>>* getObjects() const;
 
     //double getObjectProbability(MHTObject* obj) const;
 
@@ -127,9 +128,9 @@ public:
     void addChildHypothesis(Hypothesis* h);
 
     // Add object to the object list
-    void addObject(SemanticObject* obj);
+    void addObject(std::shared_ptr<SemanticObject> obj);
     
-    void removeObject(SemanticObject* obj);
+    void removeObject(std::shared_ptr<SemanticObject> obj);
 
     void clearAssignmentSet();
 
@@ -164,7 +165,7 @@ protected:
 
     double timestamp_;
 
-    std::list<SemanticObject*>* objects_;
+    std::list<std::shared_ptr<SemanticObject>>* objects_;
 
     Hypothesis* parent_;
 

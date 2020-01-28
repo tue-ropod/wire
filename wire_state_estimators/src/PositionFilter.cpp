@@ -59,9 +59,9 @@ PositionFilter::~PositionFilter() {
     //delete fixed_pdf_;
 }
 
-PositionFilter* PositionFilter::clone() const {
+/*PositionFilter* PositionFilter::clone() const {
     return new PositionFilter(*this);
-}
+}*/
 
 void PositionFilter::propagate(const mhf::Time& time) {
 

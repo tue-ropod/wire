@@ -23,9 +23,9 @@ FixedState::~FixedState() {
   //  delete pdf_;
 }
 
-FixedState* FixedState::clone() const {
-    return new FixedState(*this);
-}
+// std::shared_ptr<FixedState> FixedState::clone() const {
+//     return std::make_shared<FixedState>(*this);
+// }
 
 void FixedState::update(std::shared_ptr<const pbl::PDF> z, const mhf::Time& time) {
 }

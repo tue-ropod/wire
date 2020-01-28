@@ -23,7 +23,13 @@ public:
 
     virtual ~PropertySet();
 
-    PropertySet* clone() const;
+//     std::shared_ptr<PropertySet> clone() const;
+    virtual std::shared_ptr<IStateEstimator> clone() const { return cloneThis(); };
+  
+    std::shared_ptr<PropertySet> cloneThis() const 
+    {             
+            return std::make_shared< PropertySet>(*this);
+    }
 
     void addProperty(const Attribute& attribute, const pbl::PDF& value);
 
@@ -31,9 +37,9 @@ public:
 
     void addProperty(const Attribute& attribute, const IStateEstimator& estimator);    
 
-    const Property* getProperty(const Attribute& attribute) const;
+    std::shared_ptr<const Property> getProperty(const Attribute& attribute) const;
 
-    const Property* getProperty(const std::string& attribute) const;
+    std::shared_ptr<const Property> getProperty(const std::string& attribute) const;
 
     void propagate(const Time& time);
 
@@ -47,7 +53,7 @@ public:
 
     virtual double getLikelihood(const PropertySet& P) const;
 
-    const std::map<Attribute, Property*>& getPropertyMap() const;
+    const std::map<Attribute, std::shared_ptr<Property>>& getPropertyMap() const;
 
     Time getTimestamp() const;
     
@@ -59,13 +65,13 @@ protected:
 
     Time timestamp_;
 
-    void addProperty(Property* property);
+    void addProperty(std::shared_ptr<Property> property);
 
-    Property* getProperty(const Attribute& attribute);
+    std::shared_ptr<Property> getProperty(const Attribute& attribute);
 
 private:
 
-    std::map<Attribute, Property*> properties_;
+    std::map<Attribute, std::shared_ptr<Property>> properties_;
 
 };
 

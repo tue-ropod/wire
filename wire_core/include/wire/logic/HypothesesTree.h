@@ -62,6 +62,7 @@
 #include "wire/core/datatypes.h"
 #include <list>
 #include <map>
+#include <memory>
 
 namespace mhf {
 
@@ -87,9 +88,9 @@ public:
 
     /* GETTERS */
 
-    const std::list<SemanticObject*>* getMAPObjects() const;
+    const std::list<std::shared_ptr<SemanticObject>>* getMAPObjects() const;
 
-    const std::list<SemanticObject*>* getAllObjects() const;
+//     const std::list<std::shared_ptr<SemanticObject>>* getAllObjects() const;
 
     const std::list<Hypothesis*>& getHypotheses() const;
 

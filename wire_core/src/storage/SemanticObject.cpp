@@ -95,12 +95,12 @@ double SemanticObject::getLikelihood(const PropertySet& ev) const {
 
     vector<Attribute> need_to_deduce;
 
-    const map<Attribute, Property*>& ev_props = ev.getPropertyMap();
-    for(map<Attribute, Property*>::const_iterator it = ev_props.begin(); it != ev_props.end(); ++it) {
+    const map<Attribute, std::shared_ptr<Property>>& ev_props = ev.getPropertyMap();
+    for(map<Attribute, std::shared_ptr<Property>>::const_iterator it = ev_props.begin(); it != ev_props.end(); ++it) {
         const Attribute& attribute = it->first;
-        const Property* ev_prop = it->second;
+        std::shared_ptr<const Property> ev_prop = it->second;
 
-        const Property* this_prop = getProperty(attribute);
+        std::shared_ptr<const Property> this_prop = getProperty(attribute);
 
         if (this_prop) {
                 
@@ -143,7 +143,7 @@ double SemanticObject::getLikelihood(const PropertySet& ev) const {
     vector<Property> deduced_props = KnowledgeDatabase::getInstance().inferProperties(*this, need_to_deduce);
 
     for(vector<Property>::iterator it_prop = deduced_props.begin(); it_prop != deduced_props.end(); ++it_prop) {
-        const Property* ev_prop = ev.getProperty(it_prop->getAttribute());
+        std::shared_ptr<const Property> ev_prop = ev.getProperty(it_prop->getAttribute());
         assert(ev_prop);
         likelihood *= it_prop->getLikelihood(ev_prop->getValue());
     }
@@ -160,17 +160,17 @@ void SemanticObject::update(const Evidence& ev) {
     // first update class property
 
     Attribute class_att = AttributeConv::attribute("class_label");
-    const Property* ev_class = ev.getProperty(class_att);
+    std::shared_ptr<const Property> ev_class = ev.getProperty(class_att);
 
     if (ev_class) {
-        Property* my_class = getProperty(class_att);
+        std::shared_ptr<Property> my_class = getProperty(class_att);
 
         if (my_class) {
             my_class->update(ev_class->getValue(), ev.getTimestamp());
         } else {
-            const IStateEstimator* prototype = getExpectedObjectModel().getEstimator(class_att);
+            std::shared_ptr<const IStateEstimator> prototype = getExpectedObjectModel().getEstimator(class_att);
             if (prototype) {
-                Property* new_prop = new Property(class_att, *prototype);
+                std::shared_ptr<Property> new_prop = std::make_shared<Property>(class_att, *prototype);
                 new_prop->update(ev_class->getValue(), ev.getTimestamp());
                 addProperty(new_prop);
             } else {
@@ -189,22 +189,22 @@ void SemanticObject::update(const Evidence& ev) {
 
     // then update rest
 
-    for(map<Attribute, Property*>::const_iterator it = ev.getPropertyMap().begin(); it != ev.getPropertyMap().end(); ++it) {
+    for(map<Attribute, std::shared_ptr<Property>>::const_iterator it = ev.getPropertyMap().begin(); it != ev.getPropertyMap().end(); ++it) {
 
         const Attribute& attribute = it->first;
-        const Property* ev_prop = it->second;
+        std::shared_ptr<const Property> ev_prop = it->second;
 
         if (attribute != class_att) {
-            Property* my_prop = getProperty(attribute);
+            std::shared_ptr<Property> my_prop = getProperty(attribute);
 
             if (my_prop && !class_changed) {
                 my_prop->update(ev_prop->getValue(), ev.getTimestamp());
                 //cout << "Updating " << AttributeConv::attribute_str(attribute) << " with " << ev_prop->getValue().toString() << endl;
                 //cout << "Result: " << my_prop->toString() << endl;
             } else {
-                const IStateEstimator* prototype = getExpectedObjectModel().getEstimator(attribute);
+                std::shared_ptr<const IStateEstimator> prototype = getExpectedObjectModel().getEstimator(attribute);
                 if (prototype) {
-                    Property* new_prop = new Property(attribute, *prototype);
+                    std::shared_ptr<Property> new_prop = std::make_shared<Property>(attribute, *prototype);
                     new_prop->update(ev_prop->getValue(), ev.getTimestamp());
                     addProperty(new_prop);
                 } else {
@@ -215,13 +215,13 @@ void SemanticObject::update(const Evidence& ev) {
     }
 }
 
-SemanticObject* SemanticObject::clone() const {
-        //std::cout << "Semantic object: going to clone. This object = " << toString() << std::endl;
-    return new SemanticObject(*this);
-}
+// std::shared_ptr<SemanticObject> SemanticObject::clone() const {
+//         //std::cout << "Semantic object: going to clone. This object = " << toString() << std::endl;
+//     return std::make_shared<SemanticObject>(*this);
+// }
 
 const ClassModel& SemanticObject::getExpectedObjectModel() const {
-    const Property* class_prop = getProperty("class_label");
+    std::shared_ptr<const Property> class_prop = getProperty("class_label");
 
     string class_name;
 
@@ -235,7 +235,7 @@ const ClassModel& SemanticObject::getExpectedObjectModel() const {
 }
 
 void SemanticObject::addPotentialAssignment(const Evidence& ev, double probability) {
-    Assignment* assignment = new Assignment(Assignment::EXISTING, &ev, this, probability);
+    Assignment* assignment = new Assignment(Assignment::EXISTING, &ev, shared_from_this(), probability);
 
     for(set<Hypothesis*>::iterator it_hyp = parent_hypotheses_->begin(); it_hyp != parent_hypotheses_->end(); ++it_hyp) {
         Hypothesis& hyp = **it_hyp;
@@ -283,7 +283,8 @@ std::string SemanticObject::toString() const
     std::stringstream s;
     
     s << "Semantic object: id = " << ID_ ;
-    s << " expected class = " << expected_class_ << std::endl;//<< " parent_hypotheses_ = " << std::endl;
+    s << " expected class = " << expected_class_ ;
+    s << " num parent Hyp = " << getNumParentHypotheses() << std::endl;//<< " parent_hypotheses_ = " << std::endl;
       
   //  for(std::set<Hypothesis*>::const_iterator it = parent_hypotheses_.begin(); it != parent_hypotheses_.end(); ++it) {
    //     s << " - " << *it << endl;

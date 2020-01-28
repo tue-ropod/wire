@@ -9,6 +9,7 @@
 #define WM_ASSIGNMENT_H_
 
 #include <string>
+#include <memory>
 
 namespace mhf {
 
@@ -27,19 +28,19 @@ public:
 
     virtual ~Assignment();
 
-    Assignment(AssignmentType type, const Evidence* evidence, const SemanticObject* target, double probability);
+    Assignment(AssignmentType type, const Evidence* evidence, std::shared_ptr<const SemanticObject> target, double probability);
 
     AssignmentType getType() const;
 
     const Evidence* getEvidence() const;
 
-    const SemanticObject* getTarget() const;
+    std::shared_ptr<const SemanticObject> getTarget() const;
 
     double getProbability() const;
 
-    SemanticObject* getNewObject() const;
+    std::shared_ptr<SemanticObject> getNewObject() const;
 
-    SemanticObject* getUpdatedObject() const;
+    std::shared_ptr<SemanticObject> getUpdatedObject() const;
 
     std::string toString() const;
 
@@ -49,13 +50,13 @@ protected:
 
     const Evidence* evidence_;
 
-    const SemanticObject* target_;
+    std::shared_ptr<const SemanticObject> target_;
 
     double probability_;
 
-    mutable SemanticObject* new_object_;
+    mutable std::shared_ptr<SemanticObject> new_object_;
 
-    mutable SemanticObject* updated_object_;
+    mutable std::shared_ptr<SemanticObject> updated_object_;
 };
 
 }

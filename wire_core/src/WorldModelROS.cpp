@@ -136,10 +136,10 @@ void WorldModelROS::start() {
 bool WorldModelROS::objectToMsg(const SemanticObject& obj, wire_msgs::ObjectState& msg) const {
     msg.ID = obj.getID();
 
-    const map<Attribute, Property*>& properties = obj.getPropertyMap();
+    const map<Attribute, std::shared_ptr<Property>>& properties = obj.getPropertyMap();
 
-    for(map<Attribute, Property*>::const_iterator it_prop = properties.begin(); it_prop != properties.end(); ++it_prop) {
-        Property* prop = it_prop->second;
+    for(map<Attribute, std::shared_ptr<Property>>::const_iterator it_prop = properties.begin(); it_prop != properties.end(); ++it_prop) {
+        std::shared_ptr<Property> prop = it_prop->second;
 
         wire_msgs::Property prop_msg;
         prop_msg.attribute = AttributeConv::attribute_str(it_prop->first);
@@ -159,10 +159,10 @@ bool WorldModelROS::hypothesisToMsg(const Hypothesis& hyp, wire_msgs::WorldState
     //std::cout << "properties_.size() = " << hyp.getObjects().size() << std::endl;
    // int counter = 0;
 
-    for(list<SemanticObject*>::const_iterator it = hyp.getObjects()->begin(); it != hyp.getObjects()->end(); ++it) {
+    for(list<std::shared_ptr<SemanticObject>>::const_iterator it = hyp.getObjects()->begin(); it != hyp.getObjects()->end(); ++it) {
      //   counter++;
        //  std::cout << "Count = " << counter << "time = " << time  << std::endl;
-        SemanticObject* obj_clone = (*it)->clone();
+        std::shared_ptr<SemanticObject> obj_clone = (*it)->cloneThis();
         
         obj_clone->propagate(time.toSec());
 
@@ -171,7 +171,7 @@ bool WorldModelROS::hypothesisToMsg(const Hypothesis& hyp, wire_msgs::WorldState
             msg.objects.push_back(obj_msg);
         }
 
-        delete obj_clone;
+//         delete obj_clone;
 
     }
 
@@ -359,7 +359,7 @@ void WorldModelROS::publish() const {
 
 }
 
-const list<SemanticObject*>* WorldModelROS::getMAPObjects() const {
+const list<std::shared_ptr<SemanticObject>>* WorldModelROS::getMAPObjects() const {
     return world_model_->getMAPObjects();
 }
 

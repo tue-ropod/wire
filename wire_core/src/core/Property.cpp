@@ -19,16 +19,16 @@ Property::Property(const Property& orig)
 }
 
 Property::~Property() {
-    delete estimator_;
+//     delete estimator_;
 }
 
-Property* Property::clone() const {
-    return new Property(*this);
+std::shared_ptr<Property> Property::clone() const {
+    return std::make_shared<Property>(*this);
 }
 
 Property& Property::operator=(const Property& other) {
     if (this != &other) {
-        delete estimator_;
+//         delete estimator_;
         time_ = other.time_;
         attribute_ = other.attribute_;
         estimator_ = other.estimator_->clone();
@@ -41,8 +41,8 @@ const Attribute& Property::getAttribute() const {
     return attribute_;
 }
 
-const IStateEstimator& Property::getEstimator() const {
-    return *estimator_;
+std::shared_ptr<const IStateEstimator> Property::getEstimator() const {
+    return estimator_;
 }
 
 std::shared_ptr<const pbl::PDF> Property::getValue() const {

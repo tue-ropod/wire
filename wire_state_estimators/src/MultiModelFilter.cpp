@@ -40,10 +40,10 @@
 #include "wire_state_estimators/PositionFilter.h"
 
 MultiModelFilter::MultiModelFilter() : initialized_(false) {
-    PositionFilter* e1 = new PositionFilter();
+    std::shared_ptr<PositionFilter> e1 = std::make_shared<PositionFilter>();
     e1->setParameter("max_acceleration", 0.0);
 
-    PositionFilter* e2 = new PositionFilter();
+    std::shared_ptr<PositionFilter> e2 = std::make_shared<PositionFilter>();
     e2->setParameter("max_acceleration", 8.0);
 
     addEstimator(e1);
@@ -59,16 +59,16 @@ MultiModelFilter::MultiModelFilter(const MultiModelFilter& orig) : mhf::IStateEs
 }
 
 MultiModelFilter::~MultiModelFilter() {
-    for(unsigned int i = 0; i < estimators_.size(); ++i) {
-        delete estimators_[i];
-    }
+//     for(unsigned int i = 0; i < estimators_.size(); ++i) {
+//         delete estimators_[i];
+//     }
 }
 
-MultiModelFilter* MultiModelFilter::clone() const {
-    return new MultiModelFilter(*this);
-}
+// MultiModelFilter* MultiModelFilter::clone() const {
+//     return new MultiModelFilter(*this);
+// }
 
-void MultiModelFilter::addEstimator(mhf::IStateEstimator* estimator) {
+void MultiModelFilter::addEstimator(std::shared_ptr<mhf::IStateEstimator> estimator) {
     estimators_.push_back(estimator);
 
     weights_.resize(estimators_.size());

@@ -61,9 +61,9 @@ PositionAndDimensionFilter::~PositionAndDimensionFilter() {
         
 }
 
-PositionAndDimensionFilter* PositionAndDimensionFilter::clone() const {
-    return new PositionAndDimensionFilter(*this);
-}
+// PositionAndDimensionFilter* PositionAndDimensionFilter::clone() const {
+//     return new PositionAndDimensionFilter(*this);
+// }
 
 void PositionAndDimensionFilter::propagate(const mhf::Time& time) {
 
@@ -81,12 +81,45 @@ void PositionAndDimensionFilter::propagate(const mhf::Time& time) {
         return;
     }
 
-    float Q = 0.4;
+    double a_max = 8.0;// TODO make configurable
+    pbl::Matrix QmRectangle(RECTANGLE_STATE_SIZE + RECTANGLE_DIM_STATE_SIZE,RECTANGLE_STATE_SIZE + RECTANGLE_DIM_STATE_SIZE); 
+    pbl::Matrix QmCircle(CIRCLE_STATE_SIZE + CIRCLE_DIM_STATE_SIZE,CIRCLE_STATE_SIZE + CIRCLE_DIM_STATE_SIZE);
+    
+    QmRectangle.zeros();
+    QmCircle.zeros();
+    
+    double q = a_max * a_max / 4;
+    double dt2 = dt * dt;
+    double dt4 = dt2 * dt2;
+    
+    int posVelDim = 3;
+    for(int i = 0; i < posVelDim; ++i) 
+    {
+            QmRectangle(i, i) = dt4 / 4 * q;                       // cov pos
+            QmRectangle(i, i + posVelDim) = dt4 / 4 * q;           // cov pos~vel                    
+            QmRectangle(i + posVelDim, i + posVelDim) = dt2 * q;   // cov vel       
+    }
+    
+    QmRectangle(2*posVelDim, 2*posVelDim) = 0.4;                   // cov width       
+    QmRectangle(2*posVelDim + 1, 2*posVelDim + 1) = 0.4;           // cov width
+    
+    posVelDim = 2;
+    for(int i = 0; i < posVelDim; ++i) 
+    {
+            QmCircle(i, i) = dt4 / 4 * q;                          // cov pos
+            QmCircle(i, i + posVelDim) = dt4 / 4 * q;              // cov pos~vel                    
+            QmCircle(i + posVelDim, i + posVelDim) = dt2 * q;      // cov vel       
+    }
+    
+    QmCircle(2*posVelDim, 2*posVelDim) = 0.4;  // cov radius  
+    
+    /*float Q = 0.4;
     pbl::Vector diagQRect, diagQCircle;
     diagQRect << Q << Q << Q << 2*Q << 2*Q << 2*Q << 0.5*Q << 0.5*Q << arma::endr; // TODO why this difference in Q?
     diagQCircle << Q << Q << Q << Q << Q << arma::endr;
     pbl::Matrix QmRectangle = arma::diagmat( diagQRect );
     pbl::Matrix QmCircle = arma::diagmat( diagQCircle );
+    */
    
     properties_->propagateRectangleFeatures( QmRectangle, dt );
     properties_->propagateCircleFeatures( QmCircle, dt);
@@ -143,11 +176,17 @@ std::shared_ptr<const pbl::PDF> PositionAndDimensionFilter::getFullValue() const
 }
 
 bool PositionAndDimensionFilter::setParameter(const std::string& param, bool b) {
-    return false;
+        return false;
 }
 
 bool PositionAndDimensionFilter::setParameter(const std::string &param, double v) {
-    return true;
+    
+    if (param == "max_acceleration") {
+            max_acceleration_ = v;
+            return true;
+    }
+        
+    return false;
 }
 
 bool PositionAndDimensionFilter::setParameter(const std::string& param, const std::string& s)

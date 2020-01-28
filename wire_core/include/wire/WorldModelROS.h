@@ -53,7 +53,7 @@ public:
 
     void startThreaded();
 
-    const std::list<SemanticObject*>* getMAPObjects() const;
+    const std::list<std::shared_ptr<SemanticObject>>* getMAPObjects() const;
 
 protected:
 

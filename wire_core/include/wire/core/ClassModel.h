@@ -78,7 +78,7 @@ public:
 
     const PropertySet& getClutterPDFs() const;
 
-    const IStateEstimator* getEstimator(const Attribute& attribute) const;
+    std::shared_ptr<const IStateEstimator> getEstimator(const Attribute& attribute) const;
     
     std::string toString() const;
 

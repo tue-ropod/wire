@@ -66,7 +66,7 @@ public:
 
     PositionAndDimensionFilter(const PositionAndDimensionFilter& orig);
 
-    virtual PositionAndDimensionFilter* clone() const;
+    virtual std::shared_ptr<IStateEstimator> clone() const { return cloneThis(); };
   
     std::shared_ptr<PositionAndDimensionFilter> cloneThis() const 
     {             
@@ -128,6 +128,8 @@ protected:
     mhf::Time t_last_propagation_;
 
     tracking::FeatureProperties* properties_;
+    
+    double max_acceleration_;
 };
 
 #endif

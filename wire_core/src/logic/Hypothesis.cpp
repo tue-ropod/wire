@@ -28,7 +28,7 @@ Hypothesis::Hypothesis(const double& timestamp, double probability) : probabilit
 //             std::cout << "Hypothesis constructor called: this hypothesis = " << this << std::endl;
             
           //  std::list<SemanticObject*>* initObjects;
-            objects_ = new std::list<SemanticObject*>();
+            objects_ = new std::list<std::shared_ptr<SemanticObject>>();
 //             std::cout << "hypothesis constructor: p objects = " << objects_ << std::endl;
 }
 
@@ -67,7 +67,7 @@ int Hypothesis::getNumObjects() const {
     return objects_->size();
 }
 
-const list<SemanticObject*>* Hypothesis::getObjects() const {
+const list<std::shared_ptr<SemanticObject>>* Hypothesis::getObjects() const {
         
      //   std::cout << "Hypothesis = " << this << " objects_ = " ;//<< std::endl;
 //         std::cout << objects_ << std::endl;
@@ -132,7 +132,7 @@ void Hypothesis::addChildHypothesis(Hypothesis* h) {
     children_.push_back(h);
 }
 
-void Hypothesis::addObject(SemanticObject* obj) {
+void Hypothesis::addObject(std::shared_ptr<SemanticObject> obj) {
 //     int numObjectsPrev = getNumObjects();
     objects_->push_back(obj);
 //     std::cout << "going to add object to hypothesis, obj = " << obj->toString() << " current #objects = " << numObjectsPrev << " hypothesis = " << this << std::endl;
@@ -147,7 +147,7 @@ void Hypothesis::addObject(SemanticObject* obj) {
 //     }
 }
 
-void Hypothesis::removeObject(SemanticObject* obj) {
+void Hypothesis::removeObject(std::shared_ptr<SemanticObject> obj) {
     objects_->remove(obj);
     obj->removeFromHypothesis(this);
 }
@@ -177,7 +177,7 @@ void Hypothesis::applyAssignments() {
             // remove assignment from list
             it_ass = all_assignments.erase(it_ass);
         } else if (ass->getType() == Assignment::NEW) {
-            SemanticObject* new_obj = ass->getNewObject();
+            std::shared_ptr<SemanticObject> new_obj = ass->getNewObject();
             addObject(new_obj);
 
             // remove assignment from list
@@ -188,10 +188,10 @@ void Hypothesis::applyAssignments() {
     }
 
     // apply cases with target
-    const list<SemanticObject*>* hyp_parent_objs = parent_->getObjects();
-    for (list<SemanticObject*>::const_iterator it_obj = hyp_parent_objs->begin(); it_obj != hyp_parent_objs->end(); ++it_obj) {
+    const list<std::shared_ptr<SemanticObject>>* hyp_parent_objs = parent_->getObjects();
+    for (list<std::shared_ptr<SemanticObject>>::const_iterator it_obj = hyp_parent_objs->begin(); it_obj != hyp_parent_objs->end(); ++it_obj) {
              
-        SemanticObject* obj = *it_obj;
+        std::shared_ptr<SemanticObject> obj = *it_obj;
         
         const Assignment* update_ass = 0;
 
@@ -207,7 +207,7 @@ void Hypothesis::applyAssignments() {
         }
 
         if (update_ass) {
-            SemanticObject* updated_obj = update_ass->getUpdatedObject();
+            std::shared_ptr<SemanticObject> updated_obj = update_ass->getUpdatedObject();
             addObject(updated_obj);
         } else {
             addObject(obj);
@@ -287,8 +287,8 @@ void Hypothesis::clear() {
 //         bool check = objects_->begin() ==  objects_->end();
 //         std::cout << "Hypothesis clear: check = " << check << std::endl;
         
-    for (list<SemanticObject*>::iterator it_obj = objects_->begin(); it_obj != objects_->end(); ++it_obj) {
-        SemanticObject* obj = *it_obj;
+    for (list<std::shared_ptr<SemanticObject>>::iterator it_obj = objects_->begin(); it_obj != objects_->end(); ++it_obj) {
+        std::shared_ptr<SemanticObject> obj = *it_obj;
         obj->removeFromHypothesis(this);
         
 //         std::cout << "Hypothesis clear(): obj->getNumParentHypotheses() = " << obj->getNumParentHypotheses() << std::endl;
@@ -296,7 +296,7 @@ void Hypothesis::clear() {
         if (obj->getNumParentHypotheses() == 0) {
             ObjectStorage::getInstance().removeObject(*obj);
          //   std::cout << "Going to delete object " << obj->toString() << std::endl;
-            delete obj;
+         //   delete obj;
         }
     }
 

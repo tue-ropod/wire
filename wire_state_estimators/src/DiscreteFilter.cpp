@@ -53,9 +53,9 @@ DiscreteFilter::~DiscreteFilter() {
     --N_DISCRETEKALMAN_FILTER;
 }
 
-DiscreteFilter* DiscreteFilter::clone() const {
-	return new DiscreteFilter(*this);
-}
+// DiscreteFilter* DiscreteFilter::clone() const {
+// 	return new DiscreteFilter(*this);
+// }
 
 void DiscreteFilter::propagate(const mhf::Time& time) {
 }

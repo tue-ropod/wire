@@ -43,7 +43,7 @@ const PropertySet& KnowledgeDatabase::getClutterPDFs(const std::string& class_na
     return getClassModel(class_name)->getClutterPDFs();
 }
 
-const IStateEstimator* KnowledgeDatabase::getEstimator(const std::string& class_name, const Attribute& attribute) const {
+std::shared_ptr<const IStateEstimator> KnowledgeDatabase::getEstimator(const std::string& class_name, const Attribute& attribute) const {
     return getClassModel(class_name)->getEstimator(attribute);
 }
 
@@ -93,7 +93,7 @@ const ClassModel* KnowledgeDatabase::getClassModel(const std::string& class_name
 
 double KnowledgeDatabase::getProbabilityNew(const Evidence& z) {
 
-    const Property* class_prop = z.getProperty("class_label");
+    std::shared_ptr<const Property> class_prop = z.getProperty("class_label");
 
     double likelihood = 0;
     double total_prob = 0;
@@ -131,7 +131,7 @@ double KnowledgeDatabase::getProbabilityNew(const Evidence& z) {
 
 double KnowledgeDatabase::getProbabilityClutter(const Evidence& z) {
 
-    const Property* class_prop = z.getProperty("class_label");
+    std::shared_ptr<const Property> class_prop = z.getProperty("class_label");
 
     double likelihood = 0;
     double total_prob = 0;
@@ -182,7 +182,7 @@ double KnowledgeDatabase::getProbabilityExisting(const Evidence& z, const Semant
 }
 
 vector<Property> KnowledgeDatabase::inferProperties(const PropertySet& prop_set, vector<Attribute> attribs) const {
-    const Property* class_prop = prop_set.getProperty("class_label");
+    std::shared_ptr<const Property> class_prop = prop_set.getProperty("class_label");
 
     const ClassModel* most_prob_class_model = 0;
     if (class_prop) {
@@ -195,7 +195,7 @@ vector<Property> KnowledgeDatabase::inferProperties(const PropertySet& prop_set,
 
     vector<Property> inferred_props;
     for(vector<Attribute>::iterator it_att = attribs.begin(); it_att != attribs.end(); ++it_att) {
-        const Property* prop = most_prob_class_model->getNewPDFs().getProperty(*it_att);
+        std::shared_ptr<const Property> prop = most_prob_class_model->getNewPDFs().getProperty(*it_att);
         assert(prop);
         inferred_props.push_back(*prop);
     }
