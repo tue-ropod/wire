@@ -370,4 +370,12 @@ Hypothesis* Hypothesis::deleteSinglePaths() {
     return this;
 }
 
+void Hypothesis::showStatictics() const {
+        std::cout << "Hypothesis " << this << 
+        " has prob " << probability_ << 
+        " at timestamp " <<  timestamp_ << 
+        " Heigth = " << height_ << 
+        " #obj = "  <<  objects_->size();
+}
+
 }

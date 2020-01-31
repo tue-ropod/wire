@@ -11,6 +11,7 @@
 #define MARKER_TIMEOUT_TIME              0.5             // [s]
 #define MIN_PROB_OBJECT                  0.05            // [-]
 #define MARGIN_RECTANGLE_INTERCHANGE     30*M_PI/180     // [rad]
+#define MAX_DIMENSION_UNCERTAINTY         1               // [-]
 
 #define RECTANGLE_STATE_SIZE              6               // [-]
 #define RECTANGLE_MEASURED_STATE_SIZE     3               // [-]
@@ -24,6 +25,21 @@
 
 namespace tracking
 {
+        
+struct rectangleMapping {
+   unsigned int x_PosVelRef = 0, y_PosVelRef = 1, yaw_PosVelRef = 2, xVel_PosVelRef = 3, yVel_PosVelRef = 4, yawVel_PosVelRef = 5;//, width_PosVelRef, depth_PosVelRef;
+   unsigned int width_dimRef = 0, depth_dimRef = 1;
+   unsigned int x_zRef = 0, y_zRef = 1, yaw_zRef = 2, width_zRef = 3, depth_zRef = 4;
+};
+
+struct circleMapping {
+        unsigned int x_PosVelRef = 0, y_PosVelRef = 1, xVel_PosVelRef = 2, yVel_PosVelRef = 3;//, xAccel_PosVelRef = 4, yAccel_PosVelRef = 5;
+        unsigned int r_dimRef = 0;      
+        unsigned int x_zRef = 0, y_zRef = 1, radius_zRef = 2;
+};
+
+extern struct rectangleMapping RM;
+extern struct circleMapping CM;
         
 template <typename T> 
 int sgn(T val) 
@@ -50,13 +66,14 @@ void unwrap (T *angleMeasured, T angleReference, T increment)
 
 class Circle
 {
+  public:
     float x_, y_, z_, roll_, pitch_, yaw_, xVel_, yVel_, radius_; //xAccel_;//, yAccel_, radius_; // x, y, z-positions, roll, pitch, yaw and radius of circle
     pbl::Matrix P_PosVel_, Pdim_; // estimated covariance for state = [x, y, xVel, yVel] ^T and the radius
     
     /* observation model*/
     pbl::Matrix H_PosVel_, H_dim_, H_;
    
-  public:
+  
     Circle();
     
     void setMeasuredCircle(  std::shared_ptr<const pbl::Gaussian> Gmeasured);
@@ -123,13 +140,14 @@ class Circle
 
 class Rectangle
 {
+    public:
     float x_, y_, z_, w_, d_, h_, roll_, pitch_, yaw_, xVel_, yVel_, yawVel_; // x, y of center, width, height and rotation of rectangle
     pbl::Matrix P_PosVel_, Pdim_;
         
     /* observation model*/
     pbl::Matrix H_PosVel_, H_dim_, H_;   
     
-  public:
+  
     Rectangle();
     
     void setMeasuredRectangle( std::shared_ptr< const pbl::Gaussian> Gmeasured);

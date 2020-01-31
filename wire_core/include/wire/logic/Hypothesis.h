@@ -158,6 +158,8 @@ public:
     void deleteChildren();
 
     Hypothesis* deleteSinglePaths();
+    
+    void showStatictics() const;
 
 protected:
 

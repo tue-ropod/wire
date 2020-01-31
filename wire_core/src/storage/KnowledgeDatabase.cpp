@@ -123,6 +123,9 @@ double KnowledgeDatabase::getProbabilityNew(const Evidence& z) {
     assert(default_model != 0);
 
     likelihood += (1 - total_prob) * default_model->getNewPDFs().getLikelihood(z);
+    
+//     std::cout << "KnowledgeDatabase::getProbabilityNew: default_model->getNewPDFs() = " <<  default_model->getNewPDFs().toString();
+//     std::cout << "KnowledgeDatabase::getProbabilityNew: prior new = " << getPriorNew() << "default_model->getNewPDFs().getLikelihood(z) = " << default_model->getNewPDFs().getLikelihood(z) << std::endl;
 
     double p_new = getPriorNew() * likelihood;
 

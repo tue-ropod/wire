@@ -124,15 +124,20 @@ double SemanticObject::getLikelihood(const PropertySet& ev) const {
                          
                         if( unwrap( &(muMeasured.at(yaw_zRef)), (double)  modelledRectGauss->getMean().at(yaw_PosVelRef), (double) M_PI ) )      
                         {
+                                std::cout << "SemanticObject.cpp: Updated yaw. muMeasured.at(yaw_zRef) = " << muMeasured.at(yaw_zRef) << 
+                                " modelledRectGauss->getMean().at(yaw_PosVelRef) = " << modelledRectGauss->getMean().at(yaw_PosVelRef) << std::endl;
+                                
                                 std::shared_ptr<pbl::Gaussian> updatedRectGauss = std::make_shared<pbl::Gaussian>(muMeasured, measuredRectGauss->getCovariance());
                                 std::shared_ptr< pbl::Hybrid> measuredValueHybUpdated = std::make_shared<pbl::Hybrid>();
                         
-                                measuredValueHybUpdated->addPDF(*updatedRectGauss,modelledPDFs[0].weight);// Here is a segfault!
+                                measuredValueHybUpdated->addPDF(*updatedRectGauss,modelledPDFs[0].weight);
                                 measuredValueHybUpdated->addPDF(*modelledPDFs[1].pdf,modelledPDFs[1].weight);
                                 
                                 z = measuredValueHybUpdated;
                         }
                 }
+                
+                std::cout << "SemanticObject::getLikelihood: z = " << z->toString() << std::endl;
                 
              likelihood *= this_prop->getLikelihood(z);
         } else {

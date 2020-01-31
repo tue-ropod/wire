@@ -35,7 +35,7 @@ catkin_package(
 include_directories(include ${catkin_INCLUDE_DIRS})
 
 ## Build
-add_library(wire_state_estimators src/featureProperties.cpp include/wire_state_estimators/featureProperties.h)
+add_library(wire_state_estimators src/featureProperties.cpp)
 add_library(position_estimator src/PositionFilter.cpp src/KalmanFilter.cpp)
 add_library(multimodel_estimator src/MultiModelFilter.cpp src/PositionFilter.cpp)
 add_library(discrete_estimator src/DiscreteFilter.cpp)

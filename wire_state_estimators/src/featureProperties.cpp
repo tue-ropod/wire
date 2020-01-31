@@ -1,20 +1,9 @@
 #include "wire_state_estimators/featureProperties.h"
 #include <boost/iterator/iterator_concepts.hpp>
 
-
-struct rectangleMapping {
-   unsigned int x_PosVelRef = 0, y_PosVelRef = 1, yaw_PosVelRef = 2, xVel_PosVelRef = 3, yVel_PosVelRef = 4, yawVel_PosVelRef = 5;//, width_PosVelRef, depth_PosVelRef;
-   unsigned int width_dimRef = 0, depth_dimRef = 1;
-   unsigned int x_zRef = 0, y_zRef = 1, yaw_zRef = 2, width_zRef = 3, depth_zRef = 4;
-} RM;
-
-struct circleMapping {
-        unsigned int x_PosVelRef = 0, y_PosVelRef = 1, xVel_PosVelRef = 2, yVel_PosVelRef = 3;//, xAccel_PosVelRef = 4, yAccel_PosVelRef = 5;
-        unsigned int r_dimRef = 0;      
-        unsigned int x_zRef = 0, y_zRef = 1, radius_zRef = 2;
-} CM;
-
 namespace tracking{
+struct rectangleMapping RM;     
+struct circleMapping CM;  
         
 Circle::Circle():   H_PosVel_( arma::eye(CIRCLE_MEASURED_STATE_SIZE, CIRCLE_STATE_SIZE) ), 
                     H_dim_ (arma::eye(CIRCLE_MEASURED_DIM_STATE_SIZE, CIRCLE_DIM_STATE_SIZE) )
@@ -616,12 +605,33 @@ void FeatureProbabilities::update ( float pRectangle_measured, float pCircle_mea
     pmf_measured->setProbability ( "Circle", pCircle_measured );
 
     pmf_->update ( pmf_measured );
-    std::cout << "FeatureProbabilities::update end" << std::endl;
 }
 
 void FeatureProbabilities::update ( FeatureProbabilities& featureProbabilities_in )
 {
     pmf_->update ( featureProbabilities_in.pmf_ );
+    
+    
+    float pCircle = pmf_->getProbability ( "Circle" );            
+    
+    bool updated = false;
+    if(pCircle < MIN_PROB_OBJECT ) // smooth out prob such that recovery is easier
+    {
+            pCircle = MIN_PROB_OBJECT;
+            updated = true;
+    }
+    else if(pCircle > 1.0 - MIN_PROB_OBJECT)
+    {
+            pCircle = 1.0 - MIN_PROB_OBJECT;
+            updated = true;
+    }
+    
+    if(updated)
+    {
+            float pRectangle =  1.0 - pCircle;  // Only 2 objects now, so the sum of it equals 1
+            pmf_->setProbability ( "Rectangle", pRectangle );
+            pmf_->setProbability ( "Circle", pCircle );
+    }
 }
 
 void FeatureProperties::correctForDimensions( float deltaWidth, float deltaDepth, float* xMeasured, float* yMeasured, float measuredPosX, float measuredPosY, float modelledPosX, float modelledPosY,  float thetaPred)
@@ -717,7 +727,6 @@ void FeatureProperties::setMeasuredFeatureProperties ( std::shared_ptr<const pbl
 pbl::Vector kalmanPropagate(pbl::Matrix F, pbl::Matrix *P, pbl::Vector x_k_1_k_1, pbl::Matrix Q)
 {   
     pbl::Vector x_k_k_1 = F*x_k_1_k_1;
-    //pbl::Matrix P_k_k_1 = F* (*P) * F.t() + Q;
     *P = F* (*P) * F.t() + Q;
     return x_k_k_1;
 }
@@ -753,7 +762,17 @@ void FeatureProperties::propagateRectangleFeatures (pbl::Matrix Q_k, float dt)
          pbl::Matrix Q_k_dim = Q_k.submat(RECTANGLE_STATE_SIZE, RECTANGLE_STATE_SIZE, RECTANGLE_STATE_SIZE + RECTANGLE_DIM_STATE_SIZE -1, RECTANGLE_STATE_SIZE + RECTANGLE_DIM_STATE_SIZE -1);
          pbl::Vector x_k_1_k_1_dim = { rectangle_.get_w(), rectangle_.get_d()};
          pbl::Vector x_k_k_1_dim =  kalmanPropagate(Fdim, &Pdim, x_k_1_k_1_dim, Q_k_dim);
-        
+         
+         if(Pdim(RM.width_dimRef, RM.width_dimRef) > MAX_DIMENSION_UNCERTAINTY)
+         {
+                 Pdim(RM.width_dimRef, RM.width_dimRef) = MAX_DIMENSION_UNCERTAINTY;
+         }
+         
+         if(Pdim(RM.depth_dimRef, RM.depth_dimRef) > MAX_DIMENSION_UNCERTAINTY)
+         {
+                 Pdim(RM.depth_dimRef, RM.depth_dimRef) = MAX_DIMENSION_UNCERTAINTY;
+         }
+         
          rectangle_.set_w ( x_k_k_1_dim ( RM.width_dimRef ) );
          rectangle_.set_d ( x_k_k_1_dim ( RM.depth_dimRef ) );
          rectangle_.set_Pdim( Pdim );
@@ -788,9 +807,9 @@ void FeatureProperties::updateRectangleFeatures ( pbl::Matrix R_k, pbl::Vector z
                                         RECTANGLE_STATE_SIZE + RECTANGLE_MEASURED_DIM_STATE_SIZE - 1, 
                                         RECTANGLE_STATE_SIZE + RECTANGLE_MEASURED_DIM_STATE_SIZE - 1);           
                
-       bool arbitraryWidthObserved = (R_k_dim(RM.width_dimRef, RM.width_dimRef) > 5.0 ); // TODO better way of communicating this info 
-       bool arbitraryDepthObserved = (R_k_dim(RM.depth_dimRef, RM.depth_dimRef) > 5.0 ); // TODO better way of communicating this info 
-        
+       bool arbitraryWidthObserved = (R_k_dim(RM.width_dimRef, RM.width_dimRef) > 0.75); // TODO better way of communicating this info 
+       bool arbitraryDepthObserved = (R_k_dim(RM.depth_dimRef, RM.depth_dimRef) > 0.75 ); // TODO better way of communicating this info 
+       
        pbl::Matrix H_dimensions = rectangle_.get_H_dim();
 
        if(arbitraryWidthObserved)

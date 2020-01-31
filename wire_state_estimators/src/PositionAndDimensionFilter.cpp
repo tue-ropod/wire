@@ -81,7 +81,7 @@ void PositionAndDimensionFilter::propagate(const mhf::Time& time) {
         return;
     }
 
-    double a_max = 8.0;// TODO make configurable
+    double a_max = 4.0;// TODO make configurable
     pbl::Matrix QmRectangle(RECTANGLE_STATE_SIZE + RECTANGLE_DIM_STATE_SIZE,RECTANGLE_STATE_SIZE + RECTANGLE_DIM_STATE_SIZE); 
     pbl::Matrix QmCircle(CIRCLE_STATE_SIZE + CIRCLE_DIM_STATE_SIZE,CIRCLE_STATE_SIZE + CIRCLE_DIM_STATE_SIZE);
     
@@ -101,7 +101,7 @@ void PositionAndDimensionFilter::propagate(const mhf::Time& time) {
     }
     
     QmRectangle(2*posVelDim, 2*posVelDim) = 0.4;                   // cov width       
-    QmRectangle(2*posVelDim + 1, 2*posVelDim + 1) = 0.4;           // cov width
+    QmRectangle(2*posVelDim + 1, 2*posVelDim + 1) = 0.4;           // cov depth
     
     posVelDim = 2;
     for(int i = 0; i < posVelDim; ++i) 
@@ -141,6 +141,8 @@ void PositionAndDimensionFilter::update(std::shared_ptr<const pbl::PDF> z, const
             
             pbl::Vector z_kRectangle = measuredProperties.rectangle_.get_H()*measuredProperties.rectangle_.getState();
             pbl::Vector z_kCircle = measuredProperties.circle_.get_H()*measuredProperties.circle_.getState();
+            
+            std::cout << "PositionAndDimensionFilter::update: z_kRectangle = " << z_kRectangle.t() << ", z_kCircle = " << z_kCircle.t() << std::endl;
             
             properties_->updateRectangleFeatures( measuredProperties.rectangle_.getCovariance(), z_kRectangle );
             properties_->updateCircleFeatures( measuredProperties.circle_.getCovariance(), z_kCircle );

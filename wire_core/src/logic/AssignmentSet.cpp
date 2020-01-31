@@ -104,16 +104,20 @@ void AssignmentSet::print() const {
                 std::cout << "  " << prob << " ";
             }
         }
-        printf("\n");
+        printf("\n\n");
     }
 
     for(unsigned int i = 0; i < evidence_assignments_.size(); ++i) {
-        std::cout << assignment_matrix_->getAssignment(i, evidence_assignments_[i]).toString() << std::endl;
+            //                      std::cout << assignment_matrix_->getAssignment(i, evidence_assignments_[i]).toString() << std::endl;
+             for(unsigned int j = 0; j <  assignment_matrix_->getNumAssignments(i); ++j) {
+                      std::cout << assignment_matrix_->getAssignment(i, j).toString() << std::endl;
+        }
+        printf("\n");
     }
 
     isValid();
 
-    printf("\n");
+//     printf("\n");
 }
 
 }

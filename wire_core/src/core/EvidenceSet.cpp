@@ -42,4 +42,14 @@ std::vector<Evidence*>::const_iterator EvidenceSet::end() const {
     return evidence_.end();
 }
 
+std::string EvidenceSet::toString() const
+{
+    std::stringstream s;
+    for( std::vector<Evidence*>::const_iterator it = evidence_.begin(); it != evidence_.end(); ++it) {
+            Evidence* ev = *it;
+            s << "Evidence " << *it << " equals " << ev->toString();
+    }
+    return s.str();
+}
+        
 }

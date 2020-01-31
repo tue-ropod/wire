@@ -89,8 +89,11 @@ public:
      * last evidence item in the evidence set
      */
     std::vector<Evidence*>::const_iterator end() const;
+    
+    std::string toString() const;
 
     typedef std::vector<Evidence*>::const_iterator const_iterator;
+    
 
 protected:
 

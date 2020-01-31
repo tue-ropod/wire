@@ -77,6 +77,7 @@ void HypothesisTree::addEvidence(const EvidenceSet& ev_set) {
 #endif
 
     //** Propagate all objects, compute association probabilities and add all possible measurement-track assignments
+    // assumption: all evidence from the set originates from the same time-sample
     for(EvidenceSet::const_iterator it_ev = ev_set.begin(); it_ev != ev_set.end(); ++it_ev) {
         ObjectStorage::getInstance().match(**it_ev); // In here, the associations to existing objects are solved -> addPotentialAssignment in match-method.
     }
@@ -236,10 +237,12 @@ void HypothesisTree::expandTree(const EvidenceSet& ev_set) {
     leafs_.clear();
 
     int n_iterations = 0;
+    
+    std::cout << "EvidenceSet = " << ev_set.toString() << std::endl;
 
     // add hypotheses as long as there are criteria are met
     while(!assignment_sets.empty() && leafs_.size() < num_max_hyps_ && assignment_sets.top()->getProbability() > min_prob) {
-        // assignment_sets.top()->print();
+        assignment_sets.top()->print();
 
         // Get most probable assignment
         ++n_iterations;
