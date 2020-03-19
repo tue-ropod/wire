@@ -10,6 +10,7 @@
 
 #include <string>
 #include <memory>
+#include <sstream>
 
 namespace mhf {
 
@@ -25,7 +26,7 @@ public:
         EXISTING,
         CLUTTER
     };
-
+    
     virtual ~Assignment();
 
     Assignment(AssignmentType type, const Evidence* evidence, std::shared_ptr<const SemanticObject> target, double probability);

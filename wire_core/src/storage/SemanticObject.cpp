@@ -124,9 +124,6 @@ double SemanticObject::getLikelihood(const PropertySet& ev) const {
                          
                         if( unwrap( &(muMeasured.at(yaw_zRef)), (double)  modelledRectGauss->getMean().at(yaw_PosVelRef), (double) M_PI ) )      
                         {
-                                std::cout << "SemanticObject.cpp: Updated yaw. muMeasured.at(yaw_zRef) = " << muMeasured.at(yaw_zRef) << 
-                                " modelledRectGauss->getMean().at(yaw_PosVelRef) = " << modelledRectGauss->getMean().at(yaw_PosVelRef) << std::endl;
-                                
                                 std::shared_ptr<pbl::Gaussian> updatedRectGauss = std::make_shared<pbl::Gaussian>(muMeasured, measuredRectGauss->getCovariance());
                                 std::shared_ptr< pbl::Hybrid> measuredValueHybUpdated = std::make_shared<pbl::Hybrid>();
                         
@@ -136,8 +133,6 @@ double SemanticObject::getLikelihood(const PropertySet& ev) const {
                                 z = measuredValueHybUpdated;
                         }
                 }
-                
-                std::cout << "SemanticObject::getLikelihood: z = " << z->toString() << std::endl;
                 
              likelihood *= this_prop->getLikelihood(z);
         } else {
@@ -152,14 +147,10 @@ double SemanticObject::getLikelihood(const PropertySet& ev) const {
         assert(ev_prop);
         likelihood *= it_prop->getLikelihood(ev_prop->getValue());
     }
-
-    // cout << "    Likelihood existing = " << likelihood << endl;
-
     return likelihood;
 }
 
 void SemanticObject::update(const Evidence& ev) {
-// std::cout << "SemanticObject::update: going to propagate." << std::endl;
     propagate(ev.getTimestamp());
 
     // first update class property
@@ -259,20 +250,7 @@ void SemanticObject::addToHypothesis(Hypothesis* hyp) {
 }
 
 void SemanticObject::removeFromHypothesis(Hypothesis* hyp) {
-//         std::cout << "parent_hypotheses_ = " << parent_hypotheses_ << " semantic object = " << this << std::endl;
-//         std::cout << "Remove from Hypothesis: parent_hypotheses_.size() = " << parent_hypotheses_->size() << std::endl;
-//         std::cout << "remove from hypothesis: hyp = " << hyp << std::endl;
-//         std::cout << "parent hypothesis = " << std::endl;
-//         for(std::set<Hypothesis*>::iterator it = parent_hypotheses_->begin(); it != parent_hypotheses_->end(); it++)
-//         {
-//                 Hypothesis* hypTest = *it;
-//                 std::cout << hypTest << "\t";
-//         }
-//         std::cout << "\n";
-        
-//         std::cout << "removeFromHypothesis: # parent_hypotheses_ = "  << parent_hypotheses_->size() << std::endl;
     parent_hypotheses_->erase(hyp);
-//     std::cout << "removeFromHypothesis, after removal: # parent_hypotheses_ = "  << parent_hypotheses_->size() << std::endl;
 }
 
 unsigned int SemanticObject::getNumParentHypotheses() const {
@@ -287,13 +265,19 @@ std::string SemanticObject::toString() const
 {
     std::stringstream s;
     
-    s << "Semantic object: id = " << ID_ ;
+    s << " Semantic object: id = " << ID_ ;
     s << " expected class = " << expected_class_ ;
     s << " num parent Hyp = " << getNumParentHypotheses() << std::endl;//<< " parent_hypotheses_ = " << std::endl;
-      
-  //  for(std::set<Hypothesis*>::const_iterator it = parent_hypotheses_.begin(); it != parent_hypotheses_.end(); ++it) {
-   //     s << " - " << *it << endl;
-   // }
+    
+    const map<Attribute, std::shared_ptr<Property>>& ev_props = getPropertyMap();
+    for( map<Attribute, std::shared_ptr<Property>>::const_iterator itProps = ev_props.begin(); itProps != ev_props.end(); itProps++)
+    {
+            Attribute att = itProps->first;
+            std::shared_ptr<Property> prop = itProps->second;
+            s << "For attribute " << AttributeConv::attribute_str(att) << " prop = " << prop->toString();
+            
+    }
+    std::cout << "\n";
     return s.str();
 }
 

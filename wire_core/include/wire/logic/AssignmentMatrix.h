@@ -34,6 +34,8 @@ public:
     void sortAssignments();
 
     unsigned int getNumMeasurements() const;
+    
+    std::string toString() const;
 
 protected:
 

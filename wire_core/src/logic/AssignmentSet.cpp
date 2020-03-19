@@ -39,12 +39,12 @@ AssignmentSet::~AssignmentSet() {
 
 void AssignmentSet::expand(std::list<AssignmentSet*>& children) const {
     for(unsigned int i = n_blocked_; i < evidence_assignments_.size(); ++i) {
-        if (evidence_assignments_[i] + 1 < assignment_matrix_->getNumAssignments(i)) {
+        if (evidence_assignments_[i] + 1 < assignment_matrix_->getNumAssignments(i)) { // Evidence is sorted according to the most likely alternative. 
             AssignmentSet* child = new AssignmentSet(*this);
             child->evidence_assignments_[i]++;
-            child->n_blocked_ = i;
+            child->n_blocked_ = i; // For the next hypothesis, chose the best next alternative to assign.
             child->probability_ *= assignment_matrix_->getAssignment(i, child->evidence_assignments_[i]).getProbability()
-                    / assignment_matrix_->getAssignment(i, this->evidence_assignments_[i]).getProbability();                    
+                    / assignment_matrix_->getAssignment(i, this->evidence_assignments_[i]).getProbability();
                     
             children.push_back(child);
         }
@@ -92,6 +92,37 @@ bool AssignmentSet::isValid() const {
     */
 }
 
+bool AssignmentSet::multipleAssignmentsOfSingleEvidence( ) const {
+std::vector<unsigned int> objectAssigments;
+        for(unsigned int i = 0; i < evidence_assignments_.size(); ++i) // zijn we nu de 1e assignments ana het vergelijken? Dat wil zeggen dat nog steeds dezelfde ID assigned kunnen worden.
+        {
+                       Assignment::AssignmentType assType =  assignment_matrix_->getAssignment(i, evidence_assignments_[i]).getType();
+
+                       if(assType == Assignment::NEW || assType == Assignment::CLUTTER)
+                       {
+                               continue;
+                       }
+                       
+                       std::shared_ptr<const mhf::SemanticObject> obj = assignment_matrix_->getAssignment(i, evidence_assignments_[i]).getTarget();
+                       unsigned int IDtest = obj->getID();
+                      std::cout << IDtest << "\t";
+                       objectAssigments.push_back(IDtest);
+        }
+
+        for(unsigned int i = 0; i < objectAssigments.size() - 1 && objectAssigments.size() > 0; ++i) // zijn we nu de 1e assignments ana het vergelijken? Dat wil zeggen dat nog steeds dezelfde ID assigned kunnen worden.
+        {
+            for(unsigned int j = i + 1; j < objectAssigments.size(); ++j)
+            {
+                if( objectAssigments[i] == objectAssigments[j] )
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+}
+
 void AssignmentSet::print() const {
     std::cout << std::endl << "===== P = " << getProbability() << " ====" << std::endl;
 
@@ -106,7 +137,24 @@ void AssignmentSet::print() const {
         }
         printf("\n\n");
     }
+    
+    std::cout << "object IDs = " << std::endl;
 
+    for(unsigned int i = 0; i < evidence_assignments_.size(); ++i) {
+        for(unsigned int j = 0; j <  assignment_matrix_->getNumAssignments(i); ++j) {
+            double prob = assignment_matrix_->getAssignment(i, j).getProbability();
+            
+            if(assignment_matrix_->getAssignment(i, j).getType() == Assignment::CLUTTER) {
+                        std::cout << "CLUTTER\t";
+                }  else if (assignment_matrix_->getAssignment(i, j).getType() == Assignment::NEW) {
+                        std::cout << " NEW\t";
+                }  else {
+                        std::cout << assignment_matrix_->getAssignment(i, j).getTarget()->getID() << "\t";
+                }   
+        }
+                printf("\n\n");
+    }
+    
     for(unsigned int i = 0; i < evidence_assignments_.size(); ++i) {
             //                      std::cout << assignment_matrix_->getAssignment(i, evidence_assignments_[i]).toString() << std::endl;
              for(unsigned int j = 0; j <  assignment_matrix_->getNumAssignments(i); ++j) {

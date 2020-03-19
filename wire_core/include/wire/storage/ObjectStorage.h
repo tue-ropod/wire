@@ -27,6 +27,8 @@ public:
     void match(const Evidence& ev);
     
    std::shared_ptr< std::list<std::shared_ptr<SemanticObject>> > getObjects() const;
+   
+   std::string allObjects2String() const;
 
 protected:
 

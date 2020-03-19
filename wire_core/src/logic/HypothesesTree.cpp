@@ -41,8 +41,10 @@ namespace mhf {
 /* *                        CONSTRUCTOR / DESTRUCTOR                            * */
 /* ****************************************************************************** */
 
-HypothesisTree::HypothesisTree(int num_max_hyps, double max_min_prob_ratio) : n_updates_(0), t_last_update_(-1),
-        tree_height_(0), num_max_hyps_(num_max_hyps), max_min_prob_ratio_(max_min_prob_ratio) {
+HypothesisTree::HypothesisTree(int num_max_hyps, double max_min_prob_ratio, bool single_object_assignment) : 
+        n_updates_(0), t_last_update_(-1), tree_height_(0), num_max_hyps_(num_max_hyps),
+        max_min_prob_ratio_(max_min_prob_ratio), single_object_assignment_(single_object_assignment)
+{
 
     // create empty hypothesis (contains no objects) with timestep 0
     Hypothesis* empty_hyp = new Hypothesis(t_last_update_, 1.0);
@@ -224,6 +226,22 @@ void HypothesisTree::expandTree(const EvidenceSet& ev_set) {
             ROS_DEBUG(" ass_set.getNumMeasurements = %i\n", ass_set->getNumMeasurements());
         assignment_sets.push(ass_set);
     }
+    
+    // sort assignments: place to remove the double assignments? How to prevent to apply the same hypothesis twice?
+    // How to handle the n_blocked_-parameter?
+   
+    //std::priority_queue<AssignmentSet*, std::vector<AssignmentSet*>, compareAssignmentSets >  assCopy = assignment_sets;
+    /*std::cout << "assignment_sets before generating hypotheses = " << std::endl;
+     std::cout << "assignment_sets.size() " << assignment_sets.size() << std::endl;
+     int counter = 0;
+         while(!assCopy.empty()) {
+                   std::cout << "assCopy: ass # = " << counter++ << std::endl;
+                  assCopy.top()->print();
+                  assCopy.pop();
+        }
+        
+        std::cout << "Going to generate hypotheses " << std::endl;
+      */  
 
     ROS_DEBUG(" - Generate hypotheses\n");
 
@@ -237,12 +255,9 @@ void HypothesisTree::expandTree(const EvidenceSet& ev_set) {
     leafs_.clear();
 
     int n_iterations = 0;
-    
-    std::cout << "EvidenceSet = " << ev_set.toString() << std::endl;
 
     // add hypotheses as long as there are criteria are met
     while(!assignment_sets.empty() && leafs_.size() < num_max_hyps_ && assignment_sets.top()->getProbability() > min_prob) {
-        assignment_sets.top()->print();
 
         // Get most probable assignment
         ++n_iterations;
@@ -259,10 +274,8 @@ void HypothesisTree::expandTree(const EvidenceSet& ev_set) {
 
             //std::cout << "hyp->getChildHypotheses().size() = " << hyp->getChildHypotheses().size() << std::endl;
           
-        if (ass_set->isValid()) {
+        if (ass_set->isValid() && ( (single_object_assignment_ && !ass_set->multipleAssignmentsOfSingleEvidence() ) || !single_object_assignment_ ) ) { // TODO add config variable to check if multiple assignments of single is allowed
             /* ************ assignment set is complete! Create hypothesis ************ */
-            
-//             std::cout << "ass_set->getProbability() = " << ass_set->getProbability() << std::endl;
             
             Hypothesis* hyp_child = new Hypothesis(ev_set.getTimestamp(), ass_set->getProbability());
             ROS_DEBUG(" ass_set.getNumMeasurements() = %i\n", ass_set->getNumMeasurements() );
@@ -270,30 +283,17 @@ void HypothesisTree::expandTree(const EvidenceSet& ev_set) {
             
             hyp_child->setAssignments(ass_set);
             hyp->addChildHypothesis(hyp_child);
-
-//             std::cout << "leafs_.empty() = " << leafs_.empty() << " leafs_.size() = " << leafs_.size() << std::endl;
             
             if (leafs_.empty()) {
-                // first hypothesis found (and therefore the best one)
-//                     std::cout << "max_min_prob_ratio_ = " << max_min_prob_ratio_ << std::endl;
-//                     std::cout << "hyp_child->getProbability() = " << hyp_child->getProbability() << std::endl;
                     
                 min_prob = hyp_child->getProbability() * max_min_prob_ratio_;
 
                 MAP_hypothesis_ = hyp_child;
                 
-//                 std::cout << "MAP_hypothesis_ set to " << MAP_hypothesis_ << " min prob = " << min_prob << std::endl;
-                
             }
 
             ROS_DEBUG(" NEW LEAF: %p\n", hyp_child);
-//             std::cout << " NEW LEAF: " << hyp_child << std::endl;
             leafs_.push_back(hyp_child);
-         //   ROS_DEBUG("  #leafs = %i, #old leafs = %i\n", (int)leafs_.size(), n_old_leafs);
-            
-            //ROS_DEBUG("  #leafs = %i\n", (int)leafs_.size());
-            //std::printf("  #leafs = %i\n", (int)leafs_.size());
-
             /* ************************************************************************* */
         }
 
@@ -446,10 +446,8 @@ void HypothesisTree::pruneTree(const Time& timestamp) {
     normalizeProbabilities();
 
     ROS_DEBUG("   #leafs after pruning = %i\n", (int)leafs_.size());
-//     printf("   #leafs after pruning = %i\n", (int)leafs_.size());
 
     ROS_DEBUG("pruneTree - end\n");
-//      printf("pruneTree - end\n");
 }
 
 /* ****************************************************************************** */
@@ -478,8 +476,6 @@ const Hypothesis& HypothesisTree::getMAPHypothesis() const
     for(std::list<mhf::Hypothesis* >::const_iterator it_hyp = leafs_.begin(); it_hyp != leafs_.end(); ++it_hyp) 
     {
 
-      //  const std::list<mhf::SemanticObject*>* objs = (*it_hyp)->getObjects();
-
         double hypProb = (*it_hyp)->getProbability();
         if( hypProb > maxProb )
         {
@@ -487,16 +483,14 @@ const Hypothesis& HypothesisTree::getMAPHypothesis() const
                 bestHyp = it_hyp;
         }
         
-        
-       // sumProb += hyp_prob;
-       // std::cout << "Hyp P = " << hyp_prob << ": " << objs->size() << " object(s)" << std::endl;
-
     }
-    
-//    std::cout << "getMAPHypothesis best hyp =  " << *bestHyp << std::endl;
-    
+
     return **bestHyp;
-    //std::cout << "totalProb = " << sumProb << std::endl;
+}
+
+std::string HypothesisTree::allObjects2String( ) const
+{
+        return ObjectStorage::getInstance().allObjects2String();
 }
 
 const std::list<std::shared_ptr<SemanticObject>>* HypothesisTree::getMAPObjects() const {

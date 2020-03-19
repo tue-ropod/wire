@@ -80,7 +80,7 @@ public:
     /* CONSTRUCTORS / DESTRUCTORS */
 
     // Constructor
-    HypothesisTree(int num_max_hyps, double max_min_prob_ratio);
+    HypothesisTree(int num_max_hyps, double max_min_prob_ratio, bool single_object_assignment);
 
     // Destructor
     virtual ~HypothesisTree();
@@ -110,6 +110,8 @@ public:
     void showStatistics();
     
     std::list<Hypothesis*> leafs_; // TEMP, should be protected
+    
+    std::string allObjects2String() const;
 
 protected:
 
@@ -126,6 +128,8 @@ protected:
     int tree_height_;
 
     unsigned int num_max_hyps_;
+
+    bool single_object_assignment_;
 
     /** ratio between max and min hypothesis probability **/
     double max_min_prob_ratio_;

@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <stdio.h>
+#include <iostream>
 
 using namespace std;
 
@@ -47,6 +48,7 @@ void AssignmentMatrix::sortAssignments() {
     for(vector<vector<const Assignment*> >::iterator it_ev = assignments_.begin(); it_ev != assignments_.end(); ++it_ev) {
         sort(it_ev->begin(), it_ev->end(), compareAssignments);
     }
+
 }
 
 const Assignment& AssignmentMatrix::getAssignment(unsigned int i_ev, int i_assignment) {
@@ -59,6 +61,22 @@ unsigned int AssignmentMatrix::getNumAssignments(unsigned int i_ev) {
 
 unsigned int AssignmentMatrix::getNumMeasurements() const {
     return assignments_.size();
+}
+
+std::string AssignmentMatrix::toString() const {
+        std::stringstream ss;
+        ss << "AssignmentMatrix = " << std::endl;
+        for (unsigned int i = 0; i < assignments_.size(); i++)
+        {
+                for(unsigned int j = 0; j < assignments_[i].size(); j++)
+                {
+                        ss << assignments_[i][j]->toString() << std::endl;
+                }
+                
+                ss << "\n\n";
+        }
+        return ss.str();
+
 }
 
 }

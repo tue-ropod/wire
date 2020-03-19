@@ -40,15 +40,16 @@ PositionAndDimensionFilter::PositionAndDimensionFilter() :
 
 t_last_update_(0),
 t_last_propagation_(0),
-properties_(0)
+properties_(0),
+max_acceleration_(0)
 {
 }
 
 PositionAndDimensionFilter::PositionAndDimensionFilter(const PositionAndDimensionFilter& orig) : mhf::IStateEstimator(orig), 
 t_last_update_(orig.t_last_update_),
 t_last_propagation_(orig.t_last_propagation_),
-properties_(0)
-
+properties_(0),
+max_acceleration_(orig.max_acceleration_)
 {
     if (orig.properties_) 
     {
@@ -81,14 +82,13 @@ void PositionAndDimensionFilter::propagate(const mhf::Time& time) {
         return;
     }
 
-    double a_max = 4.0;// TODO make configurable
     pbl::Matrix QmRectangle(RECTANGLE_STATE_SIZE + RECTANGLE_DIM_STATE_SIZE,RECTANGLE_STATE_SIZE + RECTANGLE_DIM_STATE_SIZE); 
     pbl::Matrix QmCircle(CIRCLE_STATE_SIZE + CIRCLE_DIM_STATE_SIZE,CIRCLE_STATE_SIZE + CIRCLE_DIM_STATE_SIZE);
     
     QmRectangle.zeros();
     QmCircle.zeros();
     
-    double q = a_max * a_max / 4;
+    double q = max_acceleration_ * max_acceleration_ / 4;
     double dt2 = dt * dt;
     double dt4 = dt2 * dt2;
     
@@ -142,8 +142,6 @@ void PositionAndDimensionFilter::update(std::shared_ptr<const pbl::PDF> z, const
             pbl::Vector z_kRectangle = measuredProperties.rectangle_.get_H()*measuredProperties.rectangle_.getState();
             pbl::Vector z_kCircle = measuredProperties.circle_.get_H()*measuredProperties.circle_.getState();
             
-            std::cout << "PositionAndDimensionFilter::update: z_kRectangle = " << z_kRectangle.t() << ", z_kCircle = " << z_kCircle.t() << std::endl;
-            
             properties_->updateRectangleFeatures( measuredProperties.rectangle_.getCovariance(), z_kRectangle );
             properties_->updateCircleFeatures( measuredProperties.circle_.getCovariance(), z_kCircle );
             properties_->updateProbabilities(measuredProperties.featureProbabilities_);
@@ -164,8 +162,7 @@ std::shared_ptr<const pbl::PDF> PositionAndDimensionFilter::getValue() const {
    {    
            return properties_->getPDFSmall();
    }
-   
-    std::cout << "PositionAndDimensionFilter::getValue(): SOMETHINGS WRONG" << std::endl;
+   return 0;
 }
 
 std::shared_ptr<const pbl::PDF> PositionAndDimensionFilter::getFullValue() const {  
@@ -174,7 +171,7 @@ std::shared_ptr<const pbl::PDF> PositionAndDimensionFilter::getFullValue() const
            return properties_->getPDF();
    }
    
-    std::cout << "PositionAndDimensionFilter::getValue(): SOMETHINGS WRONG" << std::endl;
+   return 0;
 }
 
 bool PositionAndDimensionFilter::setParameter(const std::string& param, bool b) {

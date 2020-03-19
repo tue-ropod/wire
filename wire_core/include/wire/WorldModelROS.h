@@ -97,6 +97,8 @@ protected:
 
     ros::Time last_update_;
 
+    bool single_object_assignment_;
+
     bool initialize();
 
     void initializeMHF();

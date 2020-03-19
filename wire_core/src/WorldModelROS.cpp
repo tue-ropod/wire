@@ -22,7 +22,7 @@ using namespace mhf;
 WorldModelROS::WorldModelROS(tf::TransformListener* tf_listener)
     : loop_rate_(20), world_model_(0),  tf_listener_(tf_listener), is_tf_owner_(false), last_update_duration(0),
       max_update_duration(0), world_model_frame_id_("/map"), output_frame_id_("/map"), max_num_hyps_(100), min_prob_ratio_(1e-10),
-      last_update_(0) {
+      last_update_(0), single_object_assignment_(0) {
     initialize();
 }
 
@@ -100,7 +100,7 @@ bool WorldModelROS::initialize() {
     pub_wm_ = n.advertise<wire_msgs::WorldState>("/world_state", 10);
 
     // initialize the filter
-    world_model_ = new HypothesisTree(max_num_hyps_, min_prob_ratio_);
+    world_model_ = new HypothesisTree(max_num_hyps_, min_prob_ratio_, single_object_assignment_);
 
     return true;
 }
@@ -272,7 +272,7 @@ void WorldModelROS::processEvidence(const wire_msgs::WorldEvidence& world_eviden
     if (current_time < last_update_) {
         ROS_WARN("Saw a negative time change of %f seconds; resetting the world model.", (current_time - last_update_).toSec());
         delete world_model_;
-        world_model_ = new HypothesisTree(max_num_hyps_, min_prob_ratio_);
+        world_model_ = new HypothesisTree(max_num_hyps_, min_prob_ratio_, single_object_assignment_);
     }
     last_update_ = current_time;
 
@@ -346,7 +346,7 @@ void WorldModelROS::processEvidence(const wire_msgs::WorldEvidence& world_eviden
 
 bool WorldModelROS::resetWorldModel(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res) {
     delete world_model_;
-    world_model_ = new HypothesisTree(max_num_hyps_, min_prob_ratio_);
+    world_model_ = new HypothesisTree(max_num_hyps_, min_prob_ratio_, single_object_assignment_);
     return true;
 }
 

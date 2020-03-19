@@ -11,13 +11,14 @@
 #include <list>
 #include <vector>
 #include <map>
+#include <wire/storage/SemanticObject.h> // TODO TEMP
 
 namespace mhf {
 
 class Assignment;
 class Hypothesis;
 class AssignmentMatrix;
-class SemanticObject;
+// class SemanticObject; // TODO TEMP
 
 class AssignmentSet {
 
@@ -50,6 +51,8 @@ public:
     int getNumMeasurements() const;
 
     bool isValid() const;
+    
+    bool multipleAssignmentsOfSingleEvidence() const;
 
     void print() const;
 
@@ -61,7 +64,7 @@ protected:
 
     double probability_;
 
-    std::vector<unsigned int> evidence_assignments_;
+    std::vector<unsigned int> evidence_assignments_; // after storting the evidence probabilities, this gives the numbers in the assignment matrix to which object the evidence is applied.
 
     int n_blocked_;
 

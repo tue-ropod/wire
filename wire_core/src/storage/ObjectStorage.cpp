@@ -55,7 +55,7 @@ void ObjectStorage::match(const Evidence& ev) {
            obj.propagate(ev.getTimestamp()); // propagated to current timestamp, which is being set in process evidence of WorldModelROS.cpp
     }
 
-    for(list<std::shared_ptr<SemanticObject>>::iterator it_obj = objects_->begin(); it_obj != objects_->end(); ++it_obj) {
+    for(list<std::shared_ptr<SemanticObject>>::iterator it_obj = objects_->begin(); it_obj != objects_->end(); ++it_obj) { // how to treat single evidence to single object assumption?
         SemanticObject& obj = **it_obj;
 
         double prob_existing = KnowledgeDatabase::getInstance().getProbabilityExisting(ev, obj);
@@ -68,6 +68,17 @@ void ObjectStorage::match(const Evidence& ev) {
 std::shared_ptr<std::list<std::shared_ptr<SemanticObject>>> ObjectStorage::getObjects() const
 {
         return objects_;        
+}
+
+std::string ObjectStorage::allObjects2String() const
+{
+        std::stringstream s;
+       for(std::list<std::shared_ptr<SemanticObject>>::iterator itObj = objects_->begin(); itObj != objects_->end(); ++itObj)
+       {
+               std::shared_ptr<SemanticObject> obj = *itObj;
+               s << "obj pointer = " << obj << obj->toString();
+       }
+       return s.str();
 }
 
 }
