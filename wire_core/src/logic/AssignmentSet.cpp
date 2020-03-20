@@ -94,7 +94,7 @@ bool AssignmentSet::isValid() const {
 
 bool AssignmentSet::multipleAssignmentsOfSingleEvidence( ) const {
 std::vector<unsigned int> objectAssigments;
-        for(unsigned int i = 0; i < evidence_assignments_.size(); ++i) // zijn we nu de 1e assignments ana het vergelijken? Dat wil zeggen dat nog steeds dezelfde ID assigned kunnen worden.
+        for(unsigned int i = 0; i < evidence_assignments_.size(); ++i)
         {
                        Assignment::AssignmentType assType =  assignment_matrix_->getAssignment(i, evidence_assignments_[i]).getType();
 
@@ -102,14 +102,12 @@ std::vector<unsigned int> objectAssigments;
                        {
                                continue;
                        }
-                       
+
                        std::shared_ptr<const mhf::SemanticObject> obj = assignment_matrix_->getAssignment(i, evidence_assignments_[i]).getTarget();
-                       unsigned int IDtest = obj->getID();
-                      std::cout << IDtest << "\t";
-                       objectAssigments.push_back(IDtest);
+                       objectAssigments.push_back(obj->getID());
         }
 
-        for(unsigned int i = 0; i < objectAssigments.size() - 1 && objectAssigments.size() > 0; ++i) // zijn we nu de 1e assignments ana het vergelijken? Dat wil zeggen dat nog steeds dezelfde ID assigned kunnen worden.
+        for(unsigned int i = 0; i < objectAssigments.size() - 1 && objectAssigments.size() > 0; ++i)
         {
             for(unsigned int j = i + 1; j < objectAssigments.size(); ++j)
             {

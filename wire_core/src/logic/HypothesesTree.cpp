@@ -69,6 +69,8 @@ HypothesisTree::~HypothesisTree() {
 void HypothesisTree::addEvidence(const EvidenceSet& ev_set) {
     ROS_DEBUG("HypothesesTree::processMeasurements\n");
 
+//std::cout << "ev_set size = " << addEvidence << " @ " << __FILE__ << " line " << __LINE__ << std::endl;
+
     if (ev_set.size() == 0) {
         return;
     }
@@ -197,10 +199,8 @@ void HypothesisTree::expandTree(const EvidenceSet& ev_set) {
 #endif
 
     //** expand all current leaf hypotheses
-
     std::priority_queue<AssignmentSet*, std::vector<AssignmentSet*>, compareAssignmentSets > assignment_sets;
 
-    
     ROS_DEBUG(" - Create assignment matrices and assignment sets\n");
 
     for (std::list<Hypothesis*>::iterator it_hyp = leafs_.begin(); it_hyp != leafs_.end(); ++it_hyp) {
@@ -463,12 +463,12 @@ int HypothesisTree::getHeight() const {
 }
 
 
-/*const Hypothesis& HypothesisTree::getMAPHypothesis() const {       
-        std::cout << "HypothesisTree::getMAPHypothesis(): *MAP_hypothesis_ = " << MAP_hypothesis_ << std::endl;
+const Hypothesis& HypothesisTree::getMAPHypothesis() const {       
+//        std::cout << "HypothesisTree::getMAPHypothesis(): *MAP_hypothesis_ = " << MAP_hypothesis_ << std::endl;
     return *MAP_hypothesis_;
-}*/
+}
 
-const Hypothesis& HypothesisTree::getMAPHypothesis() const 
+/*const Hypothesis& HypothesisTree::getMAPHypothesis() const 
 {       
    double maxProb = 0.0;
    std::list<mhf::Hypothesis* >::const_iterator bestHyp;
@@ -486,7 +486,7 @@ const Hypothesis& HypothesisTree::getMAPHypothesis() const
     }
 
     return **bestHyp;
-}
+}*/
 
 std::string HypothesisTree::allObjects2String( ) const
 {
