@@ -175,7 +175,6 @@ std::cout << "z_kCircle = " <<  z_kCircle << ", cov = " << cov << std::endl;
                 properties_->updateCircleFeatures( cov, z_kCircle );
             }
             
-
             properties_->updateProbabilities(measuredProperties.featureProbabilities_);
 
             if(!properties_->rectangle_.isValid() )
@@ -188,6 +187,13 @@ std::cout << "z_kCircle = " <<  z_kCircle << ", cov = " << cov << std::endl;
                 properties_->rectangle_.printProperties();
 
                 exit(EXIT_FAILURE);
+            }
+
+
+            if(!properties_->circle_.isValid() )
+            {
+                ROS_WARN( "Circle resetted" ); 
+                properties_->circle_.setProperties( z_kCircle(tracking::CM.x_zRef), z_kCircle(tracking::CM.y_zRef), 0.3, 0.0, 0.0, 0.0, 0.0, 0.0, z_kCircle(tracking::CM.radius_zRef) );
             }
 
             if(!properties_->circle_.isValid() )

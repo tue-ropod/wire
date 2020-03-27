@@ -12,6 +12,7 @@ add_compile_options(-std=c++11)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   wire_core
+  wire_features_lib
   pluginlib
   geolib2
   armadillo_matrix
@@ -25,6 +26,7 @@ catkin_package(
   LIBRARIES ${PROJECT_NAME}
   CATKIN_DEPENDS
     wire_core
+    wire_features_lib
     pluginlib
     problib
     message_runtime 
@@ -35,7 +37,6 @@ catkin_package(
 include_directories(include ${catkin_INCLUDE_DIRS})
 
 ## Build
-add_library(wire_state_estimators src/featureProperties.cpp)
 add_library(position_estimator src/PositionFilter.cpp src/KalmanFilter.cpp)
 add_library(multimodel_estimator src/MultiModelFilter.cpp src/PositionFilter.cpp)
 add_library(discrete_estimator src/DiscreteFilter.cpp)
@@ -46,6 +47,6 @@ target_link_libraries(position_estimator ${catkin_LIBRARIES})
 target_link_libraries(multimodel_estimator ${catkin_LIBRARIES})
 target_link_libraries(discrete_estimator ${catkin_LIBRARIES})
 target_link_libraries(fixed_estimator ${catkin_LIBRARIES})
-target_link_libraries(positionanddimension_estimator wire_state_estimators problib  ${catkin_LIBRARIES} )
+target_link_libraries(positionanddimension_estimator wire_features_lib problib  ${catkin_LIBRARIES} )
 
-add_dependencies(wire_state_estimators ${catkin_EXPORTED_TARGETS})
+add_dependencies(positionanddimension_estimator ${catkin_EXPORTED_TARGETS} )
