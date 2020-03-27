@@ -136,6 +136,8 @@ class Circle
     pbl::Gaussian observedCircle2PDF();
     
     void printProperties();
+
+    bool isValid();
 };
 
 class Rectangle
@@ -228,6 +230,8 @@ class Rectangle
     pbl::Matrix getCovariance();
     
     void printProperties();
+
+    bool isValid();
 };
 
 
@@ -376,6 +380,8 @@ class FeatureProperties
     std::shared_ptr<pbl::Hybrid> getPDF();
     
     std::shared_ptr<pbl::Hybrid> getPDFSmall();
+
+    bool isValid();
     
 };
 

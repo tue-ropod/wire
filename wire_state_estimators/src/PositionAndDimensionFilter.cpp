@@ -143,8 +143,66 @@ void PositionAndDimensionFilter::update(std::shared_ptr<const pbl::PDF> z, const
             pbl::Vector z_kCircle = measuredProperties.circle_.get_H()*measuredProperties.circle_.getState();
             
             properties_->updateRectangleFeatures( measuredProperties.rectangle_.getCovariance(), z_kRectangle );
-            properties_->updateCircleFeatures( measuredProperties.circle_.getCovariance(), z_kCircle );
+
+            bool hasNan = false;
+            std::vector< unsigned int> invalidVals;
+            for( unsigned int iz = 0; iz < z_kCircle.size(); iz++)
+            {
+                if( z_kCircle(iz) != z_kCircle(iz) )
+                {
+                    hasNan = true;
+                    invalidVals.push_back(iz);
+                }
+            }
+
+            if( !hasNan )
+            {
+                properties_->updateCircleFeatures( measuredProperties.circle_.getCovariance(), z_kCircle );
+            } else if(properties_->nMeasurements_ ==  0)
+            {
+                // set unknown variables to 0 with very high covariance
+                pbl::Matrix cov =  measuredProperties.circle_.getCovariance();
+                
+                for( unsigned int iNan = 0; iNan < invalidVals.size(); iNan++)
+                {
+                    unsigned int iz = invalidVals[iNan];
+                    z_kCircle(iz) = 0.0;
+                    cov(iz,iz) = SOME_VERY_HIGH_COV;
+                }
+
+std::cout << "z_kCircle = " <<  z_kCircle << ", cov = " << cov << std::endl;
+
+                properties_->updateCircleFeatures( cov, z_kCircle );
+            }
+            
+
             properties_->updateProbabilities(measuredProperties.featureProbabilities_);
+
+            if(!properties_->rectangle_.isValid() )
+            {
+                ROS_FATAL( "Rectangle updated with a NaN_" ); 
+                
+                std::cout << "Measured Properties:\n";
+                measuredProperties.rectangle_.printProperties();
+                std::cout << "\nUpdated Properties:\n";
+                properties_->rectangle_.printProperties();
+
+                exit(EXIT_FAILURE);
+            }
+
+            if(!properties_->circle_.isValid() )
+            {
+                ROS_FATAL( "Circle updated with a NaN_" ); 
+
+                std::cout << "Measured Properties:\n";
+                measuredProperties.circle_.printProperties();
+                std::cout << "\nUpdated Properties:\n";
+                properties_->circle_.printProperties();
+
+                exit(EXIT_FAILURE);
+            }
+            
+            properties_->nMeasurements_++;
         }
         
     } else {

@@ -50,6 +50,7 @@
 #include <iostream>
 #include <time.h>
 
+#define SOME_VERY_HIGH_COV 1000000;
 
 /**
  * @brief Estimator specialized in estimating the position of a target. The estimator

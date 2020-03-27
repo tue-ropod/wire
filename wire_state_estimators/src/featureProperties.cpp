@@ -102,6 +102,17 @@ void Circle::printProperties ( )
     std::cout << "Pdim_ = " << Pdim_ << std::endl;
 }
 
+bool Circle::isValid() 
+{
+        if(x_ != x_ || y_ != y_ || z_ != z_ || roll_ != roll_ || pitch_ != pitch_ || yaw_ != yaw_ || xVel_ != xVel_ ||
+        yVel_ != yVel_ || radius_ != radius_ )
+        {
+                return false;
+        } else {
+                return true;
+        }
+}
+
 void Circle::setMarker ( visualization_msgs::Marker& marker , unsigned int ID )
 {
    std_msgs::ColorRGBA color;
@@ -324,6 +335,17 @@ void Rectangle::printProperties ( )
     std::cout << " yaw_ = "   << yaw_ << std::endl;
     std::cout << " P_ = " << P_PosVel_ << std::endl;
     std::cout << "Pdim_ = " << Pdim_ << std::endl;
+}
+
+bool Rectangle::isValid()
+{
+        if(x_ != x_ || y_ != y_ || z_ != z_ || w_ != w_ || d_ != d_ || h_ != h_ || xVel_ != xVel_ || yVel_ != yVel_ || 
+        yawVel_ != yawVel_ || roll_ != roll_ || pitch_ != pitch_ || yaw_ != yaw_)
+        {
+                return false;
+        } else {
+                return true;
+        }
 }
 
 float Rectangle::predictX( float dt )
@@ -945,7 +967,7 @@ void FeatureProperties::updateCircleFeatures ( pbl::Matrix R_k, pbl::Vector z_k 
         pbl::Matrix R_k_dim = R_k.submat(CIRCLE_STATE_SIZE,
                                          CIRCLE_STATE_SIZE,
                                          CIRCLE_STATE_SIZE + CIRCLE_MEASURED_DIM_STATE_SIZE - 1,
-                                         CIRCLE_STATE_SIZE + CIRCLE_MEASURED_DIM_STATE_SIZE - 1);        
+                                         CIRCLE_STATE_SIZE + CIRCLE_MEASURED_DIM_STATE_SIZE - 1);
 
         pbl::Vector x_k_k_dim = kalmanUpdate(circle_.get_H_dim(), &Pdim, x_k_k_1_dim, z_k_dim, R_k_dim);
         
@@ -1027,6 +1049,17 @@ void FeatureProperties::printProperties()
         std::cout << 
         "Probability circle = "    << featureProbabilities_.get_pCircle() << 
         "\t Probability rectangle = " << featureProbabilities_.get_pRectangle() << std::endl;
+}
+
+bool FeatureProperties::isValid()
+{
+    if(!rectangle_.isValid() || circle_.isValid() )
+    {
+            return false;
+    } else {
+            return true;
+    }
+
 }
 
 }
