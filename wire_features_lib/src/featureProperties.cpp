@@ -367,8 +367,10 @@ std::shared_ptr<pbl::Hybrid> FeatureProperties::getPDFSmall()
 }
 
 bool FeatureProperties::isValid()
-{
-    if(!rectangle_.isValid() || circle_.isValid() )
+{ 
+    if(!rectangle_.isValid() || circle_.isValid() ||
+     featureProbabilities_.get_pRectangle() != featureProbabilities_.get_pRectangle() ||
+     featureProbabilities_.get_pCircle()    != featureProbabilities_.get_pCircle() )
     {
             return false;
     } else {
