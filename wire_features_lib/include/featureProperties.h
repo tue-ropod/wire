@@ -9,7 +9,7 @@
 #include "circle.h"
 #include "featureProbabilities.h"
 
-#define MAX_DIMENSION_UNCERTAINTY         1               // [-]
+#define MAX_DIMENSION_UNCERTAINTY         2               // [-]
 
 namespace tracking
 {

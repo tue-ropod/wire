@@ -220,10 +220,12 @@ void HypothesisTree::expandTree(const EvidenceSet& ev_set) {
 
         // sort assignment matrix based on assignment probabilities
         hyp->getAssignmentMatrix()->sortAssignments();
+        std::cout << "AssignmentMatrix = " << hyp->getAssignmentMatrix()->toString();
 
         // create empty assignment set, add assignments and update probability (product hypothesis and assignment probs)
         AssignmentSet* ass_set = new AssignmentSet(hyp, hyp->getAssignmentMatrix());
             ROS_DEBUG(" ass_set.getNumMeasurements = %i\n", ass_set->getNumMeasurements());
+            std::cout << "Assignment set = "; ass_set->print();
         assignment_sets.push(ass_set);
     }
     
@@ -278,12 +280,12 @@ void HypothesisTree::expandTree(const EvidenceSet& ev_set) {
             /* ************ assignment set is complete! Create hypothesis ************ */
             
             Hypothesis* hyp_child = new Hypothesis(ev_set.getTimestamp(), ass_set->getProbability());
-            ROS_DEBUG(" ass_set.getNumMeasurements() = %i\n", ass_set->getNumMeasurements() );
+            ROS_DEBUG(" ass_set.getNumMeasurements() = %i, ass_set->getProbability() %i\n", ass_set->getNumMeasurements(), ass_set->getProbability() );
 //             std::cout << " ass_set.getNumMeasurements() = " << ass_set->getNumMeasurements() << std::endl;
             
             hyp_child->setAssignments(ass_set);
             hyp->addChildHypothesis(hyp_child);
-            
+            std::cout << "hyp_child->getProbability() = " << hyp_child->getProbability();
             if (leafs_.empty()) {
                     
                 min_prob = hyp_child->getProbability() * max_min_prob_ratio_;

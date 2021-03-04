@@ -9,7 +9,7 @@ Rectangle::Rectangle(): H_dim_ ( arma::eye(RECTANGLE_MEASURED_DIM_STATE_SIZE, RE
 {
     float notANumber = 0.0/0.0;
     P_PosVel_ = arma::eye( RECTANGLE_STATE_SIZE, RECTANGLE_STATE_SIZE ); 
-    Pdim_ = arma::eye( RECTANGLE_DIM_STATE_SIZE, RECTANGLE_DIM_STATE_SIZE ); 
+    Pdim_ = 2*arma::eye( RECTANGLE_DIM_STATE_SIZE, RECTANGLE_DIM_STATE_SIZE ); 
     this->setValues( notANumber, notANumber, notANumber, notANumber, notANumber, notANumber, notANumber, notANumber, notANumber ); // Produces NaN values, meaning that the properties are not initialized yet
     xVel_   = 0.0;
     yVel_   = 0.0;
@@ -38,7 +38,7 @@ void Rectangle::setMeasuredRectangle( std::shared_ptr<const pbl::Gaussian> Gmeas
   
         
         P_PosVel_ = arma::eye( RECTANGLE_STATE_SIZE, RECTANGLE_STATE_SIZE ); 
-        Pdim_ = arma::eye( RECTANGLE_DIM_STATE_SIZE, RECTANGLE_DIM_STATE_SIZE ); 
+        Pdim_ = 2*arma::eye( RECTANGLE_DIM_STATE_SIZE, RECTANGLE_DIM_STATE_SIZE ); 
         
         P_PosVel_.submat(0, 0, RECTANGLE_MEASURED_STATE_SIZE - 1, RECTANGLE_MEASURED_STATE_SIZE - 1) = 
                 Gmeasured->getCovariance().submat(0, 0, RECTANGLE_MEASURED_STATE_SIZE - 1, RECTANGLE_MEASURED_STATE_SIZE - 1);
@@ -265,11 +265,14 @@ void Rectangle::predictAndUpdatePos( float dt )
 
 bool Rectangle::switchDimensions( float measuredYaw)
 {
+        // wat als dit een veelvoud is?!
+        std::cout << "switchDimensions: std::fabs( std::fabs( yaw_ - measuredYaw )- M_PI_2 ) = " << std::fabs( std::fabs( yaw_ - measuredYaw )- M_PI_2 ) << std::endl;
         return std::fabs( std::fabs( yaw_ - measuredYaw )- M_PI_2 ) < MARGIN_RECTANGLE_INTERCHANGE;
 }
 
 void Rectangle::interchangeRectangleFeatures()
 {
+        std::cout << " interchagne rectangle features" << std::endl;
         float widthOld = w_;
         w_ = d_;
         d_ = widthOld;

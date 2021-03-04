@@ -201,7 +201,10 @@ void FeatureProperties::propagateRectangleFeatures (pbl::Matrix Q_k, float dt)
 
 void FeatureProperties::updateRectangleFeatures ( pbl::Matrix R_k, pbl::Vector z_k)
 {       
+        std::cout << "FeatureProperties::updateRectangleFeatures: measured = " << &z_k( RM.yaw_zRef) << " model = " << (double) rectangle_.get_yaw() << std::endl;
         unwrap( &z_k( RM.yaw_zRef ), (double) rectangle_.get_yaw(), (double) M_PI );
+
+        std::cout << "FeatureProperties::updateRectangleFeatures: unwrapped = " << &z_k( RM.yaw_zRef) << " model = " << (double) rectangle_.get_yaw() << std::endl;
 
         if( rectangle_.switchDimensions( z_k( RM.yaw_zRef ) ) )
         {

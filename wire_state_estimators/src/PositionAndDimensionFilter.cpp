@@ -189,7 +189,6 @@ std::cout << "z_kCircle = " <<  z_kCircle << ", cov = " << cov << std::endl;
                 exit(EXIT_FAILURE);
             }
 
-
             if(!properties_->circle_.isValid() )
             {
                 ROS_WARN( "Circle resetted" ); 
