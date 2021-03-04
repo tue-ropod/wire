@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(wire_state_estimators)
 
 #set(CMAKE_BUILD_TYPE Debug)
-set(CMAKE_BUILD_TYPE "RelWithDebInfo")
+#set(CMAKE_BUILD_TYPE "RelWithDebInfo")
 
 ## Compile as C++11
 add_compile_options(-std=c++11)
